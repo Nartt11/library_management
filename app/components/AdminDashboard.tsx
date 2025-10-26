@@ -224,19 +224,18 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   };
 
   return (
-    // <DashboardLayout
-    //   user={user}
-    //   onLogout={onLogout}
-    //   sidebar={
-    //     <NavigationSidebar
-    //       role={user.role}
-    //       activeView={activeView}
-    //       onViewChange={setActiveView}
-    //     />
-    //   }
-    // >
-    //   {renderContent()}
-    // </DashboardLayout>
-    <div></div>
+    <DashboardLayout
+      user={user}
+      onLogout={onLogout}
+      sidebar={
+        <NavigationSidebar
+          role={user.role}
+          activeView={activeView}
+          onViewChange={setActiveView}
+        />
+      }
+    >
+      {renderContent()}
+    </DashboardLayout>
   );
 }

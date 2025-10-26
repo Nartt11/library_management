@@ -16,6 +16,7 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
+  DollarSign,
 } from "lucide-react";
 import type { User } from "../../page";
 
@@ -251,17 +252,17 @@ export function StudentHistory({ user }: StudentHistoryProps) {
                             </h4>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                            <User className="h-3 w-3" />
+                            <UserRound className="h-3 w-3" />
                             <span>by {record.author}</span>
                           </div>
-                          {record.fineAmount > 0 && (
+                          {/* {record.fineAmount > 0 && (
                             <div className="flex items-center gap-2 text-sm text-amber-600">
                               <DollarSign className="h-3 w-3" />
                               <span className="font-medium">
                                 Fine: ${record.fineAmount.toFixed(2)}
                               </span>
                             </div>
-                          )}
+                          )} */}
                         </div>
                         <div className="flex-shrink-0 ml-4">
                           <Badge
@@ -346,7 +347,7 @@ export function StudentHistory({ user }: StudentHistoryProps) {
 
                         <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 p-3 rounded-lg">
                           <div className="flex items-center gap-2 mb-1">
-                            <User className="h-3 w-3 text-purple-600" />
+                            <UserRound className="h-3 w-3 text-purple-600" />
                             <span className="text-xs font-medium text-purple-800">
                               Staff
                             </span>
