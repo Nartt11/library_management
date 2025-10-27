@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { LoginPage } from "@/components/LoginPage";
 import { Showroom } from "@/components/Showroom";
 import { AdminDashboard } from "@/components/AdminDashboard";
@@ -8,48 +8,20 @@ import { LibrarianDashboard } from "@/components/LibrarianDashboard";
 import { StudentDashboard } from "@/components/StudentDashboard";
 import { ScannerDashboard } from "@/components/ScannerDashboard";
 import { Toaster } from "@/components/ui/sonner";
-
-export type UserRole = "admin" | "librarian" | "student" | "scanner";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  studentNumber?: string;
-  role: UserRole;
-  avatar?: string;
-}
-
-export interface PendingBook {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  bookId: string;
-  category: string;
-  action: "borrow" | "reserve";
-}
+import { useAuth } from "@/context/authContext";
 
 export default function HomePage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [pendingBook, setPendingBook] = useState<PendingBook | null>(null);
-
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-  };
+  const { currentUser, login, logout, setPendingBook, pendingBook } = useAuth();
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    logout();
     setShowLogin(true);
-    setPendingBook(null);
   };
 
-  const handleLoginRequired = (book?: PendingBook) => {
+  const handleLoginRequired = (book?: any) => {
     if (book) {
       setPendingBook(book);
-    } else {
-      setPendingBook(null);
     }
     setShowLogin(true);
   };
@@ -59,20 +31,20 @@ export default function HomePage() {
     setPendingBook(null);
   };
 
-  const handlePendingBookProcessed = useCallback(() => {
+  const handlePendingBookProcessed = () => {
     setPendingBook(null);
-  }, []);
+  };
 
   if (!currentUser) {
     if (showLogin) {
       return (
         <LoginPage
-          onLogin={handleLogin}
+          onLogin={login}
           onBackToShowroom={handleBackToShowroom}
         />
       );
     } else {
-      return <Showroom onLoginRequired={handleLoginRequired} />;
+      return <Showroom />;
     }
   }
 
@@ -96,7 +68,7 @@ export default function HomePage() {
       case "scanner":
         return <ScannerDashboard user={currentUser} onLogout={handleLogout} />;
       default:
-        return <LoginPage onLogin={handleLogin} />;
+        return <LoginPage onLogin={login} />;
     }
   };
 

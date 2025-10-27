@@ -13,7 +13,7 @@ import {
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Footer } from "./Footer";
 import { ArrowLeft } from "lucide-react";
-import type { User, UserRole } from "../page";
+import type { User, UserRole } from "@/types/user";
 import uccLogo from "../../public/window.svg";
 
 interface LoginPageProps {
@@ -146,7 +146,7 @@ export function LoginPage({ onLogin, onBackToShowroom }: LoginPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-green-50 flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4">
         {onBackToShowroom && !showForgotPassword && (
           <Button

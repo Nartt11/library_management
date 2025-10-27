@@ -3,7 +3,7 @@ import { BookOpen } from 'lucide-react';
 
 export function DashboardFooter() {
   return (
-    <footer className="bg-gradient-to-r from-orange-50 to-amber-50 border-t border-orange-200 mt-auto">
+    <footer className="bg-linear-to-r from-orange-50 to-amber-50 border-t border-orange-200 mt-auto">
       <div className="px-6 py-4">
         {/* Desktop Layout */}
         <div className="hidden md:flex items-center justify-between">

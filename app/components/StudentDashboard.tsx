@@ -10,7 +10,8 @@ import { StudentAttendance } from "./student/StudentAttendance";
 import { StudentHistory } from "./student/StudentHistory";
 import { ManageAccount } from "./ManageAccount";
 import { toast } from "sonner";
-import type { User, PendingBook } from "../page";
+import type { User } from "@/types/user";
+import type { PendingBook } from "@/types/pendingBook";
 
 interface StudentDashboardProps {
   user: User;

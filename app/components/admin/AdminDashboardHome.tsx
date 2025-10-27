@@ -37,7 +37,7 @@ import {
   Activity,
   Settings,
 } from "lucide-react";
-import type { User } from "../../page";
+import type { User } from "@/types/user";
 
 interface AdminDashboardHomeProps {
   user: User;

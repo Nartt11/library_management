@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -14,8 +15,8 @@ import {
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Footer } from "../components/Footer";
 import { ArrowLeft } from "lucide-react";
-import type { User, UserRole } from "../page";
-import uccLogo from "../../public/window.svg";
+import type { User, UserRole } from "@/types/user";
+import uitLogo from "../../public/UITLogo.jpg";
 import { useRouter } from "next/navigation";
 
 interface LoginPageProps {
@@ -56,7 +57,7 @@ export default function RegisterPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-green-50 flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4">
         <Button
           variant="outline"
@@ -70,14 +71,14 @@ export default function RegisterPage({
         <Card className="w-full max-w-lg">
           <CardHeader className="text-center space-y-4">
             <div className="flex justify-center">
-              <ImageWithFallback
-                src={uccLogo}
-                alt="University of Caloocan City Logo"
-                className="h-20 w-20 object-contain"
+              <Image
+                src={uitLogo}
+                alt="University of Infomation Techonology"
+                className="h-40 w-80 object-contain"
               />
             </div>
             <CardTitle className="text-2xl">
-              "Library Management System"
+              {"Library Management System"}
             </CardTitle>
             <CardDescription>
               "Register to access your account and explore our collection."

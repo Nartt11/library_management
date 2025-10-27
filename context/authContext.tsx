@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import type { User } from "@/types/user";
+import type { User,UserRole } from "@/types/user";
 import type { PendingBook } from "@/types/pendingBook";
 
 interface AuthContextType {

@@ -970,6 +970,7 @@ export function AdminBookManagement({
       <PasswordConfirmation
         isOpen={showPasswordConfirmation}
         onClose={handlePasswordCancelled}
+        onCancel={handlePasswordCancelled}
         onConfirm={handlePasswordConfirmed}
         title={pendingAction?.title || ""}
         description={pendingAction?.description || ""}

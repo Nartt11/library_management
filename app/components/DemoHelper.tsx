@@ -125,7 +125,7 @@ export function DemoHelper({ userRole }: DemoHelperProps) {
         <DialogTrigger asChild>
           <Button
             size="lg"
-            className="rounded-full shadow-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+            className="rounded-full shadow-lg bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           >
             <HelpCircle className="h-5 w-5 mr-2" />
             Demo Guide

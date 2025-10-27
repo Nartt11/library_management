@@ -12,7 +12,7 @@ import { GlobalLogs } from "./admin/GlobalLogs";
 import { BackupRestore, BackupRestoreData } from "./admin/BackupRestore";
 import { Features } from "./admin/Features";
 import { ManageAccount } from "./ManageAccount";
-import type { User } from "../page";
+import type { User } from "@/types/user";
 
 interface AdminDashboardProps {
   user: User;
@@ -181,13 +181,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         return <AdminDashboardHome user={user} onNavigate={setActiveView} />;
       case "users":
         return <UserManagement onDeleteUser={addToBackup.user} />;
-      // case "books":
-      //   return (
-      //     <AdminBookManagement
-      //       onDeleteBook={addToBackup.book}
-      //       currentUser={user}
-      //     />
-      //   );
+      case "books":
+        return (
+          <AdminBookManagement
+            onDeleteBook={addToBackup.book}
+            // currentUser={user}
+          />
+        );
       // case "equipment":
       //   return (
       //     <AdminEquipmentManagement

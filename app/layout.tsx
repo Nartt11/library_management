@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UCC Library Management System",
+  title: "UIT Library Management System",
   description:
-    "Modern Library Management System for University of Caloocan City",
+    "Modern Library Management System for University of Infomation Technology",
 };
 
 export default function RootLayout({

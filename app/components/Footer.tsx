@@ -3,13 +3,13 @@ import { BookOpen } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-orange-50 to-amber-50 border-t border-orange-200">
+    <footer className="bg-linear-to-r from-orange-50 to-amber-50 border-t border-orange-200">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Main Content */}
         <div className="text-center space-y-4 mb-8">
           <div className="flex items-center justify-center space-x-2">
             <BookOpen className="h-6 w-6 text-orange-600" />
-            <h3 className="text-xl font-medium text-orange-900">UCC Library</h3>
+            <h3 className="text-xl font-medium text-orange-900">UIT Library</h3>
           </div>
           <div className="max-w-2xl mx-auto space-y-2">
             <p className="text-orange-700 leading-relaxed">
@@ -25,7 +25,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="pt-6 border-t border-orange-200 text-center space-y-3">
           <p className="text-sm text-orange-600">
-            © 2024 UCC Library Management System. All rights reserved.
+            © 2024 UIT Library Management System. All rights reserved.
           </p>
           <div className="flex items-center justify-center space-x-4 text-sm">
             <a href="#privacy" className="text-orange-600 hover:text-orange-800 transition-colors">

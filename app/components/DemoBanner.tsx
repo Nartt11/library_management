@@ -10,7 +10,7 @@ export function DemoBanner() {
   if (!isVisible) return null;
 
   return (
-    <div className="border-b border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
+    <div className="border-b border-orange-200 bg-linear-to-r from-orange-50 to-amber-50">
       <div className="px-4 py-2">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">

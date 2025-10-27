@@ -12,11 +12,15 @@ import {
 } from "../components/ui/card";
 
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import Image from "next/image";
 import { Footer } from "../components/Footer";
 import { ArrowLeft } from "lucide-react";
-import type { User, UserRole } from "../page";
-import uccLogo from "../../public/window.svg";
+import type { User, UserRole } from "@/types/user";
+import uitLogo from "../../public/UITLogo.jpg";
 import { useRouter } from "next/navigation";
+
+import { login } from "@/services/auth/authService";
+import { useAuth } from "@/context/authContext";
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -39,58 +43,19 @@ export default function LoginPage({
   const [newPassword, setNewPassword] = useState("");
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // Validate credentials and determine role automatically
-    let user: User | null = null;
+  const user = await login(loginField, password);
+  if (user) {
+    // Lưu user -> localStorage hoặc context
+    localStorage.setItem("user", JSON.stringify(user));
+    router.push("/{user.}/dashboard"); // tuỳ route 
+  } else {
+    alert("Invalid username or password");
+  }
+};
 
-    // Check student credentials
-    if (loginField === "123" && password === "123") {
-      user = {
-        id: "4",
-        name: "Alex Johnson",
-        email: "alex.johnson@student.university.edu",
-        studentNumber: "123",
-        role: "student" as UserRole,
-      };
-    }
-    // Check librarian credentials
-    else if (loginField === "librarian" && password === "123") {
-      user = {
-        id: "3",
-        name: "Sarah Chen",
-        email: "sarah.chen@university.edu",
-        role: "librarian" as UserRole,
-      };
-    }
-    // Check admin credentials
-    else if (loginField === "admin" && password === "123") {
-      user = {
-        id: "2",
-        name: "John Anderson",
-        email: "john.anderson@university.edu",
-        role: "admin" as UserRole,
-      };
-    }
-    // Check scanner credentials
-    else if (loginField === "scanner" && password === "123") {
-      user = {
-        id: "5",
-        name: "Scanner",
-        email: "scanner@university.edu",
-        role: "scanner" as UserRole,
-      };
-    }
-
-    if (user) {
-      onLogin(user);
-    } else {
-      alert(
-        "Invalid credentials. Please check your username/student number and password."
-      );
-    }
-  };
   const handleBackToShowroom = () => {
     router.push("/");
   };
@@ -155,7 +120,7 @@ export default function LoginPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-orange-50 to-green-50 flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4">
         {!showForgotPassword && (
           <Button
@@ -171,10 +136,10 @@ export default function LoginPage({
         <Card className="w-full max-w-lg">
           <CardHeader className="text-center space-y-4">
             <div className="flex justify-center">
-              <ImageWithFallback
-                src={uccLogo}
+              <Image
+                src={uitLogo}
                 alt="University of Caloocan City Logo"
-                className="h-20 w-20 object-contain"
+                className="h-40 w-80 object-contain"
               />
             </div>
             <CardTitle className="text-2xl">
@@ -230,8 +195,16 @@ export default function LoginPage({
                     Forgot Password?
                   </Button>
                 </div>
-
-                <div className="mt-4 text-center text-sm text-muted-foreground">
+                  <div className="mt-2 text-center">
+                  <Button
+                    variant="link"
+                    onClick={() => router.push("/register")}
+                    className="text-sm text-muted-foreground hover:text-primary"
+                  >
+                    Don't have an account? Register
+                  </Button>
+                </div>
+                {/* <div className="mt-4 text-center text-sm text-muted-foreground">
                   <p>Demo credentials:</p>
                   <div className="mt-2 text-xs space-y-1">
                     <p>Student: 123 / 123</p>
@@ -239,7 +212,7 @@ export default function LoginPage({
                     <p>Admin: admin / 123</p>
                     <p>Scanner: scanner / 123</p>
                   </div>
-                </div>
+                </div> */}
               </>
             ) : (
               // Forgot Password Form

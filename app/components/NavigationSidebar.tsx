@@ -16,7 +16,7 @@ import {
   Settings,
   User
 } from 'lucide-react';
-import type { UserRole } from '../App';
+import type { UserRole } from '@/types/user';
 
 interface NavigationSidebarProps {
   role: UserRole;
