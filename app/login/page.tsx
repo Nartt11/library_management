@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -19,7 +19,7 @@ import type { User, UserRole } from "@/types/user";
 import uitLogo from "../../public/UITLogo.jpg";
 import { useRouter } from "next/navigation";
 
-import { login } from "@/services/auth/authService";
+import { loginService } from "@/services/auth/authService";
 import { useAuth } from "@/context/authContext";
 
 interface LoginPageProps {
@@ -30,8 +30,6 @@ interface LoginPageProps {
 type ForgotPasswordStep = "email" | "code" | "newPassword";
 
 export default function LoginPage({
-  onLogin,
-  onBackToShowroom,
 }: LoginPageProps) {
   const [loginField, setLoginField] = useState("");
   const [password, setPassword] = useState("");
@@ -41,20 +39,31 @@ export default function LoginPage({
   const [forgotEmail, setForgotEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
   const router = useRouter();
+  const { saveUser } = useAuth();
 
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  const user = await login(loginField, password);
+  const user = await loginService(loginField, password);
   if (user) {
     // Lưu user -> localStorage hoặc context
     localStorage.setItem("user", JSON.stringify(user));
-    router.push("/{user.}/dashboard"); // tuỳ route 
+    saveUser(user);
+     if (user.role === "admin") {
+    router.push("/admin/dashboard");
+  } else if (user.role === "librarian") {
+    router.push("/librarian/dashboard");
+  } else if (user.role === "staff") {
+    router.push("/staff/dashboard");
   } else {
-    alert("Invalid username or password");
+    router.push("/student/dashboard");
   }
+} else {
+  alert("Invalid username or password");
 };
+}
 
   const handleBackToShowroom = () => {
     router.push("/");

@@ -1,7 +1,7 @@
 // services/auth.service.ts
 import { loginApi } from "@/lib/api/auth";
 
-export async function login(username: string, password: string) {
+export async function loginService(username: string, password: string) {
   const user = await loginApi(username, password);
 
   // Save to localStorage (đơn giản)

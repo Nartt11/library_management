@@ -12,7 +12,7 @@ import { useAuth } from "@/context/authContext";
 
 export default function HomePage() {
   const [showLogin, setShowLogin] = useState(false);
-  const { currentUser, login, logout, setPendingBook, pendingBook } = useAuth();
+  const { currentUser, saveUser, logout, setPendingBook, pendingBook } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -39,7 +39,7 @@ export default function HomePage() {
     if (showLogin) {
       return (
         <LoginPage
-          onLogin={login}
+          onLogin={saveUser}
           onBackToShowroom={handleBackToShowroom}
         />
       );
@@ -68,7 +68,7 @@ export default function HomePage() {
       case "scanner":
         return <ScannerDashboard user={currentUser} onLogout={handleLogout} />;
       default:
-        return <LoginPage onLogin={login} />;
+        return <LoginPage onLogin={saveUser} />;
     }
   };
 
