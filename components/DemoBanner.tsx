@@ -1,3 +1,5 @@
+// Pick làm thông báo...
+"use client";
 import React, { useState } from "react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";

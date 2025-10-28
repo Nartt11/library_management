@@ -13,7 +13,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { ShieldCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import type { User } from "../../types/user";
+import type { User } from "../types/user";
 
 interface PasswordConfirmationProps {
   isOpen: boolean;

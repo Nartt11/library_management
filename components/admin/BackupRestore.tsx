@@ -39,7 +39,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { UserRole, User } from "../../../types/user";
+import type { UserRole, User } from "../../types/user";
 import { PasswordConfirmation } from "../PasswordConfirmation";
 
 interface DeletedUser {

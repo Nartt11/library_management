@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-// import { LoginPage } from "@/components/LoginPage";
+import LoginPage from "@/app/(public)/login/page";
 import { Showroom } from "@/components/Showroom";
-import { AdminDashboard } from "@/components/AdminDashboard";
-import { LibrarianDashboard } from "@/components/LibrarianDashboard";
+// import { AdminDashboard } from "@/components/AdminDashboard";
+// import { LibrarianDashboard } from "@/components/LibrarianDashboard";
 import { StudentDashboard } from "@/components/StudentDashboard";
 import { ScannerDashboard } from "@/components/ScannerDashboard";
 import { Toaster } from "@/components/ui/sonner";
@@ -48,12 +48,12 @@ export default function HomePage() {
 
   const renderDashboard = () => {
     switch (currentUser.role) {
-      case "admin":
-        return <AdminDashboard user={currentUser} onLogout={handleLogout} />;
-      case "librarian":
-        return (
-          <LibrarianDashboard user={currentUser} onLogout={handleLogout} />
-        );
+      // case "admin":
+      //   return <AdminDashboard user={currentUser} onLogout={handleLogout} />;
+      // case "librarian":
+      //   return (
+      //     <LibrarianDashboard user={currentUser} onLogout={handleLogout} />
+      //   );
       case "student":
         return (
           <StudentDashboard

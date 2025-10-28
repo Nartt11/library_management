@@ -1,31 +1,28 @@
+"use client";
 import React from "react";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Button } from "./../../components/ui/button";
+import { Avatar, AvatarFallback } from "./../../components/ui/avatar";
 import { LogOut, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { DemoHelper } from "./DemoHelper";
-import { DemoBanner } from "./DemoBanner";
-import { DashboardFooter } from "./DashboardFooter";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
-import type { User } from "../types/user";
+import { Sheet, SheetContent, SheetTrigger } from "./../../components/ui/sheet";
+import { DemoHelper } from "./../../components/DemoHelper";
+import { DemoBanner } from "./../../components/DemoBanner";
+import { DashboardFooter } from "./../../components/DashboardFooter";
+import { ImageWithFallback } from "./../../components/figma/ImageWithFallback";
+import type { User } from "../../types/user";
 import uitLogo from "../../public/UITLogo.jpg";
-import uccLogo from "./../public/globe.svg";
+import uccLogo from "../../public/globe.svg";
+import { useAuth } from "@/context/authContext";
+import { NavigationSidebar } from "@/components/NavigationSidebar";
 
 interface DashboardLayoutProps {
-  user: User;
   children: React.ReactNode;
-  sidebar: React.ReactNode;
   onLogout: () => void;
 }
 
-export function DashboardLayout({
-  user,
-  children,
-  sidebar,
-  onLogout,
-}: DashboardLayoutProps) {
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { currentUser, logout } = useAuth();
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-fit bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-4 border-b border-sidebar-border">
@@ -42,7 +39,7 @@ export function DashboardLayout({
             </div>
           </div>
         </div>
-        {sidebar}
+        <NavigationSidebar role={currentUser?.role} activeView="" />
       </div>
 
       {/* Main Content */}
@@ -74,7 +71,7 @@ export function DashboardLayout({
                       </div>
                     </div>
                   </div>
-                  {sidebar}
+                  <NavigationSidebar role={currentUser?.role} activeView="" />
                 </SheetContent>
               </Sheet>
 
@@ -90,19 +87,21 @@ export function DashboardLayout({
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarFallback>
-                    {user.name
+                    {currentUser?.name
                       .split(" ")
                       .map((n) => n[0])
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">
-                  <p className="text-sm text-foreground">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-sm text-foreground">{currentUser?.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {currentUser?.email}
+                  </p>
                 </div>
               </div>
 
-              <Button variant="ghost" size="icon" onClick={onLogout}>
+              <Button variant="ghost" size="icon" onClick={logout}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -117,7 +116,7 @@ export function DashboardLayout({
       </div>
 
       {/* Demo Helper */}
-      <DemoHelper userRole={user.role} />
+      {/* <DemoHelper userRole={currentUser?.role} /> */}
     </div>
   );
 }

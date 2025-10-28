@@ -18,7 +18,7 @@ import {
   AlertTriangle,
   DollarSign,
 } from "lucide-react";
-import type { User } from "../../page";
+import type { User } from "../../types/user";
 
 interface StudentHistoryProps {
   user: User;

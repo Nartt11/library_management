@@ -6,4 +6,6 @@ export interface User {
   studentNumber?: string;
   role: UserRole;
   avatar?: string;
+  //phoneNumber?: string;
+  //address?: string; 
 }
