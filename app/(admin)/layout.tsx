@@ -22,7 +22,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { currentUser, logout } = useAuth();
   return (
-    <div className="flex h-fit bg-background">
+    <div className="flex h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-4 border-b border-sidebar-border">
