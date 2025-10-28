@@ -1,8 +1,21 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { BookOpen, Users, AlertTriangle, QrCode, Calendar, TrendingUp } from 'lucide-react';
-import type { User } from '../../App';
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import {
+  BookOpen,
+  Users,
+  AlertTriangle,
+  QrCode,
+  Calendar,
+  TrendingUp,
+} from "lucide-react";
+import type { User } from "../../../types/user";
 
 interface LibrarianDashboardHomeProps {
   user: User;
@@ -10,39 +23,43 @@ interface LibrarianDashboardHomeProps {
   onAddBook?: () => void;
 }
 
-export function LibrarianDashboardHome({ user, onNavigate, onAddBook }: LibrarianDashboardHomeProps) {
+export function LibrarianDashboardHome({
+  user,
+  onNavigate,
+  onAddBook,
+}: LibrarianDashboardHomeProps) {
   const kpiData = [
     {
-      title: 'Books Borrowed Today',
-      value: '24',
-      description: '+3 from yesterday',
+      title: "Books Borrowed Today",
+      value: "24",
+      description: "+3 from yesterday",
       icon: BookOpen,
-      color: 'text-blue-600',
-      trend: 'up',
+      color: "text-blue-600",
+      trend: "up",
     },
     {
-      title: 'Active Visitors',
-      value: '47',
-      description: 'Currently in library',
+      title: "Active Visitors",
+      value: "47",
+      description: "Currently in library",
       icon: Users,
-      color: 'text-green-600',
-      trend: 'up',
+      color: "text-green-600",
+      trend: "up",
     },
     {
-      title: 'Overdue Books',
-      value: '8',
-      description: 'Need attention',
+      title: "Overdue Books",
+      value: "8",
+      description: "Need attention",
       icon: AlertTriangle,
-      color: 'text-red-600',
-      trend: 'down',
+      color: "text-red-600",
+      trend: "down",
     },
     {
-      title: 'QR Scans',
-      value: '156',
-      description: 'Today',
+      title: "QR Scans",
+      value: "156",
+      description: "Today",
       icon: QrCode,
-      color: 'text-purple-600',
-      trend: 'up',
+      color: "text-purple-600",
+      trend: "up",
     },
   ];
 
@@ -50,7 +67,9 @@ export function LibrarianDashboardHome({ user, onNavigate, onAddBook }: Libraria
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl mb-2">Welcome back, {user.name}!</h1>
-        <p className="text-muted-foreground">Here's your library overview for today.</p>
+        <p className="text-muted-foreground">
+          Here's your library overview for today.
+        </p>
       </div>
 
       {/* KPI Cards */}
@@ -66,7 +85,7 @@ export function LibrarianDashboardHome({ user, onNavigate, onAddBook }: Libraria
               <CardContent>
                 <div className="text-2xl">{kpi.value}</div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  {kpi.trend === 'up' ? (
+                  {kpi.trend === "up" ? (
                     <TrendingUp className="h-3 w-3 text-green-600" />
                   ) : null}
                   {kpi.description}
@@ -85,33 +104,33 @@ export function LibrarianDashboardHome({ user, onNavigate, onAddBook }: Libraria
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Button 
+            <Button
               className="h-auto p-4 flex flex-col gap-2"
-              onClick={() => onNavigate?.('scanner')}
+              onClick={() => onNavigate?.("scanner")}
             >
               <QrCode className="h-6 w-6" />
               <span>Scan QR Code</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-auto p-4 flex flex-col gap-2"
               onClick={() => onAddBook?.()}
             >
               <BookOpen className="h-6 w-6" />
               <span>Add New Book</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-auto p-4 flex flex-col gap-2"
-              onClick={() => onNavigate?.('overdue')}
+              onClick={() => onNavigate?.("overdue")}
             >
               <AlertTriangle className="h-6 w-6" />
               <span>View Overdue</span>
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-auto p-4 flex flex-col gap-2"
-              onClick={() => onNavigate?.('attendance')}
+              onClick={() => onNavigate?.("attendance")}
             >
               <Calendar className="h-6 w-6" />
               <span>Attendance Logs</span>

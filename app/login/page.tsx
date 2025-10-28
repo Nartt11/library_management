@@ -1,19 +1,19 @@
 "use client";
 import React, { use, useState } from "react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from "../../components/ui/card";
 
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import Image from "next/image";
-import { Footer } from "../components/Footer";
+import { Footer } from "../../components/Footer";
 import { ArrowLeft } from "lucide-react";
 import type { User, UserRole } from "@/types/user";
 import uitLogo from "../../public/UITLogo.jpg";
@@ -29,8 +29,7 @@ interface LoginPageProps {
 
 type ForgotPasswordStep = "email" | "code" | "newPassword";
 
-export default function LoginPage({
-}: LoginPageProps) {
+export default function LoginPage({}: LoginPageProps) {
   const [loginField, setLoginField] = useState("");
   const [password, setPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -43,27 +42,27 @@ export default function LoginPage({
   const router = useRouter();
   const { saveUser } = useAuth();
 
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const user = await loginService(loginField, password);
-  if (user) {
-    // Lưu user -> localStorage hoặc context
-    localStorage.setItem("user", JSON.stringify(user));
-    saveUser(user);
-     if (user.role === "admin") {
-    router.push("/admin/dashboard");
-  } else if (user.role === "librarian") {
-    router.push("/librarian/dashboard");
-  } else if (user.role === "staff") {
-    router.push("/staff/dashboard");
-  } else {
-    router.push("/student/dashboard");
-  }
-} else {
-  alert("Invalid username or password");
-};
-}
+    const user = await loginService(loginField, password);
+    if (user) {
+      // Lưu user -> localStorage hoặc context
+      localStorage.setItem("user", JSON.stringify(user));
+      saveUser(user);
+      if (user.role === "admin") {
+        router.push("/admin/dashboard");
+      } else if (user.role === "librarian") {
+        router.push("/dashboard");
+      } else if (user.role === "staff") {
+        router.push("/staff/dashboard");
+      } else {
+        router.push("/student/dashboard");
+      }
+    } else {
+      alert("Invalid username or password");
+    }
+  };
 
   const handleBackToShowroom = () => {
     router.push("/");
@@ -204,7 +203,7 @@ const handleLogin = async (e: React.FormEvent) => {
                     Forgot Password?
                   </Button>
                 </div>
-                  <div className="mt-2 text-center">
+                <div className="mt-2 text-center">
                   <Button
                     variant="link"
                     onClick={() => router.push("/register")}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LoginPage } from "@/components/LoginPage";
+// import { LoginPage } from "@/components/LoginPage";
 import { Showroom } from "@/components/Showroom";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { LibrarianDashboard } from "@/components/LibrarianDashboard";
@@ -12,7 +12,8 @@ import { useAuth } from "@/context/authContext";
 
 export default function HomePage() {
   const [showLogin, setShowLogin] = useState(false);
-  const { currentUser, saveUser, logout, setPendingBook, pendingBook } = useAuth();
+  const { currentUser, saveUser, logout, setPendingBook, pendingBook } =
+    useAuth();
 
   const handleLogout = () => {
     logout();
@@ -38,10 +39,7 @@ export default function HomePage() {
   if (!currentUser) {
     if (showLogin) {
       return (
-        <LoginPage
-          onLogin={saveUser}
-          onBackToShowroom={handleBackToShowroom}
-        />
+        <LoginPage onLogin={saveUser} onBackToShowroom={handleBackToShowroom} />
       );
     } else {
       return <Showroom />;

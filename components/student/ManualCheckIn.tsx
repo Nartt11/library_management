@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Badge } from '../ui/badge';
-import { ScanAlert } from '../ui/scan-alert';
-import { LogIn, Clock, Calendar, User, CheckCircle } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
-import type { User } from '../../App';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Badge } from "../ui/badge";
+import { ScanAlert } from "../ui/scan-alert";
+import { LogIn, Clock, Calendar, UserRound, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
+import type { User } from "../../../types/user";
 
 interface ManualCheckInProps {
   user: User;
@@ -22,43 +28,43 @@ interface CheckInRecord {
 }
 
 export function ManualCheckIn({ user }: ManualCheckInProps) {
-  const [studentNumber, setStudentNumber] = useState(user.studentNumber || '');
+  const [studentNumber, setStudentNumber] = useState(user.studentNumber || "");
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [showScanAlert, setShowScanAlert] = useState(false);
   const [recentCheckIns, setRecentCheckIns] = useState<CheckInRecord[]>([
     {
-      id: '1',
-      studentNumber: 'ST001234567',
-      date: '2025-08-01',
-      time: '14:30:00',
-      timestamp: '2025-08-01T14:30:00'
+      id: "1",
+      studentNumber: "ST001234567",
+      date: "2025-08-01",
+      time: "14:30:00",
+      timestamp: "2025-08-01T14:30:00",
     },
     {
-      id: '2',
-      studentNumber: 'ST001234567',
-      date: '2025-07-31',
-      time: '10:15:00',
-      timestamp: '2025-07-31T10:15:00'
-    }
+      id: "2",
+      studentNumber: "ST001234567",
+      date: "2025-07-31",
+      time: "10:15:00",
+      timestamp: "2025-07-31T10:15:00",
+    },
   ]);
 
   // Auto-fill current date and time
-  const currentDate = new Date().toISOString().split('T')[0];
-  const currentTime = new Date().toLocaleTimeString('en-US', { 
+  const currentDate = new Date().toISOString().split("T")[0];
+  const currentTime = new Date().toLocaleTimeString("en-US", {
     hour12: false,
-    hour: '2-digit',
-    minute: '2-digit'
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const handleCheckIn = () => {
     if (!studentNumber.trim()) {
-      toast.error('Please enter your student number');
+      toast.error("Please enter your student number");
       return;
     }
 
     // Validate student number format (basic validation)
     if (studentNumber.length < 5) {
-      toast.error('Student number must be at least 5 characters');
+      toast.error("Student number must be at least 5 characters");
       return;
     }
 
@@ -67,12 +73,12 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
       studentNumber: studentNumber,
       date: currentDate,
       time: currentTime,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    setRecentCheckIns(prev => [newCheckIn, ...prev.slice(0, 4)]); // Keep only 5 most recent
+    setRecentCheckIns((prev) => [newCheckIn, ...prev.slice(0, 4)]); // Keep only 5 most recent
     setIsCheckedIn(true);
-    
+
     setShowScanAlert(true);
 
     // Reset checked-in state after 3 seconds
@@ -82,7 +88,7 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
   };
 
   const getTodayCheckIns = () => {
-    return recentCheckIns.filter(checkIn => checkIn.date === currentDate);
+    return recentCheckIns.filter((checkIn) => checkIn.date === currentDate);
   };
 
   return (
@@ -92,7 +98,10 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
           <LogIn className="h-6 w-6" />
           Manual Check-In
         </h1>
-        <p className="text-muted-foreground">Check into the library using your student number when QR scanning is unavailable.</p>
+        <p className="text-muted-foreground">
+          Check into the library using your student number when QR scanning is
+          unavailable.
+        </p>
       </div>
 
       {/* Quick Stats */}
@@ -111,7 +120,9 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Clock className="h-4 w-4 text-green-600" />
-              <span className="text-sm text-muted-foreground">Current Time</span>
+              <span className="text-sm text-muted-foreground">
+                Current Time
+              </span>
             </div>
             <p className="text-xl">{currentTime}</p>
             <p className="text-xs text-muted-foreground">Auto-filled</p>
@@ -120,10 +131,10 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <User className="h-4 w-4 text-orange-600" />
+              <UserRound className="h-4 w-4 text-orange-600" />
               <span className="text-sm text-muted-foreground">Status</span>
             </div>
-            <p className="text-lg">{isCheckedIn ? 'Checked In' : 'Ready'}</p>
+            <p className="text-lg">{isCheckedIn ? "Checked In" : "Ready"}</p>
             <p className="text-xs text-muted-foreground">Current</p>
           </CardContent>
         </Card>
@@ -144,10 +155,12 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
           {isCheckedIn && (
             <div className="flex items-center gap-2 p-3 bg-green-100 rounded-lg border border-green-300">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              <span className="text-green-800">Check-in successful! You are now logged in.</span>
+              <span className="text-green-800">
+                Check-in successful! You are now logged in.
+              </span>
             </div>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1 space-y-2">
               <Label htmlFor="student-number">Student Number *</Label>
@@ -167,7 +180,9 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
               <Label>Date (Auto-filled)</Label>
               <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{new Date(currentDate).toLocaleDateString()}</span>
+                <span className="text-sm">
+                  {new Date(currentDate).toLocaleDateString()}
+                </span>
               </div>
             </div>
 
@@ -181,7 +196,7 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
           </div>
 
           <div className="flex justify-center pt-4">
-            <Button 
+            <Button
               onClick={handleCheckIn}
               disabled={isCheckedIn || !studentNumber.trim()}
               className="gap-2 min-w-48"
@@ -215,20 +230,36 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
               <div className="text-center py-8">
                 <LogIn className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg mb-2">No check-ins yet</h3>
-                <p className="text-muted-foreground">Your manual check-ins will appear here.</p>
+                <p className="text-muted-foreground">
+                  Your manual check-ins will appear here.
+                </p>
               </div>
             ) : (
               recentCheckIns.map((checkIn) => (
-                <div key={checkIn.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div
+                  key={checkIn.id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
                   <div className="flex items-center gap-4">
                     <div className="text-center min-w-0">
-                      <p className="text-sm">{new Date(checkIn.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(checkIn.date).toLocaleDateString('en-US', { weekday: 'short' })}</p>
+                      <p className="text-sm">
+                        {new Date(checkIn.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(checkIn.date).toLocaleDateString("en-US", {
+                          weekday: "short",
+                        })}
+                      </p>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <User className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm">ID: {checkIn.studentNumber}</span>
+                        <UserRound className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-sm">
+                          ID: {checkIn.studentNumber}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-3 w-3 text-muted-foreground" />
@@ -237,8 +268,12 @@ export function ManualCheckIn({ user }: ManualCheckInProps) {
                     </div>
                   </div>
                   <div className="text-center">
-                    <Badge variant={checkIn.date === currentDate ? 'default' : 'secondary'}>
-                      {checkIn.date === currentDate ? 'Today' : 'Completed'}
+                    <Badge
+                      variant={
+                        checkIn.date === currentDate ? "default" : "secondary"
+                      }
+                    >
+                      {checkIn.date === currentDate ? "Today" : "Completed"}
                     </Badge>
                   </div>
                 </div>

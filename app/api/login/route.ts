@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     id: user.id,
-    username: user.username,
+    name: user.username,
     role: user.role,
     token: "FAKE_JWT_TOKEN",
   });

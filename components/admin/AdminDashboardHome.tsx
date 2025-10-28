@@ -104,7 +104,7 @@ export function AdminDashboardHome({
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl mb-2">Welcome back, {user.name}!</h1>
+        <h1 className="text-2xl mb-2">Welcome back, {user?.name}!</h1>
         <p className="text-muted-foreground">
           Here's your library system overview.
         </p>

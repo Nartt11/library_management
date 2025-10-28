@@ -1,32 +1,40 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Badge } from '../ui/badge';
-import { User, Edit3, Save, X, Eye, EyeOff, Copy } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
-import type { User } from '../../App';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Badge } from "../ui/badge";
+import { UserRound, Edit3, Save, X, Eye, EyeOff, Copy } from "lucide-react";
+import { toast } from "sonner";
+import type { User } from "../../types/user";
 
 interface StudentIDProps {
   user: User;
 }
 
 export function StudentID({ user }: StudentIDProps) {
-  const [studentNumber, setStudentNumber] = useState(user.studentNumber || 'ST001234567');
+  const [studentNumber, setStudentNumber] = useState(
+    user.studentNumber || "ST001234567"
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [tempStudentNumber, setTempStudentNumber] = useState(studentNumber);
   const [showNumber, setShowNumber] = useState(true);
 
   const handleSave = () => {
     if (!tempStudentNumber.trim()) {
-      toast.error('Student number cannot be empty');
+      toast.error("Student number cannot be empty");
       return;
     }
-    
+
     setStudentNumber(tempStudentNumber);
     setIsEditing(false);
-    toast.success('Student ID updated successfully');
+    toast.success("Student ID updated successfully");
   };
 
   const handleCancel = () => {
@@ -35,16 +43,19 @@ export function StudentID({ user }: StudentIDProps) {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(studentNumber).then(() => {
-      toast.success('Student number copied to clipboard');
-    }).catch(() => {
-      toast.error('Failed to copy student number');
-    });
+    navigator.clipboard
+      .writeText(studentNumber)
+      .then(() => {
+        toast.success("Student number copied to clipboard");
+      })
+      .catch(() => {
+        toast.error("Failed to copy student number");
+      });
   };
 
   const formatStudentNumber = (number: string) => {
     if (!showNumber) {
-      return '••••••••••';
+      return "••••••••••";
     }
     return number;
   };
@@ -53,20 +64,24 @@ export function StudentID({ user }: StudentIDProps) {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl mb-2 flex items-center gap-2">
-          <User className="h-6 w-6" />
+          <UserRound className="h-6 w-6" />
           Student ID
         </h1>
-        <p className="text-muted-foreground">Manage your student identification number and settings.</p>
+        <p className="text-muted-foreground">
+          Manage your student identification number and settings.
+        </p>
       </div>
 
       {/* Student ID Card */}
       <Card className="border-2 border-primary/20">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-secondary/5">
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+            <UserRound className="h-5 w-5" />
             Digital Student ID
           </CardTitle>
-          <CardDescription>Your primary identification for library services</CardDescription>
+          <CardDescription>
+            Your primary identification for library services
+          </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="space-y-6">
@@ -79,10 +94,12 @@ export function StudentID({ user }: StudentIDProps) {
                 </div>
                 <Badge variant="default">Active</Badge>
               </div>
-              
+
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm text-muted-foreground block mb-1">Student Number</label>
+                  <label className="text-sm text-muted-foreground block mb-1">
+                    Student Number
+                  </label>
                   <div className="flex items-center gap-3">
                     {isEditing ? (
                       <div className="flex-1 flex items-center gap-2">
@@ -95,7 +112,11 @@ export function StudentID({ user }: StudentIDProps) {
                         <Button size="sm" onClick={handleSave}>
                           <Save className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={handleCancel}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCancel}
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -113,7 +134,11 @@ export function StudentID({ user }: StudentIDProps) {
                             onClick={() => setShowNumber(!showNumber)}
                             title={showNumber ? "Hide number" : "Show number"}
                           >
-                            {showNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            {showNumber ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
                           </Button>
                           <Button
                             size="sm"
@@ -144,11 +169,15 @@ export function StudentID({ user }: StudentIDProps) {
                 <CardContent className="p-4">
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <User className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm text-muted-foreground">Account Status</span>
+                      <UserRound className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm text-muted-foreground">
+                        Account Status
+                      </span>
                     </div>
                     <p className="text-lg">Active</p>
-                    <p className="text-xs text-muted-foreground">Member since 2024</p>
+                    <p className="text-xs text-muted-foreground">
+                      Member since 2024
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -157,9 +186,15 @@ export function StudentID({ user }: StudentIDProps) {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <Copy className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-muted-foreground">Quick Copy</span>
+                      <span className="text-sm text-muted-foreground">
+                        Quick Copy
+                      </span>
                     </div>
-                    <Button onClick={copyToClipboard} variant="outline" size="sm">
+                    <Button
+                      onClick={copyToClipboard}
+                      variant="outline"
+                      size="sm"
+                    >
                       Copy Student Number
                     </Button>
                   </div>
@@ -203,13 +238,16 @@ export function StudentID({ user }: StudentIDProps) {
       <Card>
         <CardHeader>
           <CardTitle>Manual Input Helper</CardTitle>
-          <CardDescription>In case your physical ID is lost or hidden</CardDescription>
+          <CardDescription>
+            In case your physical ID is lost or hidden
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
             <h4 className="text-amber-800 mb-2">Lost or Hidden ID?</h4>
             <p className="text-amber-700 text-sm mb-3">
-              If your physical student ID is lost or hidden, you can still access library services:
+              If your physical student ID is lost or hidden, you can still
+              access library services:
             </p>
             <ol className="text-amber-700 text-sm space-y-1">
               <li>1. Use the "Manual Check-In" option in the sidebar</li>

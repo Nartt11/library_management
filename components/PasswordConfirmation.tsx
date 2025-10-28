@@ -13,13 +13,12 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { ShieldCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import type { User } from "../page";
+import type { User } from "../../types/user";
 
 interface PasswordConfirmationProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  onCancel: () => void;
   title: string;
   description: string;
   actionName?: string;
@@ -31,7 +30,6 @@ export function PasswordConfirmation({
   isOpen,
   onClose,
   onConfirm,
-  onCancel,
   title,
   description,
   actionName = "Proceed",

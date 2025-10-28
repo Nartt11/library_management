@@ -1,59 +1,97 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { BookOpen, Calendar, Clock, AlertTriangle, Search, QrCode, History } from 'lucide-react';
-import type { User } from '../../App';
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import {
+  BookOpen,
+  Calendar,
+  Clock,
+  AlertTriangle,
+  Search,
+  QrCode,
+  History,
+} from "lucide-react";
+import type { User } from "../../types/user";
 
 interface StudentDashboardHomeProps {
   user: User;
   onNavigate?: (view: string) => void;
 }
 
-export function StudentDashboardHome({ user, onNavigate }: StudentDashboardHomeProps) {
+export function StudentDashboardHome({
+  user,
+  onNavigate,
+}: StudentDashboardHomeProps) {
   const kpiData = [
     {
-      title: 'Books Borrowed',
-      value: '3',
-      description: 'Currently borrowed',
+      title: "Books Borrowed",
+      value: "3",
+      description: "Currently borrowed",
       icon: BookOpen,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
     },
     {
-      title: 'Days Visited',
-      value: '12',
-      description: 'This month',
+      title: "Days Visited",
+      value: "12",
+      description: "This month",
       icon: Calendar,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: "text-green-600",
+      bgColor: "bg-green-50",
     },
     {
-      title: 'Overdue Books',
-      value: '1',
-      description: 'Need attention',
+      title: "Overdue Books",
+      value: "1",
+      description: "Need attention",
       icon: AlertTriangle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
+      color: "text-red-600",
+      bgColor: "bg-red-50",
     },
   ];
 
   const recentBorrowedBooks = [
-    { id: '1', title: 'Introduction to Computer Science', author: 'John Smith', dueDate: '2025-08-15', status: 'Borrowed', color: 'text-green-600' },
-    { id: '2', title: 'Data Structures and Algorithms', author: 'Jane Doe', dueDate: '2025-08-10', status: 'Overdue', color: 'text-red-600' },
-    { id: '3', title: 'Database Management Systems', author: 'Mike Johnson', dueDate: '2025-08-20', status: 'Borrowed', color: 'text-green-600' },
+    {
+      id: "1",
+      title: "Introduction to Computer Science",
+      author: "John Smith",
+      dueDate: "2025-08-15",
+      status: "Borrowed",
+      color: "text-green-600",
+    },
+    {
+      id: "2",
+      title: "Data Structures and Algorithms",
+      author: "Jane Doe",
+      dueDate: "2025-08-10",
+      status: "Overdue",
+      color: "text-red-600",
+    },
+    {
+      id: "3",
+      title: "Database Management Systems",
+      author: "Mike Johnson",
+      dueDate: "2025-08-20",
+      status: "Borrowed",
+      color: "text-green-600",
+    },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'overdue':
-        return 'destructive';
-      case 'borrowed':
-        return 'default';
-      case 'returned':
-        return 'secondary';
+      case "overdue":
+        return "destructive";
+      case "borrowed":
+        return "default";
+      case "returned":
+        return "secondary";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -61,7 +99,9 @@ export function StudentDashboardHome({ user, onNavigate }: StudentDashboardHomeP
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl mb-2">Welcome back, {user.name}!</h1>
-        <p className="text-muted-foreground">Here's your library overview for today.</p>
+        <p className="text-muted-foreground">
+          Here's your library overview for today.
+        </p>
       </div>
 
       {/* KPI Cards */}
@@ -70,13 +110,17 @@ export function StudentDashboardHome({ user, onNavigate }: StudentDashboardHomeP
           const Icon = kpi.icon;
           return (
             <Card key={kpi.title} className="border-l-4 border-l-green-500">
-              <CardHeader className={`flex flex-row items-center justify-between space-y-0 pb-2 ${kpi.bgColor}`}>
+              <CardHeader
+                className={`flex flex-row items-center justify-between space-y-0 pb-2 ${kpi.bgColor}`}
+              >
                 <CardTitle className="text-sm">{kpi.title}</CardTitle>
                 <Icon className={`h-4 w-4 ${kpi.color}`} />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl">{kpi.value}</div>
-                <p className="text-xs text-muted-foreground">{kpi.description}</p>
+                <p className="text-xs text-muted-foreground">
+                  {kpi.description}
+                </p>
               </CardContent>
             </Card>
           );
@@ -93,11 +137,18 @@ export function StudentDashboardHome({ user, onNavigate }: StudentDashboardHomeP
           <CardContent>
             <div className="space-y-3">
               {recentBorrowedBooks.map((book) => (
-                <div key={book.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg">
+                <div
+                  key={book.id}
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg"
+                >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{book.title}</p>
-                    <p className="text-xs text-muted-foreground">by {book.author}</p>
-                    <p className="text-xs text-muted-foreground">Due: {book.dueDate}</p>
+                    <p className="text-xs text-muted-foreground">
+                      by {book.author}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Due: {book.dueDate}
+                    </p>
                   </div>
                   <Badge variant={getStatusColor(book.status)}>
                     {book.status}
@@ -115,21 +166,23 @@ export function StudentDashboardHome({ user, onNavigate }: StudentDashboardHomeP
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-3">
-              <Button 
+              <Button
                 variant="outline"
                 className="h-auto p-4 flex items-center gap-3 bg-orange-50 border-orange-200 hover:bg-orange-100"
-                onClick={() => onNavigate?.('catalog')}
+                onClick={() => onNavigate?.("catalog")}
               >
                 <Search className="h-5 w-5 text-orange-600" />
                 <div className="text-left flex-1">
                   <h4 className="text-sm text-orange-700">Search Books</h4>
-                  <p className="text-xs text-orange-600">Find books in our catalog</p>
+                  <p className="text-xs text-orange-600">
+                    Find books in our catalog
+                  </p>
                 </div>
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="h-auto p-4 flex items-center gap-3 bg-green-50 border-green-200 hover:bg-green-100"
-                onClick={() => onNavigate?.('qr-ticket')}
+                onClick={() => onNavigate?.("qr-ticket")}
               >
                 <QrCode className="h-5 w-5 text-green-600" />
                 <div className="text-left flex-1">
@@ -137,15 +190,17 @@ export function StudentDashboardHome({ user, onNavigate }: StudentDashboardHomeP
                   <p className="text-xs text-green-600">For borrowing books</p>
                 </div>
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="h-auto p-4 flex items-center gap-3 bg-amber-50 border-amber-200 hover:bg-amber-100"
-                onClick={() => onNavigate?.('history')}
+                onClick={() => onNavigate?.("history")}
               >
                 <History className="h-5 w-5 text-amber-600" />
                 <div className="text-left flex-1">
                   <h4 className="text-sm text-amber-700">View History</h4>
-                  <p className="text-xs text-amber-600">Check your borrowing history</p>
+                  <p className="text-xs text-amber-600">
+                    Check your borrowing history
+                  </p>
                 </div>
               </Button>
             </div>

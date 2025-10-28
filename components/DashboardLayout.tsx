@@ -7,8 +7,9 @@ import { DemoHelper } from "./DemoHelper";
 import { DemoBanner } from "./DemoBanner";
 import { DashboardFooter } from "./DashboardFooter";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import type { User } from "../page";
-import uccLogo from "../../public/window.svg";
+import type { User } from "../types/user";
+import uitLogo from "../../public/UITLogo.jpg";
+import uccLogo from "./../public/globe.svg";
 
 interface DashboardLayoutProps {
   user: User;
@@ -79,7 +80,8 @@ export function DashboardLayout({
 
               <div>
                 <h1 className="text-xl text-foreground capitalize">
-                  {user.role.replace("-", " ")} Dashboard
+                  {/* {user.role.replace("-", " ")} Dashboard */}
+                  Dashboard
                 </h1>
               </div>
             </div>
@@ -88,10 +90,12 @@ export function DashboardLayout({
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarFallback>
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {user?.name
+                      ? user.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                      : "?"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">
