@@ -204,12 +204,13 @@ export default function LoginPage({}: LoginPageProps) {
                   </Button>
                 </div>
                 <div className="mt-2 text-center">
+                  Don't have an account?
                   <Button
                     variant="link"
                     onClick={() => router.push("/register")}
                     className="text-sm text-muted-foreground hover:text-primary"
                   >
-                    Don't have an account? Register
+                    Register
                   </Button>
                 </div>
                 {/* <div className="mt-4 text-center text-sm text-muted-foreground">

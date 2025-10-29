@@ -20,7 +20,7 @@ import {
 } from "../ui/dialog";
 import { Calendar, Clock, UserRound, Plus, LogIn } from "lucide-react";
 import { toast } from "sonner";
-import type { User } from "../../page";
+import type { User } from "../../types/user";
 
 interface StudentAttendanceProps {
   user: User;

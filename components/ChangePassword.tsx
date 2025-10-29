@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Key, Lock } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import React, { useState } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Key, Lock } from "lucide-react";
+import { toast } from "sonner";
 
 interface ChangePasswordProps {
   trigger?: React.ReactNode;
@@ -13,35 +26,35 @@ interface ChangePasswordProps {
 
 export function ChangePassword({ trigger }: ChangePasswordProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [step, setStep] = useState<'current' | 'new'>('current');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [step, setStep] = useState<"current" | "new">("current");
 
   const handleCurrentPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Mock password validation - accept any non-empty password
     if (currentPassword.trim()) {
-      setStep('new');
+      setStep("new");
     } else {
-      toast.error('Please enter your current password');
+      toast.error("Please enter your current password");
     }
   };
 
   const handleNewPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword.trim()) {
       // Show success notification
-      toast.success('Successfully changed');
-      
+      toast.success("Successfully changed");
+
       // Reset form and close dialog
-      setCurrentPassword('');
-      setNewPassword('');
-      setStep('current');
+      setCurrentPassword("");
+      setNewPassword("");
+      setStep("current");
       setIsOpen(false);
     } else {
-      toast.error('Please enter a new password');
+      toast.error("Please enter a new password");
     }
   };
 
@@ -49,9 +62,9 @@ export function ChangePassword({ trigger }: ChangePasswordProps) {
     setIsOpen(open);
     if (!open) {
       // Reset form when dialog closes
-      setCurrentPassword('');
-      setNewPassword('');
-      setStep('current');
+      setCurrentPassword("");
+      setNewPassword("");
+      setStep("current");
     }
   };
 
@@ -64,9 +77,7 @@ export function ChangePassword({ trigger }: ChangePasswordProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogChange}>
-      <DialogTrigger asChild>
-        {trigger || defaultTrigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="w-[400px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -74,14 +85,13 @@ export function ChangePassword({ trigger }: ChangePasswordProps) {
             Change Password
           </DialogTitle>
           <DialogDescription>
-            {step === 'current' 
-              ? 'Enter your current password to continue'
-              : 'Enter your new password'
-            }
+            {step === "current"
+              ? "Enter your current password to continue"
+              : "Enter your new password"}
           </DialogDescription>
         </DialogHeader>
 
-        {step === 'current' ? (
+        {step === "current" ? (
           <form onSubmit={handleCurrentPasswordSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">Current Password</Label>
@@ -96,9 +106,9 @@ export function ChangePassword({ trigger }: ChangePasswordProps) {
               />
             </div>
             <div className="flex gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsOpen(false)}
                 className="flex-1"
               >
@@ -124,10 +134,10 @@ export function ChangePassword({ trigger }: ChangePasswordProps) {
               />
             </div>
             <div className="flex gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setStep('current')}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep("current")}
                 className="flex-1"
               >
                 Back

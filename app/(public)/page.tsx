@@ -66,7 +66,7 @@ export default function HomePage() {
       // case "scanner":
       //   return <ScannerDashboard user={currentUser} onLogout={handleLogout} />;
       default:
-        return <LoginPage onLogin={saveUser} />;
+        return <Showroom />;
     }
   };
 

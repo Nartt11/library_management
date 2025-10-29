@@ -1,9 +1,16 @@
 // services/auth.service.ts
-import { loginApi } from "@/lib/api/auth";
+// import { loginApi } from "@/lib/api/auth";
 
 export async function loginService(username: string, password: string) {
-  const user = await loginApi(username, password);
+  
+  const res = await fetch("/api/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
 
+  if (!res.ok) throw new Error("Login failed");
+
+  const user = res.json();
   // Save to localStorage (đơn giản)
   localStorage.setItem("user", JSON.stringify(user));
 

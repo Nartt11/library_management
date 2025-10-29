@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -33,14 +33,16 @@ import { UserPen, Search, Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PasswordConfirmation } from "../../../components/PasswordConfirmation";
 import type { User } from "../../../types/user";
+import { Author } from "@/types/author";
+import { getAuthors } from "@/services/author";
 
-interface Author {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-}
+// interface Author {
+//   id: string;
+//   name: string;
+//   email: string;
+//   phone: string;
+//   address: string;
+// }
 
 interface AuthorManagementProps {
   currentUser: User;
@@ -49,36 +51,56 @@ interface AuthorManagementProps {
 export default function AuthorManagement({
   currentUser,
 }: AuthorManagementProps) {
-  const [authors, setAuthors] = useState<Author[]>([
-    {
-      id: "AUTH-001",
-      name: "John Smith",
-      email: "john.smith@publisher.com",
-      phone: "+1 (555) 123-4567",
-      address: "123 Writer St, New York, NY 10001",
-    },
-    {
-      id: "AUTH-002",
-      name: "Jane Doe",
-      email: "jane.doe@authors.com",
-      phone: "+1 (555) 234-5678",
-      address: "456 Book Ave, Boston, MA 02101",
-    },
-    {
-      id: "AUTH-003",
-      name: "Robert Johnson",
-      email: "r.johnson@writing.org",
-      phone: "+1 (555) 345-6789",
-      address: "789 Literary Ln, Chicago, IL 60601",
-    },
-    {
-      id: "AUTH-004",
-      name: "Dr. Emily Chen",
-      email: "emily.chen@academic.edu",
-      phone: "+1 (555) 456-7890",
-      address: "321 Scholar Rd, San Francisco, CA 94101",
-    },
-  ]);
+  // const [authors, setAuthors] = useState<Author[]>([
+  //   {
+  //     id: "AUTH-001",
+  //     name: "John Smith",
+  //     email: "john.smith@publisher.com",
+  //     phone: "+1 (555) 123-4567",
+  //     address: "123 Writer St, New York, NY 10001",
+  //   },
+  //   {
+  //     id: "AUTH-002",
+  //     name: "Jane Doe",
+  //     email: "jane.doe@authors.com",
+  //     phone: "+1 (555) 234-5678",
+  //     address: "456 Book Ave, Boston, MA 02101",
+  //   },
+  //   {
+  //     id: "AUTH-003",
+  //     name: "Robert Johnson",
+  //     email: "r.johnson@writing.org",
+  //     phone: "+1 (555) 345-6789",
+  //     address: "789 Literary Ln, Chicago, IL 60601",
+  //   },
+  //   {
+  //     id: "AUTH-004",
+  //     name: "Dr. Emily Chen",
+  //     email: "emily.chen@academic.edu",
+  //     phone: "+1 (555) 456-7890",
+  //     address: "321 Scholar Rd, San Francisco, CA 94101",
+  //   },
+  // ]);
+
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAuthors(pageNumber, pageSize);
+        setAuthors(data.items || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (error) {
+        console.error("Error fetching authors:", error);
+      }
+    };
+    fetchData();
+  }, [pageNumber, pageSize]);
+
+  console.log("Authors:", authors);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -109,36 +131,36 @@ export default function AuthorManagement({
     });
   };
 
-  const handleAddAuthor = () => {
-    const action = () => {
-      const newAuthor: Author = {
-        id: `AUTH-${String(authors.length + 1).padStart(3, "0")}`,
-        ...formData,
-      };
-      setAuthors([...authors, newAuthor]);
-      setIsAddDialogOpen(false);
-      resetForm();
-      toast.success("Author added successfully");
-    };
+  // const handleAddAuthor = () => {
+  //   const action = () => {
+  //     const newAuthor: Author = {
+  //       id: `AUTH-${String(authors.length + 1).padStart(3, "0")}`,
+  //       ...formData,
+  //     };
+  //     setAuthors([...authors, newAuthor]);
+  //     setIsAddDialogOpen(false);
+  //     resetForm();
+  //     toast.success("Author added successfully");
+  //   };
 
-    setPendingAction({
-      type: "add",
-      action,
-      title: "Add New Author",
-    });
-    setShowPasswordConfirmation(true);
-  };
+  //   setPendingAction({
+  //     type: "add",
+  //     action,
+  //     title: "Add New Author",
+  //   });
+  //   setShowPasswordConfirmation(true);
+  // };
 
-  const handleEditAuthor = (author: Author) => {
-    setEditingAuthor(author);
-    setFormData({
-      name: author.name,
-      email: author.email,
-      phone: author.phone,
-      address: author.address,
-    });
-    setIsEditDialogOpen(true);
-  };
+  // const handleEditAuthor = (author: Author) => {
+  //   setEditingAuthor(author);
+  //   setFormData({
+  //     name: author.name,
+  //     email: author.email,
+  //     phone: author.phone,
+  //     address: author.address,
+  //   });
+  //   setIsEditDialogOpen(true);
+  // };
 
   const handleUpdateAuthor = () => {
     if (!editingAuthor) return;
@@ -194,10 +216,10 @@ export default function AuthorManagement({
   };
 
   const filteredAuthors = authors.filter(
-    (author) =>
-      author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      author.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      author.id.toLowerCase().includes(searchTerm.toLowerCase())
+    (author) => author.name.toLowerCase().includes(searchTerm.toLowerCase())
+    //  ||
+    // author.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // author.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -279,7 +301,7 @@ export default function AuthorManagement({
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleAddAuthor}>Add Author</Button>
+                {/* <Button onClick={handleAddAuthor}>Add Author</Button> */}
               </div>
             </DialogContent>
           </Dialog>
@@ -339,15 +361,15 @@ export default function AuthorManagement({
                         >
                           <td className="p-3">{author.id}</td>
                           <td className="p-3">{author.name}</td>
-                          <td className="p-3">{author.email}</td>
-                          <td className="p-3">{author.phone}</td>
-                          <td className="p-3">{author.address}</td>
+                          <td className="p-3">{author.yearOfBirth}</td>
+                          <td className="p-3">{author.briefDescription}</td>
+
                           <td className="p-3">
                             <div className="flex justify-end gap-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEditAuthor(author)}
+                                // onClick={() => handleEditAuthor(author)}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>

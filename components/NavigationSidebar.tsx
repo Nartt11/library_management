@@ -121,6 +121,24 @@ NavigationSidebarProps) {
             icon: User,
             link: "/account",
           },
+          {
+            id: "features",
+            label: "Features",
+            icon: Settings,
+            link: "/feature",
+          },
+          {
+            id: "book-catalog",
+            label: "Book Catalog",
+            icon: BookOpen,
+            link: "/bookcatalog",
+          },
+          {
+            id: "cart",
+            label: "My Cart",
+            icon: ShoppingCart,
+            link: "/cart",
+          },
         ];
       // case "student":
       //   return [

@@ -1,22 +1,22 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from "../../../components/ui/card";
 
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { Footer } from "../components/Footer";
+import { ImageWithFallback } from "../../../components/figma/ImageWithFallback";
+import { Footer } from "../../../components/Footer";
 import { ArrowLeft } from "lucide-react";
 import type { User, UserRole } from "@/types/user";
-import uitLogo from "../../public/UITLogo.jpg";
+import uitLogo from "./../../../public/UITLogo.jpg";
 import { useRouter } from "next/navigation";
 
 interface LoginPageProps {
