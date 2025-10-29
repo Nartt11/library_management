@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import type { User } from "@/types/user";
 import type { PendingBook } from "@/types/pendingBook";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -20,6 +21,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [currentUser, _setCurrentUser] = useState<User | null>(null);
   const [pendingBook, setPendingBook] = useState<PendingBook | null>(null);
 
@@ -37,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     saveUser(null);
     setPendingBook(null);
+    router.push("/");
   };
 
   return (

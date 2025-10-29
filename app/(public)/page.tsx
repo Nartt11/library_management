@@ -5,8 +5,8 @@ import LoginPage from "@/app/(public)/login/page";
 import { Showroom } from "@/components/Showroom";
 // import { AdminDashboard } from "@/components/AdminDashboard";
 // import { LibrarianDashboard } from "@/components/LibrarianDashboard";
-import { StudentDashboard } from "@/components/StudentDashboard";
-import { ScannerDashboard } from "@/components/ScannerDashboard";
+// import { StudentDashboard } from "@/components/StudentDashboard";
+// import { ScannerDashboard } from "@/components/ScannerDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/authContext";
 
@@ -54,17 +54,17 @@ export default function HomePage() {
       //   return (
       //     <LibrarianDashboard user={currentUser} onLogout={handleLogout} />
       //   );
-      case "student":
-        return (
-          <StudentDashboard
-            user={currentUser}
-            onLogout={handleLogout}
-            pendingBook={pendingBook}
-            onPendingBookProcessed={handlePendingBookProcessed}
-          />
-        );
-      case "scanner":
-        return <ScannerDashboard user={currentUser} onLogout={handleLogout} />;
+      // case "student":
+      //   return (
+      //     <StudentDashboard
+      //       user={currentUser}
+      //       onLogout={handleLogout}
+      //       pendingBook={pendingBook}
+      //       onPendingBookProcessed={handlePendingBookProcessed}
+      //     />
+      //   );
+      // case "scanner":
+      //   return <ScannerDashboard user={currentUser} onLogout={handleLogout} />;
       default:
         return <LoginPage onLogin={saveUser} />;
     }

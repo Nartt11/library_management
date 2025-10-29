@@ -14,10 +14,15 @@ import {
   Database,
   Monitor,
   Settings,
+  UserPen,
+  FolderTree,
+  Building2,
+  Package,
   User,
 } from "lucide-react";
 import type { UserRole } from "@/types/user";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { link } from "fs";
 
 interface NavigationSidebarProps {
   role: UserRole | undefined;
@@ -31,6 +36,7 @@ export function NavigationSidebar({
 }: // onViewChange,
 NavigationSidebarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const getMenuItems = () => {
     switch (role) {
       // case "admin":
@@ -66,6 +72,30 @@ NavigationSidebarProps) {
             label: "Book Management",
             icon: BookOpen,
             link: "/books",
+          },
+          {
+            id: "authors",
+            label: "Author Management",
+            icon: UserPen,
+            link: "/authors",
+          },
+          {
+            id: "categories",
+            label: "Category Management",
+            icon: FolderTree,
+            link: "/categories",
+          },
+          {
+            id: "publishers",
+            label: "Publisher Management",
+            icon: Building2,
+            link: "/publishers",
+          },
+          {
+            id: "inventory",
+            label: "Book Inventory",
+            icon: Package,
+            link: "/inventory",
           },
           {
             id: "scanner",
@@ -117,10 +147,11 @@ NavigationSidebarProps) {
       <div className="flex-1 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.link;
           return (
             <Button
               key={item.id}
-              variant={activeView === item.id ? "secondary" : "ghost"}
+              variant={isActive ? "secondary" : "ghost"}
               className="w-full justify-start gap-3"
               onClick={() => {
                 router.push(item.link || "/dashboard");
