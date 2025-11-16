@@ -1,12 +1,19 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import type { User } from "@/types/user";
 import type { PendingBook } from "@/types/pendingBook";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   currentUser: User | null;
   pendingBook: PendingBook | null;
-  login: (user: User) => void;
+  saveUser: (user: User | null) => void; // CHỈ lưu user
   logout: () => void;
   setPendingBook: (book: PendingBook | null) => void;
 }
@@ -14,18 +21,30 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const router = useRouter();
+  const [currentUser, _setCurrentUser] = useState<User | null>(null);
   const [pendingBook, setPendingBook] = useState<PendingBook | null>(null);
 
-  const login = (user: User) => setCurrentUser(user);
+  const saveUser = (user: User | null) => {
+    _setCurrentUser(user);
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+    else localStorage.removeItem("user");
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("user");
+    if (saved) _setCurrentUser(JSON.parse(saved));
+  }, []);
+
   const logout = () => {
-    setCurrentUser(null);
+    saveUser(null);
     setPendingBook(null);
+    router.push("/");
   };
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, pendingBook, login, logout, setPendingBook }}
+      value={{ currentUser, pendingBook, saveUser, logout, setPendingBook }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/context/authContext";
+import { AuthProvider, useAuth } from "@/context/authContext";
+// import { DashboardLayout } from "@/components/DashboardLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UCC Library Management System",
+  title: "UIT Library Management System",
   description:
-    "Modern Library Management System for University of Caloocan City",
+    "Modern Library Management System for University of Infomation Technology",
 };
 
 export default function RootLayout({
@@ -27,11 +28,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-
-        </body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
