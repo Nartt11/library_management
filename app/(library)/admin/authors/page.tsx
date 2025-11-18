@@ -91,7 +91,7 @@ export default function AuthorManagement({
     const fetchData = async () => {
       try {
         const data = await getAuthors(pageNumber, pageSize);
-        setAuthors(data.items || []);
+        // setAuthors(data.items || []);
         setTotalPages(data.totalPages || 1);
       } catch (error) {
         console.error("Error fetching authors:", error);
@@ -361,8 +361,8 @@ export default function AuthorManagement({
                         >
                           <td className="p-3">{author.id}</td>
                           <td className="p-3">{author.name}</td>
-                          <td className="p-3">{author.yearOfBirth}</td>
-                          <td className="p-3">{author.briefDescription}</td>
+                          {/* <td className="p-3">{author.yearOfBirth}</td>
+                          <td className="p-3">{author.briefDescription}</td> */}
 
                           <td className="p-3">
                             <div className="flex justify-end gap-2">

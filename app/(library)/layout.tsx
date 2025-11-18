@@ -1,16 +1,15 @@
 "use client";
 import React from "react";
-import { Button } from "./../../components/ui/button";
-import { Avatar, AvatarFallback } from "./../../components/ui/avatar";
+import { Button } from "../../components/ui/button";
+import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import { LogOut, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "./../../components/ui/sheet";
-import { DemoHelper } from "./../../components/DemoHelper";
-import { DemoBanner } from "./../../components/DemoBanner";
-import { DashboardFooter } from "./../../components/DashboardFooter";
-import { ImageWithFallback } from "./../../components/figma/ImageWithFallback";
-import type { User } from "../../types/user";
-import uitLogo from "../../public/UITLogo.jpg";
-import uccLogo from "../../public/globe.svg";
+import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
+
+import { DemoBanner } from "../../components/DemoBanner";
+import { DashboardFooter } from "../../components/DashboardFooter";
+import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
+
+import uccLogo from "./../../public/globe.svg";
 import { useAuth } from "@/context/authContext";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
 
