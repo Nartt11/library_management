@@ -14,17 +14,11 @@ export interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+import { apiGet } from '../lib/api';
+
 export async function getAuthors(
   pageNumber: number = 1,
   pageSize: number = 10
 ): Promise<PaginatedResponse<Author>> {
-  const url = `https://librarymanagementapi-x5bq.onrender.com/api/authors?pageNumber=${pageNumber}&pageSize=${pageSize}`;
-
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error("Failed to fetch authors");
-  }
-
-  const data = await res.json();
-  return data;
+  return apiGet<PaginatedResponse<Author>>('/authors', { pageNumber, pageSize });
 }
