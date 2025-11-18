@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -42,17 +42,40 @@ import {
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Footer } from "./Footer";
 
-import { getShowroomBooks } from "@/lib/book";
+import { getBooks } from "@/services/bookService";
+import { Book } from "@/types/book";
 
 import { useAuth } from "@/context/authContext";
 
 export function Showroom() {
-  const router = useRouter(); 
-  const books = getShowroomBooks() as Book[];
-  const categories = [
-    "all",
-    ...Array.from(new Set(books.map((book) => book.category))),
-  ];
+  const router = useRouter();
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchBooks() {
+      setLoading(true);
+      try {
+        const res = await getBooks(1, 50);
+        if (!mounted) return;
+        setBooks(res.items ?? []);
+      } catch (err: any) {
+        console.error(err);
+        if (!mounted) return;
+        setError(err.message || String(err));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchBooks();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  const categories = ["all", ...Array.from(new Set(books.map((book) => book.category)))];
 
   const {currentUser, setPendingBook} = useAuth();
 
