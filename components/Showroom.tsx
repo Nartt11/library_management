@@ -337,7 +337,7 @@ export function Showroom() {
               <CardContent className="p-0">
                 <div className="aspect-3/4 relative overflow-hidden">
                   <ImageWithFallback
-                    src={book.imageUrl}
+                    src="/UITLogo.jpg"
                     alt={book.title}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
@@ -441,7 +441,7 @@ export function Showroom() {
                 <div className="flex justify-center shrink-0">
                   <div className="w-20 h-28 relative rounded-lg overflow-hidden shadow-md">
                       <ImageWithFallback
-                        src={selectedBook.imageUrl}
+                        src="/UITLogo.jpg"
                         alt={selectedBook.title}
                         className="w-full h-full object-cover"
                       />

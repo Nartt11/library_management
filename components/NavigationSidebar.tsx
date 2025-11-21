@@ -154,7 +154,16 @@ NavigationSidebarProps) {
       // case "scanner":
       //   return [{ id: "scanner", label: "Attendance Scanner", icon: QrCode }];
       default:
-        return [];
+        return [
+          { id: "dashboard", label: "Dashboard", icon: Home },
+          { id: "catalog", label: "Book Catalog", icon: BookOpen },
+          { id: "equipment", label: "Equipment Catalog", icon: Monitor },
+          { id: "cart", label: "My Cart", icon: ShoppingCart },
+          { id: "qr-ticket", label: "QR Borrow Ticket", icon: QrCode },
+          { id: "attendance", label: "My Attendance", icon: UserCheck },
+          { id: "history", label: "My Borrowing History", icon: History },
+          { id: "account", label: "Manage My Account", icon: User },
+        ];
     }
   };
 

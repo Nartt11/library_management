@@ -381,7 +381,7 @@ export function UnifiedCart({
                     <div className="flex gap-4">
                       <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                         <ImageWithFallback
-                          src={item.image}
+                          src="/UITLogo.jpg"
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />

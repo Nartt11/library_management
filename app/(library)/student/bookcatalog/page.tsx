@@ -6,26 +6,26 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Badge } from "../../../components/ui/badge";
+} from "../../../../components/ui/card";
+import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
+import { Badge } from "../../../../components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "../../../../components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../../components/ui/dialog";
+} from "../../../../components/ui/dialog";
 import { Search, ShoppingCart, Filter, Calendar, BookOpen } from "lucide-react";
-import { ImageWithFallback } from "../../../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../../../../components/figma/ImageWithFallback";
 import { toast } from "sonner";
 
 interface Book {
@@ -255,362 +255,362 @@ export default function BookCatalog({
   };
 
   return (
-    // <div className="p-6 space-y-6">
-    //   <div className="flex items-center justify-between">
-    //     <div>
-    //       <h1 className="text-2xl mb-2 flex items-center gap-2">
-    //         <BookOpen className="h-6 w-6" />
-    //         Book Catalog
-    //       </h1>
-    //       <p className="text-muted-foreground">
-    //         Search and browse available books in our library.
-    //       </p>
-    //     </div>
-    //   </div>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl mb-2 flex items-center gap-2">
+            <BookOpen className="h-6 w-6" />
+            Book Catalog
+          </h1>
+          <p className="text-muted-foreground">
+            Search and browse available books in our library.
+          </p>
+        </div>
+      </div>
 
-    //   {/* Search and Filters */}
-    //   <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-    //     <CardHeader className="pb-4">
-    //       <CardTitle className="flex items-center gap-3 text-xl">
-    //         <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg text-white">
-    //           <Search className="h-5 w-5" />
-    //         </div>
-    //         Search & Discover
-    //       </CardTitle>
-    //       <CardDescription className="text-base">
-    //         Find exactly what you're looking for with our advanced search tools
-    //       </CardDescription>
-    //     </CardHeader>
-    //     <CardContent className="space-y-4">
-    //       <div className="flex flex-col lg:flex-row gap-4">
-    //         <div className="flex-1 relative group">
-    //           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
-    //           <Input
-    //             placeholder="Search by title, author, ISBN, Book ID..."
-    //             value={searchTerm}
-    //             onChange={(e) => setSearchTerm(e.target.value)}
-    //             className="pl-12 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl transition-all duration-200"
-    //           />
-    //         </div>
-    //         <div className="flex gap-4">
-    //           <Select
-    //             value={selectedCategory}
-    //             onValueChange={setSelectedCategory}
-    //           >
-    //             <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl">
-    //               <SelectValue placeholder="Category" />
-    //             </SelectTrigger>
-    //             <SelectContent className="rounded-xl border-orange-200">
-    //               {categories.map((category) => (
-    //                 <SelectItem
-    //                   key={category}
-    //                   value={category}
-    //                   className="rounded-lg"
-    //                 >
-    //                   {category === "all" ? "All Categories" : category}
-    //                 </SelectItem>
-    //               ))}
-    //             </SelectContent>
-    //           </Select>
-    //           <Select value={statusFilter} onValueChange={setStatusFilter}>
-    //             <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl">
-    //               <SelectValue placeholder="Status" />
-    //             </SelectTrigger>
-    //             <SelectContent className="rounded-xl border-orange-200">
-    //               <SelectItem value="all" className="rounded-lg">
-    //                 All Status
-    //               </SelectItem>
-    //               <SelectItem value="available" className="rounded-lg">
-    //                 Available
-    //               </SelectItem>
-    //               <SelectItem value="borrowed" className="rounded-lg">
-    //                 Borrowed
-    //               </SelectItem>
-    //               <SelectItem value="overdue" className="rounded-lg">
-    //                 Overdue
-    //               </SelectItem>
-    //             </SelectContent>
-    //           </Select>
-    //         </div>
-    //       </div>
-    //     </CardContent>
-    //   </Card>
+      {/* Search and Filters */}
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg text-white">
+              <Search className="h-5 w-5" />
+            </div>
+            Search & Discover
+          </CardTitle>
+          <CardDescription className="text-base">
+            Find exactly what you're looking for with our advanced search tools
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 relative group">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
+              <Input
+                placeholder="Search by title, author, ISBN, Book ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl transition-all duration-200"
+              />
+            </div>
+            <div className="flex gap-4">
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-orange-200">
+                  {categories.map((category) => (
+                    <SelectItem
+                      key={category}
+                      value={category}
+                      className="rounded-lg"
+                    >
+                      {category === "all" ? "All Categories" : category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-orange-200">
+                  <SelectItem value="all" className="rounded-lg">
+                    All Status
+                  </SelectItem>
+                  <SelectItem value="available" className="rounded-lg">
+                    Available
+                  </SelectItem>
+                  <SelectItem value="borrowed" className="rounded-lg">
+                    Borrowed
+                  </SelectItem>
+                  <SelectItem value="overdue" className="rounded-lg">
+                    Overdue
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-    //   {/* Results Summary */}
-    //   <div className="flex items-center justify-between">
-    //     <div className="flex items-center gap-3">
-    //       <div className="p-2 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg">
-    //         <BookOpen className="h-5 w-5 text-white" />
-    //       </div>
-    //       <div>
-    //         <p className="text-lg font-semibold text-foreground">
-    //           {filteredBooks.length} Books Found
-    //         </p>
-    //         <p className="text-sm text-muted-foreground">
-    //           Total collection: {books.length} books
-    //         </p>
-    //       </div>
-    //     </div>
-    //     <div className="flex gap-3">
-    //       <Badge
-    //         variant="outline"
-    //         className="px-4 py-2 text-sm border-green-200 bg-green-50 text-green-700"
-    //       >
-    //         Available:{" "}
-    //         {books.filter((book) => book.status === "available").length}
-    //       </Badge>
-    //       <Badge
-    //         variant="outline"
-    //         className="px-4 py-2 text-sm border-amber-200 bg-amber-50 text-amber-700 gap-2"
-    //       >
-    //         <ShoppingCart className="h-3 w-3" />
-    //         {cartItems.length} in cart
-    //       </Badge>
-    //     </div>
-    //   </div>
+      {/* Results Summary */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg">
+            <BookOpen className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-foreground">
+              {filteredBooks.length} Books Found
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Total collection: {books.length} books
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Badge
+            variant="outline"
+            className="px-4 py-2 text-sm border-green-200 bg-green-50 text-green-700"
+          >
+            Available:{" "}
+            {books.filter((book) => book.status === "available").length}
+          </Badge>
+          <Badge
+            variant="outline"
+            className="px-4 py-2 text-sm border-amber-200 bg-amber-50 text-amber-700 gap-2"
+          >
+            <ShoppingCart className="h-3 w-3" />
+            {cartItems.length} in cart
+          </Badge>
+        </div>
+      </div>
 
-    //   {/* Enhanced Books Grid */}
-    //   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-    //     {filteredBooks.map((book) => (
-    //       <Card
-    //         key={book.id}
-    //         className="group cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden"
-    //         onClick={() => handleBookClick(book)}
-    //       >
-    //         <CardContent className="p-0">
-    //           <div className="aspect-[3/4] relative overflow-hidden">
-    //             <ImageWithFallback
-    //               src={book.imageUrl}
-    //               alt={book.title}
-    //               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-    //             />
-    //             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-    //             <Badge
-    //               variant={getStatusColor(book.status)}
-    //               className="absolute top-3 right-3 text-xs font-semibold shadow-lg"
-    //             >
-    //               {book.status}
-    //             </Badge>
-    //             {book.status === "available" && book.availableCopies > 0 && (
-    //               <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-    //                 {book.availableCopies} left
-    //               </div>
-    //             )}
-    //             {cartItems.includes(book.id) && (
-    //               <div className="absolute bottom-3 left-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-    //                 In Cart
-    //               </div>
-    //             )}
-    //           </div>
-    //           <div className="p-4">
-    //             <h3 className="text-sm font-semibold line-clamp-2 text-foreground mb-2 group-hover:text-orange-600 transition-colors">
-    //               {book.title}
-    //             </h3>
-    //             <p className="text-xs text-muted-foreground mb-1">
-    //               by {book.author}
-    //             </p>
-    //             <p className="text-xs text-orange-600 font-medium">
-    //               {book.category}
-    //             </p>
-    //           </div>
-    //         </CardContent>
-    //       </Card>
-    //     ))}
-    //   </div>
+      {/* Enhanced Books Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+        {filteredBooks.map((book) => (
+          <Card
+            key={book.id}
+            className="group cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden"
+            onClick={() => handleBookClick(book)}
+          >
+            <CardContent className="p-0">
+              <div className="aspect-[3/4] relative overflow-hidden">
+                <ImageWithFallback
+                  src={book.imageUrl}
+                  alt={book.title}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <Badge
+                  variant={getStatusColor(book.status)}
+                  className="absolute top-3 right-3 text-xs font-semibold shadow-lg"
+                >
+                  {book.status}
+                </Badge>
+                {book.status === "available" && book.availableCopies > 0 && (
+                  <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    {book.availableCopies} left
+                  </div>
+                )}
+                {cartItems.includes(book.id) && (
+                  <div className="absolute bottom-3 left-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    In Cart
+                  </div>
+                )}
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-semibold line-clamp-2 text-foreground mb-2 group-hover:text-orange-600 transition-colors">
+                  {book.title}
+                </h3>
+                <p className="text-xs text-muted-foreground mb-1">
+                  by {book.author}
+                </p>
+                <p className="text-xs text-orange-600 font-medium">
+                  {book.category}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-    //   {filteredBooks.length === 0 && (
-    //     <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-    //       <CardContent className="text-center py-12">
-    //         <div className="p-4 bg-orange-100 rounded-full w-fit mx-auto mb-4">
-    //           <BookOpen className="h-8 w-8 text-orange-600" />
-    //         </div>
-    //         <p className="text-lg font-semibold text-foreground mb-2">
-    //           No books found
-    //         </p>
-    //         <p className="text-muted-foreground">
-    //           Try adjusting your search criteria or browse all categories.
-    //         </p>
-    //       </CardContent>
-    //     </Card>
-    //   )}
+      {filteredBooks.length === 0 && (
+        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="text-center py-12">
+            <div className="p-4 bg-orange-100 rounded-full w-fit mx-auto mb-4">
+              <BookOpen className="h-8 w-8 text-orange-600" />
+            </div>
+            <p className="text-lg font-semibold text-foreground mb-2">
+              No books found
+            </p>
+            <p className="text-muted-foreground">
+              Try adjusting your search criteria or browse all categories.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
-    //   {/* Book Details Dialog */}
-    //   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-    //     <DialogContent className="w-[400px] h-[550px] border-0 shadow-2xl rounded-2xl bg-white/95 backdrop-blur-sm p-6">
-    //       {selectedBook && (
-    //         <div className="flex flex-col h-full">
-    //           <DialogHeader className="flex-shrink-0 pb-4">
-    //             <DialogTitle className="text-lg font-bold line-clamp-2 text-foreground leading-tight">
-    //               {selectedBook.title}
-    //             </DialogTitle>
-    //             <DialogDescription className="text-sm text-muted-foreground">
-    //               by {selectedBook.author}
-    //             </DialogDescription>
-    //           </DialogHeader>
+      {/* Book Details Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="w-[400px] h-[550px] border-0 shadow-2xl rounded-2xl bg-white/95 backdrop-blur-sm p-6">
+          {selectedBook && (
+            <div className="flex flex-col h-full">
+              <DialogHeader className="flex-shrink-0 pb-4">
+                <DialogTitle className="text-lg font-bold line-clamp-2 text-foreground leading-tight">
+                  {selectedBook.title}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
+                  by {selectedBook.author}
+                </DialogDescription>
+              </DialogHeader>
 
-    //           <div className="flex-1 flex flex-col space-y-4">
-    //             <div className="flex justify-center flex-shrink-0">
-    //               <div className="w-20 h-28 relative rounded-lg overflow-hidden shadow-md">
-    //                 <ImageWithFallback
-    //                   src={selectedBook.imageUrl}
-    //                   alt={selectedBook.title}
-    //                   className="w-full h-full object-cover"
-    //                 />
-    //               </div>
-    //             </div>
+              <div className="flex-1 flex flex-col space-y-4">
+                <div className="flex justify-center flex-shrink-0">
+                  <div className="w-20 h-28 relative rounded-lg overflow-hidden shadow-md">
+                    <ImageWithFallback
+                      src={selectedBook.imageUrl}
+                      alt={selectedBook.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
 
-    //             <div className="grid grid-cols-2 gap-3 text-xs flex-shrink-0">
-    //               <div className="space-y-2">
-    //                 <div>
-    //                   <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-    //                     Book ID
-    //                   </span>
-    //                   <span className="font-mono text-xs truncate block text-orange-600 font-semibold">
-    //                     {selectedBook.bookId}
-    //                   </span>
-    //                 </div>
-    //                 <div>
-    //                   <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-    //                     ISBN
-    //                   </span>
-    //                   <span className="font-mono text-xs truncate block">
-    //                     {selectedBook.isbn}
-    //                   </span>
-    //                 </div>
-    //                 <div>
-    //                   <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-    //                     Category
-    //                   </span>
-    //                   <span className="text-xs truncate block">
-    //                     {selectedBook.category}
-    //                   </span>
-    //                 </div>
-    //                 <div>
-    //                   <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-    //                     Location
-    //                   </span>
-    //                   <span className="text-xs truncate block">
-    //                     {selectedBook.location}
-    //                   </span>
-    //                 </div>
-    //               </div>
-    //               <div className="space-y-2">
-    //                 <div>
-    //                   <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-    //                     Status
-    //                   </span>
-    //                   <Badge
-    //                     variant={getStatusColor(selectedBook.status)}
-    //                     className="text-xs mt-1"
-    //                   >
-    //                     {selectedBook.status}
-    //                   </Badge>
-    //                 </div>
-    //                 <div>
-    //                   <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-    //                     Available
-    //                   </span>
-    //                   <span
-    //                     className={`text-xs font-semibold ${
-    //                       selectedBook.availableCopies > 0
-    //                         ? "text-green-600"
-    //                         : "text-red-600"
-    //                     }`}
-    //                   >
-    //                     {selectedBook.availableCopies} of {selectedBook.copies}
-    //                   </span>
-    //                 </div>
-    //               </div>
-    //             </div>
+                <div className="grid grid-cols-2 gap-3 text-xs flex-shrink-0">
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                        Book ID
+                      </span>
+                      <span className="font-mono text-xs truncate block text-orange-600 font-semibold">
+                        {selectedBook.bookId}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                        ISBN
+                      </span>
+                      <span className="font-mono text-xs truncate block">
+                        {selectedBook.isbn}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                        Category
+                      </span>
+                      <span className="text-xs truncate block">
+                        {selectedBook.category}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                        Location
+                      </span>
+                      <span className="text-xs truncate block">
+                        {selectedBook.location}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                        Status
+                      </span>
+                      <Badge
+                        variant={getStatusColor(selectedBook.status)}
+                        className="text-xs mt-1"
+                      >
+                        {selectedBook.status}
+                      </Badge>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                        Available
+                      </span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          selectedBook.availableCopies > 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {selectedBook.availableCopies} of {selectedBook.copies}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-    //             {/* Expected Return Date */}
-    //             {selectedBook.status === "borrowed" &&
-    //               selectedBook.expectedReturnDate && (
-    //                 <div className="flex items-center gap-2 text-xs bg-blue-50 text-blue-700 rounded-lg p-2 flex-shrink-0">
-    //                   <Calendar className="h-3 w-3 text-blue-500 flex-shrink-0" />
-    //                   <div className="min-w-0">
-    //                     <p className="font-medium">Next available</p>
-    //                     <p className="truncate">
-    //                       {formatExpectedDate(selectedBook.expectedReturnDate)}
-    //                     </p>
-    //                   </div>
-    //                 </div>
-    //               )}
+                {/* Expected Return Date */}
+                {selectedBook.status === "borrowed" &&
+                  selectedBook.expectedReturnDate && (
+                    <div className="flex items-center gap-2 text-xs bg-blue-50 text-blue-700 rounded-lg p-2 flex-shrink-0">
+                      <Calendar className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium">Next available</p>
+                        <p className="truncate">
+                          {formatExpectedDate(selectedBook.expectedReturnDate)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-    //             {selectedBook.status === "overdue" &&
-    //               selectedBook.expectedReturnDate && (
-    //                 <div className="flex items-center gap-2 text-xs bg-red-50 text-red-700 rounded-lg p-2 flex-shrink-0">
-    //                   <Calendar className="h-3 w-3 text-red-500 flex-shrink-0" />
-    //                   <div className="min-w-0">
-    //                     <p className="font-medium">Expected return</p>
-    //                     <p className="truncate">
-    //                       {formatExpectedDate(selectedBook.expectedReturnDate)}
-    //                     </p>
-    //                   </div>
-    //                 </div>
-    //               )}
+                {selectedBook.status === "overdue" &&
+                  selectedBook.expectedReturnDate && (
+                    <div className="flex items-center gap-2 text-xs bg-red-50 text-red-700 rounded-lg p-2 flex-shrink-0">
+                      <Calendar className="h-3 w-3 text-red-500 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium">Expected return</p>
+                        <p className="truncate">
+                          {formatExpectedDate(selectedBook.expectedReturnDate)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-    //             <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-3 flex-1 min-h-0">
-    //               <h4 className="font-medium text-xs text-orange-900 mb-2">
-    //                 Description
-    //               </h4>
-    //               <div className="overflow-y-auto max-h-20">
-    //                 <p className="text-xs text-orange-800 leading-relaxed">
-    //                   {selectedBook.description}
-    //                 </p>
-    //               </div>
-    //             </div>
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-3 flex-1 min-h-0">
+                  <h4 className="font-medium text-xs text-orange-900 mb-2">
+                    Description
+                  </h4>
+                  <div className="overflow-y-auto max-h-20">
+                    <p className="text-xs text-orange-800 leading-relaxed">
+                      {selectedBook.description}
+                    </p>
+                  </div>
+                </div>
 
-    //             {/* Action buttons - only show for available books */}
-    //             {selectedBook.status === "available" && (
-    //               <div className="flex-shrink-0">
-    //                 <Button
-    //                   className="w-full gap-2 h-10 shadow-lg hover:shadow-xl transition-all duration-200"
-    //                   disabled={
-    //                     selectedBook.availableCopies === 0 ||
-    //                     cartItems.includes(selectedBook.id)
-    //                   }
-    //                   onClick={() =>
-    //                     handleAddToCart(selectedBook.id, selectedBook.title)
-    //                   }
-    //                 >
-    //                   <ShoppingCart className="h-4 w-4" />
-    //                   {cartItems.includes(selectedBook.id)
-    //                     ? "Already in Cart"
-    //                     : selectedBook.availableCopies > 0
-    //                     ? "Add to Cart"
-    //                     : "Not Available"}
-    //                 </Button>
-    //               </div>
-    //             )}
+                {/* Action buttons - only show for available books */}
+                {selectedBook.status === "available" && (
+                  <div className="flex-shrink-0">
+                    <Button
+                      className="w-full gap-2 h-10 shadow-lg hover:shadow-xl transition-all duration-200"
+                      disabled={
+                        selectedBook.availableCopies === 0 ||
+                        cartItems.includes(selectedBook.id)
+                      }
+                      onClick={() =>
+                        handleAddToCart(selectedBook.id, selectedBook.title)
+                      }
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      {cartItems.includes(selectedBook.id)
+                        ? "Already in Cart"
+                        : selectedBook.availableCopies > 0
+                        ? "Add to Cart"
+                        : "Not Available"}
+                    </Button>
+                  </div>
+                )}
 
-    //             {/* For borrowed/overdue books, show return information instead of action buttons */}
-    //             {(selectedBook.status === "borrowed" ||
-    //               selectedBook.status === "overdue") && (
-    //               <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 text-center border flex-shrink-0">
-    //                 <div className="p-2 bg-gray-200 rounded-full w-fit mx-auto mb-2">
-    //                   <Calendar className="h-4 w-4 text-gray-600" />
-    //                 </div>
-    //                 <h4 className="font-semibold text-gray-900 mb-1 text-sm">
-    //                   Currently Unavailable
-    //                 </h4>
-    //                 <p className="text-xs text-gray-600 mb-1">
-    //                   This book is not available for reservation at this time.
-    //                 </p>
-    //                 <p className="text-xs text-gray-500">
-    //                   Please check back after the expected return date above.
-    //                 </p>
-    //               </div>
-    //             )}
-    //           </div>
-    //         </div>
-    //       )}
-    //     </DialogContent>
-    //   </Dialog>
-    // </div>\
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Book Catalog Page</h1>
-      <p>This is a placeholder for the Book Catalog page.</p>
+                {/* For borrowed/overdue books, show return information instead of action buttons */}
+                {(selectedBook.status === "borrowed" ||
+                  selectedBook.status === "overdue") && (
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 text-center border flex-shrink-0">
+                    <div className="p-2 bg-gray-200 rounded-full w-fit mx-auto mb-2">
+                      <Calendar className="h-4 w-4 text-gray-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">
+                      Currently Unavailable
+                    </h4>
+                    <p className="text-xs text-gray-600 mb-1">
+                      This book is not available for reservation at this time.
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Please check back after the expected return date above.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
+  //   <div className="p-6">
+  //     <h1 className="text-2xl font-bold mb-4">Book Catalog Page</h1>
+  //     <p>This is a placeholder for the Book Catalog page.</p>
+  //   </div>
   );
 }

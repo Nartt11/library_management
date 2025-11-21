@@ -8,8 +8,9 @@ import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
 import { DemoBanner } from "../../components/DemoBanner";
 import { DashboardFooter } from "../../components/DashboardFooter";
 import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
+import Image from "next/image";
 
-import uccLogo from "./../../public/globe.svg";
+import uitLogo from "./../../public/UITLogo.jpg";
 import { useAuth } from "@/context/authContext";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
 
@@ -26,9 +27,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="hidden lg:block w-64 bg-sidebar border-r border-sidebar-border">
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <ImageWithFallback
-              src={uccLogo}
-              alt="University of Caloocan City Logo"
+            <Image
+              src={uitLogo}
+              alt="University of Infomation of Technology Logo"
               className="h-8 w-8 object-contain"
             />
             <div>
@@ -60,9 +61,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <SheetContent side="left" className="w-64 p-0">
                   <div className="p-4 border-b border-border">
                     <div className="flex items-center gap-3">
-                      <ImageWithFallback
-                        src={uccLogo}
-                        alt="University of Caloocan City Logo"
+                      <Image
+                        src={uitLogo}
+                        alt="University of Infomation of Technology Logo"
                         className="h-8 w-8 object-contain"
                       />
                       <div>

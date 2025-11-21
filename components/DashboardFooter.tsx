@@ -10,14 +10,14 @@ export function DashboardFooter() {
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <BookOpen className="h-4 w-4 text-orange-600" />
-              <span className="font-medium text-orange-900">UCC Library</span>
+              <span className="font-medium text-orange-900">UIT Library</span>
             </div>
             <p className="text-sm text-orange-700 max-w-md">
               Creating a modern learning space where knowledge, technology, and community come together.
             </p>
           </div>
           <div className="flex items-center space-x-4 text-sm">
-            <span className="text-orange-600">© 2024 UCC Library</span>
+            <span className="text-orange-600">© 2025 UIT Library</span>
             <a href="#privacy" className="text-orange-600 hover:text-orange-800 transition-colors">
               Privacy
             </a>
@@ -41,7 +41,7 @@ export function DashboardFooter() {
           </p>
           <div className="space-y-2">
             <p className="text-xs text-orange-600">
-              © 2024 UCC Library Management System
+              © 2025 UIT Library Management System
             </p>
             <div className="flex items-center justify-center space-x-3 text-xs">
               <a href="#privacy" className="text-orange-600 hover:text-orange-800 transition-colors">
