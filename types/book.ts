@@ -1,16 +1,23 @@
+export interface Author {
+  id: string;
+  name: string;
+  yearOfBirth?: number;
+  briefDescription?: string;
+}
+
+export interface BookCategory {
+  id: string;
+  name: string;
+}
+
 export interface Book {
   id: string;
-  title: string;
-  author: string;
   isbn: string;
-  bookId: string;
-  category: string;
-  status: "available" | "borrowed" | "overdue";
-  location: string;
+  title: string;
+  imgUrl: string;
+  publisher: string | null;
+  publicationYear: number;
   description: string;
-  copies: number;
-  availableCopies: number;
-  expectedReturnDate?: string;
-  borrowedBy?: string;
-  imageUrl: string;
+  authors: Author[];
+  bookCategories: BookCategory[];
 }
