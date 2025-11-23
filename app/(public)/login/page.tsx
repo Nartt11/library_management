@@ -53,7 +53,7 @@ export default function LoginPage({}: LoginPageProps) {
       if (user.role === "admin") {
         router.push("/admin/dashboard");
       } else if (user.role === "librarian") {
-        router.push("/dashboard");
+        router.push("/admin/dashboard");
       } else if (user.role === "staff") {
         router.push("/staff/dashboard");
       } else {
