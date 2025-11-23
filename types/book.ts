@@ -13,7 +13,6 @@ export interface BookCategory {
 export interface Book {
   id: string;
   isbn: string;
-  isbn: string;
   title: string;
   imgUrl: string;
   publisher: string | null;
