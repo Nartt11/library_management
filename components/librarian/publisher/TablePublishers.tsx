@@ -46,8 +46,8 @@ export default function TablePublishers({
                   />
                   <DialogDelete
                     title="Delete Publisher"
-                    deletingItem={publisher}
-                    handleDelete={handleDeletePublisher}
+                    description={`This will delete publisher "${publisher.name}". This action cannot be undone.`}
+                    onConfirm={() => handleDeletePublisher(publisher)}
                   />
                 </div>
               </td>

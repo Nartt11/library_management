@@ -17,53 +17,46 @@ import { title } from "process";
 
 export default function DialogDelete({
   title,
-  deletingItem,
-  handleDelete,
+  description,
+  onConfirm,
 }: {
   title: string;
-  deletingItem: any;
-  handleDelete: (author: any) => void;
+  description?: string;
+  onConfirm: () => void;
 }) {
   return (
-    <AlertDialog
-    //open={!!deletingAuthor}
-    //onOpenChange={() => setDeletingAuthor(null)}
-    >
+    <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="sm">
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </AlertDialogTrigger>
+
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
               <ShieldCheck className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
-            <div>
-              <AlertDialogTitle className="text-lg">{title}</AlertDialogTitle>
-            </div>
+
+            <AlertDialogTitle className="text-lg">{title}</AlertDialogTitle>
           </div>
-          {/* <AlertDialogDescription className="text-left">
-            des
-          </AlertDialogDescription> */}
         </AlertDialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 flex items-start gap-2">
+
+        <div className="py-4 space-y-4">
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 flex items-start gap-2 mt-2">
             <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
             <div className="text-sm text-orange-800 dark:text-orange-200">
-              <div className="font-medium mb-1">
-                Security Verification Required
-              </div>
-              <div>This action can be undone</div>
+              <div className="font-medium mb-1">Security Check</div>
+              <div>{description}</div>
             </div>
           </div>
         </div>
+
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => handleDelete(deletingItem)}>
-            Delete
-          </AlertDialogAction>
+
+          <AlertDialogAction onClick={onConfirm}>Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

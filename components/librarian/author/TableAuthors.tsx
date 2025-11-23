@@ -67,8 +67,8 @@ export default function TableAuthors({
                     />
                     <DialogDelete
                       title={`Delete Author ${author.name}`}
-                      deletingItem={author}
-                      handleDelete={handleDeleteAuthor}
+                      description={`This will delete author "${author.name}". This action cannot be undone.`}
+                      onConfirm={() => handleDeleteAuthor(author)}
                     />
                   </div>
                 </td>
