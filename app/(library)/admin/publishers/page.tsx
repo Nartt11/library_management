@@ -1,7 +1,122 @@
-import React from "react";
+"use client";
+import CreatePublisher from "@/components/librarian/publisher/CreatePublisher";
+import TablePublishers from "@/components/librarian/publisher/TablePublishers";
+import { Input } from "@/components/ui/input";
+import { Building2, Search, Table } from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  createPublisher,
+  deletePublisher,
+  getAllPublishers,
+  updatePublisher,
+} from "@/services/publisher";
 
 export default function PublisherManagement() {
-  return <div>PublisherManagement</div>;
+  const [publishers, setPublishers] = useState<Publisher[]>([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllPublishers(pageNumber, pageSize);
+        console.log(data);
+        setPublishers(data.data || []);
+        setTotalPages(data.totalPages || 1);
+      } catch (error) {
+        console.error("Error fetching Publishers:", error);
+      }
+    };
+    fetchData();
+  }, [pageNumber, pageSize]);
+
+  const handleAddPublisher = async (Publisher: Publisher) => {
+    const payload = {
+      name: Publisher.name,
+      phoneNumber: Publisher.phoneNumber,
+      address: Publisher.address,
+    };
+    const res = await createPublisher(payload);
+  };
+  const handleEditPublisher = async (Publisher: Publisher) => {
+    const payload = {
+      name: Publisher.name,
+      phoneNumber: Publisher.phoneNumber,
+      address: Publisher.address,
+    };
+    console.log("Edit Publisher:", Publisher);
+
+    const res = await updatePublisher(Publisher.id, payload);
+  };
+  const handleDeletePublisher = async (Publisher: Publisher) => {
+    console.log("Delete Publisher:", Publisher);
+    await deletePublisher(Publisher.id!);
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="mb-2">Publisher Management</h1>
+          <p className="text-muted-foreground">
+            Manage publisher information and details
+          </p>
+        </div>
+        <CreatePublisher handleAddPublisher={handleAddPublisher} />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            Publishers
+          </CardTitle>
+          <CardDescription>
+            Browse and manage all publishers in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search publishers by name, email, or ID..."
+                  // value={searchTerm}
+                  // onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-md border">
+              <TablePublishers
+                publishers={publishers}
+                handleEditPublisher={handleEditPublisher}
+                handleDeletePublisher={handleDeletePublisher}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div>
+                {/* Showing {filteredPublishers.length} of {publishers.length}{" "} */}
+                publisher(s)
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 // "use client";
@@ -220,179 +335,179 @@ export default function PublisherManagement() {
 //   return (
 //     <>
 //       <div className="space-y-6">
-//         <div className="flex items-center justify-between">
-//           <div>
-//             <h1 className="mb-2">Publisher Management</h1>
-//             <p className="text-muted-foreground">
-//               Manage publisher information and details
-//             </p>
-//           </div>
-//           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-//             <DialogTrigger asChild>
-//               <Button className="gap-2" onClick={() => resetForm()}>
-//                 <Plus className="h-4 w-4" />
-//                 Add Publisher
-//               </Button>
-//             </DialogTrigger>
-//             <DialogContent>
-//               <DialogHeader>
-//                 <DialogTitle>Add New Publisher</DialogTitle>
-//                 <DialogDescription>
-//                   Enter the publisher's information below
-//                 </DialogDescription>
-//               </DialogHeader>
-//               <div className="space-y-4 py-4">
-//                 <div className="space-y-2">
-//                   <Label htmlFor="name">Publisher Name</Label>
-//                   <Input
-//                     id="name"
-//                     value={formData.name}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, name: e.target.value })
-//                     }
-//                     placeholder="Enter publisher name"
-//                   />
-//                 </div>
-//                 <div className="space-y-2">
-//                   <Label htmlFor="email">Email</Label>
-//                   <Input
-//                     id="email"
-//                     type="email"
-//                     value={formData.email}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, email: e.target.value })
-//                     }
-//                     placeholder="publisher@example.com"
-//                   />
-//                 </div>
-//                 <div className="space-y-2">
-//                   <Label htmlFor="phone">Phone</Label>
-//                   <Input
-//                     id="phone"
-//                     value={formData.phone}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, phone: e.target.value })
-//                     }
-//                     placeholder="+1 (800) 123-4567"
-//                   />
-//                 </div>
-//                 <div className="space-y-2">
-//                   <Label htmlFor="address">Address</Label>
-//                   <Textarea
-//                     id="address"
-//                     value={formData.address}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, address: e.target.value })
-//                     }
-//                     placeholder="Enter full address"
-//                     rows={3}
-//                   />
-//                 </div>
-//               </div>
-//               <div className="flex justify-end gap-3">
-//                 <Button
-//                   variant="outline"
-//                   onClick={() => setIsAddDialogOpen(false)}
-//                 >
-//                   Cancel
-//                 </Button>
-//                 <Button onClick={handleAddPublisher}>Add Publisher</Button>
-//               </div>
-//             </DialogContent>
-//           </Dialog>
+// <div className="flex items-center justify-between">
+//   <div>
+//     <h1 className="mb-2">Publisher Management</h1>
+//     <p className="text-muted-foreground">
+//       Manage publisher information and details
+//     </p>
+//   </div>
+//   <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+//     <DialogTrigger asChild>
+//       <Button className="gap-2" onClick={() => resetForm()}>
+//         <Plus className="h-4 w-4" />
+//         Add Publisher
+//       </Button>
+//     </DialogTrigger>
+//     <DialogContent>
+//       <DialogHeader>
+//         <DialogTitle>Add New Publisher</DialogTitle>
+//         <DialogDescription>
+//           Enter the publisher's information below
+//         </DialogDescription>
+//       </DialogHeader>
+//       <div className="space-y-4 py-4">
+//         <div className="space-y-2">
+//           <Label htmlFor="name">Publisher Name</Label>
+//           <Input
+//             id="name"
+//             value={formData.name}
+//             onChange={(e) =>
+//               setFormData({ ...formData, name: e.target.value })
+//             }
+//             placeholder="Enter publisher name"
+//           />
 //         </div>
+//         <div className="space-y-2">
+//           <Label htmlFor="email">Email</Label>
+//           <Input
+//             id="email"
+//             type="email"
+//             value={formData.email}
+//             onChange={(e) =>
+//               setFormData({ ...formData, email: e.target.value })
+//             }
+//             placeholder="publisher@example.com"
+//           />
+//         </div>
+//         <div className="space-y-2">
+//           <Label htmlFor="phone">Phone</Label>
+//           <Input
+//             id="phone"
+//             value={formData.phone}
+//             onChange={(e) =>
+//               setFormData({ ...formData, phone: e.target.value })
+//             }
+//             placeholder="+1 (800) 123-4567"
+//           />
+//         </div>
+//         <div className="space-y-2">
+//           <Label htmlFor="address">Address</Label>
+//           <Textarea
+//             id="address"
+//             value={formData.address}
+//             onChange={(e) =>
+//               setFormData({ ...formData, address: e.target.value })
+//             }
+//             placeholder="Enter full address"
+//             rows={3}
+//           />
+//         </div>
+//       </div>
+//       <div className="flex justify-end gap-3">
+//         <Button
+//           variant="outline"
+//           onClick={() => setIsAddDialogOpen(false)}
+//         >
+//           Cancel
+//         </Button>
+//         <Button onClick={handleAddPublisher}>Add Publisher</Button>
+//       </div>
+//     </DialogContent>
+//   </Dialog>
+// </div>
 
-//         <Card>
-//           <CardHeader>
-//             <CardTitle className="flex items-center gap-2">
-//               <Building2 className="h-5 w-5" />
-//               Publishers
-//             </CardTitle>
-//             <CardDescription>
-//               Browse and manage all publishers in the system
-//             </CardDescription>
-//           </CardHeader>
-//           <CardContent>
-//             <div className="space-y-4">
-//               <div className="flex items-center gap-4">
-//                 <div className="relative flex-1">
-//                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-//                   <Input
-//                     placeholder="Search publishers by name, email, or ID..."
-//                     value={searchTerm}
-//                     onChange={(e) => setSearchTerm(e.target.value)}
-//                     className="pl-10"
-//                   />
-//                 </div>
-//               </div>
+// <Card>
+//   <CardHeader>
+//     <CardTitle className="flex items-center gap-2">
+//       <Building2 className="h-5 w-5" />
+//       Publishers
+//     </CardTitle>
+//     <CardDescription>
+//       Browse and manage all publishers in the system
+//     </CardDescription>
+//   </CardHeader>
+//   <CardContent>
+//     <div className="space-y-4">
+//       <div className="flex items-center gap-4">
+//         <div className="relative flex-1">
+//           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+//           <Input
+//             placeholder="Search publishers by name, email, or ID..."
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//             className="pl-10"
+//           />
+//         </div>
+//       </div>
 
-//               <div className="rounded-md border">
-//                 <table className="w-full">
-//                   <thead>
-//                     <tr className="border-b bg-muted/50">
-//                       <th className="p-3 text-left">Publisher ID</th>
-//                       <th className="p-3 text-left">Publisher Name</th>
-//                       <th className="p-3 text-left">Email</th>
-//                       <th className="p-3 text-left">Phone</th>
-//                       <th className="p-3 text-left">Address</th>
-//                       <th className="p-3 text-right">Actions</th>
-//                     </tr>
-//                   </thead>
-//                   <tbody>
-//                     {filteredPublishers.length === 0 ? (
-//                       <tr>
-//                         <td
-//                           colSpan={6}
-//                           className="p-8 text-center text-muted-foreground"
-//                         >
-//                           No publishers found
-//                         </td>
-//                       </tr>
-//                     ) : (
-//                       filteredPublishers.map((publisher) => (
-//                         <tr
-//                           key={publisher.id}
-//                           className="border-b hover:bg-muted/50"
-//                         >
-//                           <td className="p-3">{publisher.id}</td>
-//                           <td className="p-3">{publisher.name}</td>
-//                           <td className="p-3">{publisher.email}</td>
-//                           <td className="p-3">{publisher.phone}</td>
-//                           <td className="p-3">{publisher.address}</td>
-//                           <td className="p-3">
-//                             <div className="flex justify-end gap-2">
-//                               <Button
-//                                 variant="ghost"
-//                                 size="sm"
-//                                 onClick={() => handleEditPublisher(publisher)}
-//                               >
-//                                 <Edit className="h-4 w-4" />
-//                               </Button>
-//                               <Button
-//                                 variant="ghost"
-//                                 size="sm"
-//                                 onClick={() => handleDeletePublisher(publisher)}
-//                               >
-//                                 <Trash2 className="h-4 w-4 text-destructive" />
-//                               </Button>
-//                             </div>
-//                           </td>
-//                         </tr>
-//                       ))
-//                     )}
-//                   </tbody>
-//                 </table>
-//               </div>
+//       <div className="rounded-md border">
+//         <table className="w-full">
+//           <thead>
+//             <tr className="border-b bg-muted/50">
+//               <th className="p-3 text-left">Publisher ID</th>
+//               <th className="p-3 text-left">Publisher Name</th>
+//               <th className="p-3 text-left">Email</th>
+//               <th className="p-3 text-left">Phone</th>
+//               <th className="p-3 text-left">Address</th>
+//               <th className="p-3 text-right">Actions</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {filteredPublishers.length === 0 ? (
+//               <tr>
+//                 <td
+//                   colSpan={6}
+//                   className="p-8 text-center text-muted-foreground"
+//                 >
+//                   No publishers found
+//                 </td>
+//               </tr>
+//             ) : (
+//               filteredPublishers.map((publisher) => (
+//                 <tr
+//                   key={publisher.id}
+//                   className="border-b hover:bg-muted/50"
+//                 >
+//                   <td className="p-3">{publisher.id}</td>
+//                   <td className="p-3">{publisher.name}</td>
+//                   <td className="p-3">{publisher.email}</td>
+//                   <td className="p-3">{publisher.phone}</td>
+//                   <td className="p-3">{publisher.address}</td>
+//                   <td className="p-3">
+//                     <div className="flex justify-end gap-2">
+//                       <Button
+//                         variant="ghost"
+//                         size="sm"
+//                         onClick={() => handleEditPublisher(publisher)}
+//                       >
+//                         <Edit className="h-4 w-4" />
+//                       </Button>
+//                       <Button
+//                         variant="ghost"
+//                         size="sm"
+//                         onClick={() => handleDeletePublisher(publisher)}
+//                       >
+//                         <Trash2 className="h-4 w-4 text-destructive" />
+//                       </Button>
+//                     </div>
+//                   </td>
+//                 </tr>
+//               ))
+//             )}
+//           </tbody>
+//         </table>
+//       </div>
 
-//               <div className="flex items-center justify-between text-sm text-muted-foreground">
-//                 <div>
-//                   Showing {filteredPublishers.length} of {publishers.length}{" "}
-//                   publisher(s)
-//                 </div>
-//               </div>
-//             </div>
-//           </CardContent>
-//         </Card>
+//       <div className="flex items-center justify-between text-sm text-muted-foreground">
+//         <div>
+//           Showing {filteredPublishers.length} of {publishers.length}{" "}
+//           publisher(s)
+//         </div>
+//       </div>
+//     </div>
+//   </CardContent>
+// </Card>
 //       </div>
 
 //       {/* Edit Dialog */}

@@ -17,12 +17,12 @@ import { title } from "process";
 
 export default function DialogDelete({
   title,
-  deletingAuthor,
-  handleDeleteAuthor,
+  deletingItem,
+  handleDelete,
 }: {
   title: string;
-  deletingAuthor: Author;
-  handleDeleteAuthor: (author: Author) => void;
+  deletingItem: any;
+  handleDelete: (author: any) => void;
 }) {
   return (
     <AlertDialog
@@ -61,7 +61,7 @@ export default function DialogDelete({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => handleDeleteAuthor(deletingAuthor)}>
+          <AlertDialogAction onClick={() => handleDelete(deletingItem)}>
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

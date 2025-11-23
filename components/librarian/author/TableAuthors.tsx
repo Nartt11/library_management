@@ -67,8 +67,8 @@ export default function TableAuthors({
                     />
                     <DialogDelete
                       title={`Delete Author ${author.name}`}
-                      deletingAuthor={author}
-                      handleDeleteAuthor={handleDeleteAuthor}
+                      deletingItem={author}
+                      handleDelete={handleDeleteAuthor}
                     />
                   </div>
                 </td>

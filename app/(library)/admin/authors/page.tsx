@@ -25,8 +25,6 @@ export default function AuthorManagement() {
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
