@@ -23,6 +23,7 @@ import {
 import type { UserRole } from "@/types/user";
 import { usePathname, useRouter } from "next/navigation";
 import { link } from "fs";
+import { LibrarianNavBarData } from "@/lib/NavBarData";
 
 interface NavigationSidebarProps {
   role: UserRole | undefined;
@@ -54,92 +55,7 @@ NavigationSidebarProps) {
       //     { id: "account", label: "Manage My Account", icon: User },
       //   ];
       case "librarian":
-        return [
-          {
-            id: "dashboard",
-            label: "Dashboard",
-            icon: Home,
-            link: "/dashboard",
-          },
-          {
-            id: "users",
-            label: "User Management",
-            icon: Users,
-            link: "/users",
-          },
-          {
-            id: "books",
-            label: "Book Management",
-            icon: BookOpen,
-            link: "/books",
-          },
-          {
-            id: "authors",
-            label: "Author Management",
-            icon: UserPen,
-            link: "/authors",
-          },
-          {
-            id: "categories",
-            label: "Category Management",
-            icon: FolderTree,
-            link: "/categories",
-          },
-          {
-            id: "publishers",
-            label: "Publisher Management",
-            icon: Building2,
-            link: "/publishers",
-          },
-          {
-            id: "inventory",
-            label: "Book Inventory",
-            icon: Package,
-            link: "/inventory",
-          },
-          {
-            id: "scanner",
-            label: "QR Scanner",
-            icon: QrCode,
-            link: "/scanner",
-          },
-          {
-            id: "overdue",
-            label: "Overdue Alerts",
-            icon: AlertTriangle,
-            link: "/overdue",
-          },
-          {
-            id: "history",
-            label: "Borrowing History",
-            icon: History,
-            link: "/history",
-          },
-          {
-            id: "account",
-            label: "Manage My Account",
-            icon: User,
-            link: "/account",
-          },
-          {
-            id: "features",
-            label: "Features",
-            icon: Settings,
-            link: "/feature",
-          },
-          {
-            id: "book-catalog",
-            label: "Book Catalog",
-            icon: BookOpen,
-            link: "/bookcatalog",
-          },
-          {
-            id: "cart",
-            label: "My Cart",
-            icon: ShoppingCart,
-            link: "/cart",
-          },
-        ];
+        return LibrarianNavBarData;
       // case "student":
       //   return [
       //     { id: "dashboard", label: "Dashboard", icon: Home },
@@ -166,7 +82,6 @@ NavigationSidebarProps) {
         ];
     }
   };
-
   const menuItems = getMenuItems();
 
   return (

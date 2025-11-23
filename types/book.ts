@@ -1,16 +1,11 @@
 export interface Book {
   id: string;
-  title: string;
-  author: string;
   isbn: string;
-  bookId: string;
-  category: string;
-  status: "available" | "borrowed" | "overdue";
-  location: string;
+  title: string;
+  imgUrl: string | null;
+  publisher: string | null;
+  publicationYear: number;
   description: string;
-  copies: number;
-  availableCopies: number;
-  expectedReturnDate?: string;
-  borrowedBy?: string;
-  imageUrl: string;
+  authors: { id: string; name: string }[];
+  bookCategories: { id: string; name: string }[];
 }
