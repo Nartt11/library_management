@@ -1,8 +1,8 @@
 import { apiFetch } from "./base";
 
-// GET /api/books?page=1&pageSize=10
+// GET /api/books?pageNumber=1&pageSize=10
 export function getAllBooks(page: number, pageSize: number) {
-  return apiFetch(`/books?page=${page}&pageSize=${pageSize}`);
+  return apiFetch(`/books?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/books/{id}

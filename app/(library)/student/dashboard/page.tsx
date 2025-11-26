@@ -1,16 +1,41 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import { BookOpen, Calendar, Clock, AlertTriangle, Search, QrCode, History } from 'lucide-react';
+import { getStudentDashboard } from '../../../../services/student';
+import { StudentDashboardData } from '../../../../types/student';
 
 export default function StudentDashboardHome() {
-  const kpiData = [
+  const router = useRouter();
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        setLoading(true);
+        const data = await getStudentDashboard();
+        setDashboardData(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, []);
+
+  const kpiData = dashboardData ? [
     {
       title: 'Books Borrowed',
-      value: '3',
+      value: dashboardData.booksBorrowed.toString(),
       description: 'Currently borrowed',
       icon: BookOpen,
       color: 'text-orange-600',
@@ -18,7 +43,7 @@ export default function StudentDashboardHome() {
     },
     {
       title: 'Days Visited',
-      value: '12',
+      value: dashboardData.daysVisited.toString(),
       description: 'This month',
       icon: Calendar,
       color: 'text-green-600',
@@ -26,19 +51,15 @@ export default function StudentDashboardHome() {
     },
     {
       title: 'Overdue Books',
-      value: '1',
+      value: dashboardData.overdueBooks.toString(),
       description: 'Need attention',
       icon: AlertTriangle,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
     },
-  ];
+  ] : [];
 
-  const recentBorrowedBooks = [
-    { id: '1', title: 'Introduction to Computer Science', author: 'John Smith', dueDate: '2025-08-15', status: 'Borrowed', color: 'text-green-600' },
-    { id: '2', title: 'Data Structures and Algorithms', author: 'Jane Doe', dueDate: '2025-08-10', status: 'Overdue', color: 'text-red-600' },
-    { id: '3', title: 'Database Management Systems', author: 'Mike Johnson', dueDate: '2025-08-20', status: 'Borrowed', color: 'text-green-600' },
-  ];
+  const recentBorrowedBooks = dashboardData?.currentlyBorrowedBooks || [];
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -53,7 +74,29 @@ export default function StudentDashboardHome() {
     }
   };
 
-  const router = useRouter();
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <p className="text-muted-foreground">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return null;
+  }
 
   return (
     <div className="p-6 space-y-6">

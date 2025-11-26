@@ -21,3 +21,12 @@ export interface Book {
   authors: Author[];
   bookCategories: BookCategory[];
 }
+
+// Extended type for student catalog view with availability info
+export interface BookWithAvailability extends Book {
+  totalCopies?: number;
+  availableCopies?: number;
+  status?: "available" | "borrowed" | "overdue";
+  location?: string;
+  expectedReturnDate?: string;
+}

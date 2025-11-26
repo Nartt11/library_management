@@ -1,5 +1,10 @@
 import { apiFetch } from "./base";
 
+// GET /api/book-categories (no pagination)
+export function getCategories() {
+  return apiFetch(`/book-categories`);
+}
+
 // GET /api/book-categories?page=1&pageSize=10
 export function getAllBookCategories(page: number, pageSize: number) {
   return apiFetch(`/book-categories?page=${page}&pageSize=${pageSize}`);
