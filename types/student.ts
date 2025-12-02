@@ -28,3 +28,32 @@ export interface BorrowingHistory {
   dueDate: string;
   status: 'Borrowed' | 'Returned' | 'Overdue';
 }
+
+export interface QRTicketData {
+  id: string;
+  studentId: string;
+  studentName: string;
+  timestamp: string;
+  purpose: string;
+  status: 'active' | 'scanned' | 'expired';
+  bookIds?: string[]; // Array of book IDs for checkout
+  expiresAt?: string;
+}
+
+export interface CheckoutResponse {
+  success: boolean;
+  ticketId: string;
+  message?: string;
+}
+
+export interface BorrowRequestPayload {
+  memberId: string;
+  bookIds: string[];
+  notes?: string;
+}
+
+export interface BorrowRequestResponse {
+  requestId: string;
+  qrCode: string;
+  message: string;
+}

@@ -1,87 +1,35 @@
-import React, { use } from "react";
+import React from "react";
 import { Button } from "./ui/button";
-import {
-  Home,
-  Users,
-  BookOpen,
-  Activity,
-  QrCode,
-  ShoppingCart,
-  History,
-  UserCheck,
-  BarChart3,
-  AlertTriangle,
-  Database,
-  Monitor,
-  Settings,
-  UserPen,
-  FolderTree,
-  Building2,
-  Package,
-  User,
-} from "lucide-react";
 import type { UserRole } from "@/types/user";
 import { usePathname, useRouter } from "next/navigation";
-import { link } from "fs";
-import { LibrarianNavBarData } from "@/lib/NavBarData";
+import {
+  AdminNavBarData,
+  StudentNavBarData,
+} from "@/lib/NavBarData";
 
 interface NavigationSidebarProps {
   role: UserRole | undefined;
   activeView: string;
-  // onViewChange: (view: string) => void;
 }
 
 export function NavigationSidebar({
   role,
   activeView,
-}: // onViewChange,
-NavigationSidebarProps) {
+}: NavigationSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+
   const getMenuItems = () => {
     switch (role) {
-      // case "admin":
-      //   return [
-      //     { id: "dashboard", label: "Dashboard", icon: Home },
-      //     { id: "users", label: "User Management", icon: Users },
-      //     { id: "features", label: "Features", icon: Settings },
-      //     { id: "books", label: "Book Management", icon: BookOpen },
-      //     { id: "equipment", label: "Equipment Management", icon: Monitor },
-      //     { id: "attendance", label: "Attendance Logs", icon: UserCheck },
-      //     { id: "history", label: "Borrowing History", icon: History },
-      //     { id: "overdue", label: "Overdue Alerts", icon: AlertTriangle },
-      //     { id: "logs", label: "Global Logs", icon: Activity },
-      //     { id: "backup", label: "Backup & Restore", icon: Database },
-      //     { id: "account", label: "Manage My Account", icon: User },
-      //   ];
-      case "librarian":
-        return LibrarianNavBarData;
-      // case "student":
-      //   return [
-      //     { id: "dashboard", label: "Dashboard", icon: Home },
-      //     { id: "catalog", label: "Book Catalog", icon: BookOpen },
-      //     { id: "equipment", label: "Equipment Catalog", icon: Monitor },
-      //     { id: "cart", label: "My Cart", icon: ShoppingCart },
-      //     { id: "qr-ticket", label: "QR Borrow Ticket", icon: QrCode },
-      //     { id: "attendance", label: "My Attendance", icon: UserCheck },
-      //     { id: "history", label: "My Borrowing History", icon: History },
-      //     { id: "account", label: "Manage My Account", icon: User },
-      //   ];
-      // case "scanner":
-      //   return [{ id: "scanner", label: "Attendance Scanner", icon: QrCode }];
+      case "admin":
+        return AdminNavBarData;
+      case "student":
+        return StudentNavBarData;
       default:
-        return [
-          { id: "dashboard", label: "Dashboard", icon: Home },
-          { id: "catalog", label: "Book Catalog", icon: BookOpen },
-          { id: "equipment", label: "Equipment Catalog", icon: Monitor },
-          { id: "cart", label: "My Cart", icon: ShoppingCart },
-          { id: "qr-ticket", label: "QR Borrow Ticket", icon: QrCode },
-          { id: "attendance", label: "My Attendance", icon: UserCheck },
-          { id: "history", label: "My Borrowing History", icon: History },
-          { id: "account", label: "Manage My Account", icon: User },
-        ];
+        return StudentNavBarData; // Default to student view
     }
   };
+
   const menuItems = getMenuItems();
 
   return (

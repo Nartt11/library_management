@@ -159,7 +159,7 @@ export default function StudentDashboardHome() {
               <Button 
                 variant="outline"
                 className="h-auto p-4 flex items-center gap-3 bg-orange-50 border-orange-200 hover:bg-orange-100"
-                onClick={() => router.push('/student/bookcatalog')}
+                onClick={() => router.push('/student/books')}
               >
                 <Search className="h-5 w-5 text-orange-600" />
                 <div className="text-left flex-1">

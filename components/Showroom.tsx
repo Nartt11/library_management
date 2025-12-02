@@ -44,6 +44,7 @@ import { Footer } from "./Footer";
 import { Book } from "@/types/book";
 
 import { useAuth } from "@/context/authContext";
+import { getAllBooks } from "@/services/book";
 
 export function Showroom() {
   const router = useRouter();
@@ -54,21 +55,18 @@ export function Showroom() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 24;
+  const [jumpPage, setJumpPage] = useState("");
 
   useEffect(() => {
     let mounted = true;
     async function fetchBooks() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/books?pageNumber=${currentPage}&pageSize=${pageSize}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch books: ${response.status}`);
-        }
-        const data = await response.json();
+        const data = await getAllBooks(currentPage, pageSize);
         if (!mounted) return;
         setBooks(data.data ?? []);
         setTotalPages(data.totalPages ?? 1);
-        setTotalCount(data.totalCount ?? 0);
+        setTotalCount(data.totalItems ?? 0);
         
         // Scroll to top when page changes
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -148,6 +146,7 @@ export function Showroom() {
     <div className="min-h-screen bg-linear-to-br from-orange-50 via-amber-50 to-green-50">
       <div className="container mx-auto p-6 space-y-8">
         {/* Enhanced Header */}
+        {!currentUser && (
         <div className="relative overflow-hidden rounded-xl bg-linear-to-r from-orange-600 via-orange-500 to-amber-500 p-8 text-white shadow-2xl">
           <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
           <div className="relative flex items-center justify-between">
@@ -215,6 +214,7 @@ export function Showroom() {
             </Button>
           </div>
         </div>
+        )}
 
         {/* Enhanced Search and Filters */}
         <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
@@ -293,26 +293,9 @@ export function Showroom() {
             </div>
             <div>
               <p className="text-lg font-semibold text-foreground">
-                {filteredBooks.length} Books Found
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Total collection: {books.length} books
+                {totalCount} Books Found
               </p>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <Badge
-              variant="outline"
-              className="px-4 py-2 text-sm border-green-200 bg-green-50 text-green-700"
-            >
-              Categories: {categories.length - 1}
-            </Badge>
-            <Badge
-              variant="outline"
-              className="px-4 py-2 text-sm border-amber-200 bg-amber-50 text-amber-700"
-            >
-              Authors: {new Set(books.flatMap(b => b.authors.map(a => a.name))).size}
-            </Badge>
           </div>
         </div>
 
@@ -377,9 +360,18 @@ export function Showroom() {
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  Showing page {currentPage} of {totalPages} ({totalCount} total books)
+                  Showing page {currentPage} of {totalPages} 
                 </div>
                 <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(1)}
+                          disabled={currentPage === 1 || loading}
+                          className="gap-2"
+                        >
+                          First
+                        </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -419,6 +411,44 @@ export function Showroom() {
                     })}
                   </div>
 
+                  {/* Jump to page input */}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Go to"
+                      value={jumpPage}
+                      onChange={(e) => setJumpPage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const n = Number(jumpPage);
+                          if (!Number.isInteger(n) || n < 1 || n > totalPages) {
+                            setJumpPage('');
+                            return;
+                          }
+                          setCurrentPage(n);
+                          setJumpPage('');
+                        }
+                      }}
+                      className="w-20 h-10 text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const n = Number(jumpPage);
+                        if (!Number.isInteger(n) || n < 1 || n > totalPages) {
+                          setJumpPage('');
+                          return;
+                        }
+                        setCurrentPage(n);
+                        setJumpPage('');
+                      }}
+                      disabled={loading}
+                      className="h-10"
+                    >
+                      Go
+                    </Button>
+                  </div>
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -428,6 +458,15 @@ export function Showroom() {
                   >
                     Next
                     <ChevronRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages || loading}
+                    className="gap-2"
+                  >
+                    Last
                   </Button>
                 </div>
               </div>

@@ -45,22 +45,27 @@ export default function LoginPage({}: LoginPageProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const user = await loginService(loginField, password);
-    if (user) {
-      // Lưu user -> localStorage hoặc context
-      localStorage.setItem("user", JSON.stringify(user));
-      saveUser(user);
-      if (user.role === "admin") {
-        router.push("/admin/dashboard");
-      } else if (user.role === "librarian") {
-        router.push("/admin/dashboard");
-      } else if (user.role === "staff") {
-        router.push("/staff/dashboard");
+    try {
+      const response = await loginService(loginField, password);
+      if (response?.user) {
+        // Save user to context
+        saveUser(response.user);
+        
+        // Redirect based on role
+        const role = response.user.role;
+        if (role === "admin") {
+          router.push("/admin/dashboard");
+        } else if (role === "staff") {
+          router.push("/staff/dashboard");
+        } else {
+          router.push("/student/dashboard");
+        }
       } else {
-        router.push("/student/dashboard");
+        alert("Invalid login response");
       }
-    } else {
-      alert("Invalid username or password");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      alert(error?.message || "Invalid username or password");
     }
   };
 
@@ -213,15 +218,6 @@ export default function LoginPage({}: LoginPageProps) {
                     Register
                   </Button>
                 </div>
-                {/* <div className="mt-4 text-center text-sm text-muted-foreground">
-                  <p>Demo credentials:</p>
-                  <div className="mt-2 text-xs space-y-1">
-                    <p>Student: 123 / 123</p>
-                    <p>Librarian: librarian / 123</p>
-                    <p>Admin: admin / 123</p>
-                    <p>Scanner: scanner / 123</p>
-                  </div>
-                </div> */}
               </>
             ) : (
               // Forgot Password Form

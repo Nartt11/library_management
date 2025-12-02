@@ -1,28 +1,51 @@
 import { NextResponse } from "next/server";
+import { API_BASE } from '@/lib/apiConfig';
 
-export async function POST(req: Request) {
-  const { username, password } = await req.json();
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    // Accept either `email` or `userName` in the request body
+    const { email, userName, password } = body;
+    if (!(email || userName) || !password) {
+      return NextResponse.json(
+        { error: 'Email (or userName) and password are required' },
+        { status: 400 }
+      );
+    }
 
-  // Fake users
-  const users = [
-    { id: 1, username: "123", password: "123", role: "student" },
-    { id: 2, username: "admin", password: "123", role: "admin" },
-    { id: 3, username: "librarian", password: "123", role: "librarian" },
-    { id: 4, username: "scanner", password: "123", role: "scanner" },
-  ];
+    const url = `${API_BASE}/auth/login`;
+    const payload: any = { password };
+    if (email) payload.email = email;
+    else payload.userName = userName;
 
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+    });
 
-  if (!user) {
-    return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
+    const data = await response.json();
+
+    // Normalize backend responses. Backend may return:
+    // { data: '<token string>', isSuccess: true }
+    // or { data: { JWTtoken: '...' } }
+    const token = data?.data ?? data?.data?.JWTtoken ?? data?.token ?? null;
+    const isSuccess = data?.isSuccess ?? (response.ok ?? true);
+    const errorMessage = data?.errorMessage ?? data?.error ?? null;
+
+    if (!token) {
+      return NextResponse.json({ error: errorMessage || 'Login failed', isSuccess: false }, { status: 400 });
+    }
+
+    return NextResponse.json({ token, isSuccess, errorMessage });
+  } catch (error) {
+    console.error('Error during login:', error);
+    return NextResponse.json(
+      { error: 'Failed to login' },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({
-    id: user.id,
-    name: user.username,
-    role: user.role,
-    token: "FAKE_JWT_TOKEN",
-  });
 }

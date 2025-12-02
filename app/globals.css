@@ -40,6 +40,8 @@
   --sidebar-accent-foreground: #92400e;
   --sidebar-border: #fed7aa;
   --sidebar-ring: #f97316;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
 }
 
 .dark {

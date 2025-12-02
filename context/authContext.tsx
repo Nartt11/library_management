@@ -36,9 +36,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved) _setCurrentUser(JSON.parse(saved));
   }, []);
 
+  // Listen for login events dispatched by `loginService` and storage events
+  useEffect(() => {
+    const onAuthLogin = (e: any) => {
+      const user = e?.detail ?? null;
+      if (user) saveUser(user);
+    };
+
+    const onStorage = (ev: StorageEvent) => {
+      if (ev.key === "user") {
+        if (ev.newValue) {
+          try {
+            saveUser(JSON.parse(ev.newValue));
+          } catch (_) {
+            saveUser(null);
+          }
+        } else {
+          saveUser(null);
+        }
+      }
+      if (ev.key === "token" && !ev.newValue) {
+        // token removed => logout
+        saveUser(null);
+      }
+    };
+
+    window.addEventListener("auth-login", onAuthLogin as EventListener);
+    window.addEventListener("storage", onStorage as any);
+
+    return () => {
+      window.removeEventListener("auth-login", onAuthLogin as EventListener);
+      window.removeEventListener("storage", onStorage as any);
+    };
+  }, []);
+
   const logout = () => {
     saveUser(null);
     setPendingBook(null);
+    localStorage.removeItem("token");
     router.push("/");
   };
 

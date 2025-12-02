@@ -38,7 +38,11 @@ export async function getStudentDashboard(): Promise<StudentDashboardData> {
   return Promise.resolve(MOCK_DASHBOARD_DATA);
   
   // UNCOMMENT THIS WHEN API IS READY:
-  // return apiFetch(`/student/dashboard`);
+  // const response = await fetch('/api/student/dashboard');
+  // if (!response.ok) {
+  //   throw new Error(`Failed to fetch dashboard data: ${response.status}`);
+  // }
+  // return await response.json();
 }
 
 // GET /api/student/borrowed-books - Get currently borrowed books
