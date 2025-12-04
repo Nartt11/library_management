@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Edit, FolderTree, Plus, Search } from "lucide-react";
+import { Edit, FolderTree, Plus, Search, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import DialogDelete from "@/components/librarian/DialogDelete";
 import { toast } from "sonner";
@@ -28,72 +28,105 @@ import {
   getAllBookCategories,
   updateBookCategory,
 } from "@/services/book-category";
+import { useCategories } from "@/hooks/useCategories";
+import { SmartPagination } from "@/components/ui/SmartPagination";
 
 export default function CategoryManagement() {
-  const [categories, setCategories] = useState<bookCategory[]>([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { categoriesQuery, createMutation, updateMutation, deleteMutation } =
+    useCategories(page, pageSize);
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const categories: bookCategory[] = categoriesQuery.data ?? [];
+  console.log(categoriesQuery.data);
 
-  const [formData, setFormData] = useState({
+  const totalPages = categoriesQuery.data?.totalPages ?? 1;
+  const currentPage = categoriesQuery.data?.pageNumber ?? page;
+  const totalItems = categoriesQuery.data?.totalItems ?? 0;
+
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+
+  const emptyForm = {
+    name: "",
+  };
+  const [formData, setFormData] = useState<any>(emptyForm);
+  const [errors, setErrors] = useState({
     name: "",
   });
 
-  const fetchCategories = async () => {
-    const data = await getAllBookCategories(pageNumber, pageSize);
-    setCategories(data);
-  };
+  function validateForm() {
+    const newErrors: any = {};
 
-  useEffect(() => {
-    fetchCategories();
-  }, [pageNumber, pageSize]);
-
-  const resetForm = () => {
-    setFormData({ name: "" });
-    setEditingId(null);
-  };
-
-  const onSubmitAdd = async () => {
     if (!formData.name.trim()) {
-      toast.error("Name is required");
-      return;
+      newErrors.name = "Name is required";
     }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
-    await createBookCategory(formData);
-    toast.success("Book Category added successfully");
-    setIsAddDialogOpen(false);
-    resetForm();
-    fetchCategories();
+  // ---------------- ADD publisher -----------------
+  const openAddDialog = () => {
+    setFormData(emptyForm);
+    setErrors({
+      name: "",
+    });
+    setIsAddOpen(true);
   };
 
-  const handleEditCategory = (category: bookCategory) => {
-    setEditingId(category.id);
-    setFormData({ name: category.name });
-    setIsEditDialogOpen(true);
+  const handleAdd = () => {
+    if (!validateForm()) return;
+    createMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsAddOpen(false);
+        setFormData(emptyForm);
+      },
+    });
   };
 
-  const handleUpdate = async () => {
-    if (!editingId) return;
+  const handleEdit = (category: any) => {
+    setSelectedCategory(category);
 
-    await updateBookCategory(editingId, formData);
-    toast.success("Book Category updated successfully");
-
-    setIsEditDialogOpen(false);
-    resetForm();
-    fetchCategories();
+    setFormData({
+      id: category.id,
+      name: category.name,
+    });
+    setErrors({
+      name: "",
+    });
+    setIsEditOpen(true);
   };
 
-  const handleDeleteCategory = async (category: bookCategory) => {
-    await deleteBookCategory(category.id);
-    toast.success("Book Category deleted successfully");
-    fetchCategories();
+  const handleUpdate = () => {
+    alert("update");
+    if (!validateForm()) return;
+    const { id, ...payload } = formData; // loại ID khỏi body
+
+    updateMutation.mutate(
+      { id, data: payload },
+      {
+        onSuccess: () => {
+          setIsEditOpen(false);
+        },
+      }
+    );
   };
 
+  // ---------------- DELETE publisher -----------------
+  const handleDelete = (category: any) => {
+    setSelectedCategory(category);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    deleteMutation.mutate(selectedCategory.id, {
+      onSuccess: () => setDeleteOpen(false),
+    });
+  };
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -104,41 +137,9 @@ export default function CategoryManagement() {
           </p>
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2" onClick={() => resetForm()}>
-              <Plus className="h-4 w-4" />
-              Add Category
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Category</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <Label>Category Name</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Enter category name"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setIsAddDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={onSubmitAdd}>Add</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button className="gap-2" onClick={openAddDialog}>
+          <Plus className="h-4 w-4" /> Add Category
+        </Button>
       </div>
 
       <Card>
@@ -178,16 +179,18 @@ export default function CategoryManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditCategory(cat)}
+                          onClick={() => handleEdit(cat)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
 
-                        <DialogDelete
-                          title="Delete Category"
-                          description={`Delete "${cat.name}"? This cannot be undone.`}
-                          onConfirm={() => handleDeleteCategory(cat)}
-                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(cat)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -195,14 +198,29 @@ export default function CategoryManagement() {
               )}
             </tbody>
           </table>
+
+          {/* FOOTER */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div>
+              Showing <b>{categories.length}</b> of <b>{totalItems}</b>{" "}
+              categories
+            </div>
+
+            {/* <div className="pt-4 flex justify-center">
+              <SmartPagination
+                page={page}
+                totalPages={totalPages}
+                onChange={(c) => setPage(c)}
+              />
+            </div> */}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
+            <DialogTitle>Add category</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -216,16 +234,57 @@ export default function CategoryManagement() {
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsAddOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAdd}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* EDIT DIALOG */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit publisher</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <Label>Category ID</Label>
+            <Input
+              value={formData.id}
+              disabled
+              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-4 py-4">
+            <Label>Category Name</Label>
+            <Input
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleUpdate}>Update</Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* DELETE DIALOG */}
+      <DialogDelete
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={`Delete category "${selectedCategory?.name}"`}
+        description="Are you sure? This action cannot be undone."
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

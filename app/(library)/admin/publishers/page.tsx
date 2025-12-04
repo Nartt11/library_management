@@ -1,9 +1,17 @@
 "use client";
-import CreatePublisher from "@/components/librarian/publisher/CreatePublisher";
-import TablePublishers from "@/components/librarian/publisher/TablePublishers";
-import { Input } from "@/components/ui/input";
-import { Building2, Search } from "lucide-react";
-import React, { useEffect, useState } from "react";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { Plus, Search, UserPen } from "lucide-react";
+import { SmartPagination } from "@/components/ui/SmartPagination";
+import DialogDelete from "@/components/librarian/DialogDelete";
 
 import {
   Card,
@@ -12,70 +20,131 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { usePublishers } from "@/hooks/usePublishers";
+import TablePublishers from "@/components/librarian/publisher/TablePublishers";
+import PublisherForm from "@/components/librarian/publisher/PublisherForm";
 
-import {
-  createPublisher,
-  deletePublisher,
-  getAllPublishers,
-  updatePublisher,
-} from "@/services/publisher";
+export default function publisherPage() {
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-export default function PublisherManagement() {
-  const [publishers, setPublishers] = useState<Publisher[]>([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
+  const { publishersQuery, createMutation, updateMutation, deleteMutation } =
+    usePublishers(page, pageSize);
 
-  // ---- FETCH DATA ----
-  const fetchData = async () => {
-    try {
-      const data = await getAllPublishers(pageNumber, pageSize);
-      console.log("Publishers:", data);
+  const publishers = publishersQuery.data?.data ?? [];
+  const totalPages = publishersQuery.data?.totalPages ?? 1;
+  const currentPage = publishersQuery.data?.pageNumber ?? page;
+  const totalItems = publishersQuery.data?.totalItems ?? 0;
 
-      setPublishers(data.data || []);
-      setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error("Error fetching publishers:", error);
+  // DIALOG STATES
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const [selectedPublisher, setSelectedPublisher] = useState<any>(null);
+
+  const emptyForm = {
+    name: "",
+    phoneNumber: "",
+    address: "",
+  };
+
+  const [formData, setFormData] = useState<any>(emptyForm);
+  const [errors, setErrors] = useState({
+    name: "",
+    phoneNumber: "",
+    address: "",
+  });
+
+  // Validate fields ****************
+  function validateForm() {
+    const newErrors: any = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
     }
+
+    // if (!formData.phoneNumber.trim()) {
+    //   newErrors.phoneNumber = "Phone number is required";
+    // } else if (isNaN(Number(formData.yearOfBirth))) {
+    //   newErrors.yearOfBirth = "Must be a number";
+    // } else if (Number(formData.yearOfBirth) < 1900) {
+    //   newErrors.yearOfBirth = "Year must be >= 1900";
+    // }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  // ---------------- ADD publisher -----------------
+  const openAddDialog = () => {
+    setFormData(emptyForm);
+    setErrors({
+      name: "",
+      phoneNumber: "",
+      address: "",
+    });
+    setIsAddOpen(true);
   };
 
-  // Chỉ chạy khi pageNumber, pageSize đổi
-  useEffect(() => {
-    fetchData();
-  }, [pageNumber, pageSize]);
+  const handleAdd = () => {
+    if (!validateForm()) return;
+    createMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsAddOpen(false);
+        setFormData(emptyForm);
+      },
+    });
+  };
 
-  // ---- ADD ----
-  const handleAddPublisher = async (publisher: Publisher) => {
-    const payload = {
+  // ---------------- EDIT publisher -----------------
+  const handleEdit = (publisher: any) => {
+    setSelectedPublisher(publisher);
+
+    setFormData({
+      id: publisher.id,
       name: publisher.name,
       phoneNumber: publisher.phoneNumber,
-      address: publisher.address,
-    };
-
-    await createPublisher(payload);
-    fetchData(); // refresh sau khi tạo
+      address: publisher.address || "",
+    });
+    setErrors({
+      name: "",
+      phoneNumber: "",
+      address: "",
+    });
+    setIsEditOpen(true);
   };
 
-  // ---- UPDATE ----
-  const handleEditPublisher = async (publisher: Publisher) => {
-    const payload = {
-      name: publisher.name,
-      phoneNumber: publisher.phoneNumber,
-      address: publisher.address,
-    };
+  const handleUpdate = () => {
+    alert("update");
+    if (!validateForm()) return;
+    const { id, ...payload } = formData; // loại ID khỏi body
 
-    await updatePublisher(publisher.id, payload);
-    fetchData(); // refresh sau khi update
+    updateMutation.mutate(
+      { id, data: payload },
+      {
+        onSuccess: () => {
+          setIsEditOpen(false);
+        },
+      }
+    );
   };
 
-  // ---- DELETE ----
-  const handleDeletePublisher = async (publisher: Publisher) => {
-    await deletePublisher(publisher.id!);
-    fetchData(); // refresh sau khi delete
+  // ---------------- DELETE publisher -----------------
+  const handleDelete = (publisher: any) => {
+    setSelectedPublisher(publisher);
+    setDeleteOpen(true);
+  };
+
+  const confirmDelete = () => {
+    deleteMutation.mutate(selectedPublisher.id, {
+      onSuccess: () => setDeleteOpen(false),
+    });
   };
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="mb-2">Publisher Management</h1>
@@ -84,49 +153,102 @@ export default function PublisherManagement() {
           </p>
         </div>
 
-        <CreatePublisher handleAddPublisher={handleAddPublisher} />
+        <Button className="gap-2" onClick={openAddDialog}>
+          <Plus className="h-4 w-4" /> Add publisher
+        </Button>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Publishers
+            <UserPen className="h-5 w-5" />
+            publishers
           </CardTitle>
-          <CardDescription>
-            Browse and manage all publishers in the system
-          </CardDescription>
+          <CardDescription>Browse and manage all publishers</CardDescription>
         </CardHeader>
 
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search publishers by name, email, or ID..."
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
+            {/* TABLE */}
             <div className="rounded-md border">
               <TablePublishers
                 publishers={publishers}
-                handleEditPublisher={handleEditPublisher}
-                handleDeletePublisher={handleDeletePublisher}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             </div>
 
+            {/* FOOTER */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <div>
-                Showing {publishers.length} of {totalPages * pageSize}{" "}
+                Showing <b>{publishers.length}</b> of <b>{totalItems}</b>{" "}
                 publisher(s)
+              </div>
+
+              <div className="pt-4 flex justify-center">
+                <SmartPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onChange={(p) => setPage(p)}
+                />
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* ADD DIALOG */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add publisher</DialogTitle>
+          </DialogHeader>
+
+          <PublisherForm
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsAddOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAdd}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* EDIT DIALOG */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit publisher</DialogTitle>
+          </DialogHeader>
+
+          <PublisherForm
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>Update</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE DIALOG */}
+      <DialogDelete
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={`Delete publisher "${selectedPublisher?.name}"`}
+        description="Are you sure? This action cannot be undone."
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
