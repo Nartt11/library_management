@@ -8,7 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
+import Image from "next/image";
 
 export default function BooksTable({
   books,
@@ -16,8 +17,8 @@ export default function BooksTable({
   onDelete,
 }: {
   books: Book[];
-  onEdit: (book: Book) => void;
-  onDelete: (book: Book) => void;
+  onEdit?: any;
+  onDelete?: any;
 }) {
   return (
     <Card>
@@ -36,6 +37,15 @@ export default function BooksTable({
               {books.map((book) => (
                 <tr key={book.id} className="border-b hover:bg-muted/50">
                   <td className="p-4">
+                    <Image
+                      src={book.imgUrl}
+                      height={80}
+                      width={60}
+                      alt={book.title}
+                      className="object-cover rounded-md"
+                    />
+                  </td>
+                  <td className="p-4">
                     <div>
                       <p className="line-clamp-1">{book.title}</p>
                       <p className="text-sm text-muted-foreground">
@@ -47,27 +57,26 @@ export default function BooksTable({
                     </div>
                   </td>
                   <td className="p-4 text-sm">
-                    {book.bookCategories.map((c) => c.name).join(", ")}
+                    {book.bookCategories.map((cat) => cat.name).join(", ")}
                   </td>
 
                   <td className="p-4">
                     <div className="flex gap-2">
-                      {/* <EditBook /> */}
                       <Button
+                        variant="ghost"
                         size="sm"
-                        variant="outline"
                         onClick={() => onEdit(book)}
-                        className="gap-1"
                       >
-                        <Edit className="h-3 w-3" />
-                        Edit
+                        <Edit className="h-4 w-4" />
                       </Button>
 
-                      {/* <DialogDelete
-                        title="Delete Book"
-                        description={`Are you sure you want to delete "${book.title}"? This action cannot be undone.`}
-                        onConfirm={() => confirmDeleteBook(book.id)}
-                      /> */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(book)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

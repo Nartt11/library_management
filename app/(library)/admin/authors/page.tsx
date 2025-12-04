@@ -9,22 +9,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { useAuthors } from "../../../../app/hooks/useAuthors";
+import { useAuthors } from "../../../../hooks/useAuthors";
 import { Plus, Search, UserPen } from "lucide-react";
 import { AuthorTable } from "@/components/librarian/author/TableAuthors";
 import { AuthorForm } from "@/components/librarian/author/AuthorForm";
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { SmartPagination } from "@/components/ui/SmartPagination";
 import DialogDelete from "@/components/librarian/DialogDelete";
+
 import {
   Card,
   CardContent,
@@ -45,16 +37,12 @@ export default function AuthorPage() {
   const currentPage = authorsQuery.data?.pageNumber ?? page;
   const totalItems = authorsQuery.data?.totalItems ?? 0;
 
-  console.log("a", totalPages);
-
+  // DIALOG STATES
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    yearOfBirth: 2025,
-    briefDescription: "",
-  });
+  const [selectedAuthor, setSelectedAuthor] = useState<any>(null);
 
   const emptyForm = {
     name: "",
@@ -62,16 +50,44 @@ export default function AuthorPage() {
     briefDescription: "",
   };
 
-  const [selectedAuthor, setSelectedAuthor] = useState<any>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [formData, setFormData] = useState<any>(emptyForm);
+  const [errors, setErrors] = useState({
+    name: "",
+    yearOfBirth: "",
+  });
 
-  // ADD
+  // Validate fields
+  function validateForm() {
+    const newErrors: any = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    if (!formData.yearOfBirth) {
+      newErrors.yearOfBirth = "Year of birth is required";
+    } else if (isNaN(Number(formData.yearOfBirth))) {
+      newErrors.yearOfBirth = "Must be a number";
+    } else if (Number(formData.yearOfBirth) < 1900) {
+      newErrors.yearOfBirth = "Year must be >= 1900";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  // ---------------- ADD AUTHOR -----------------
   const openAddDialog = () => {
     setFormData(emptyForm);
+    setErrors({
+      name: "",
+      yearOfBirth: "",
+    });
     setIsAddOpen(true);
   };
 
   const handleAdd = () => {
+    if (!validateForm()) return;
     createMutation.mutate(formData, {
       onSuccess: () => {
         setIsAddOpen(false);
@@ -80,16 +96,29 @@ export default function AuthorPage() {
     });
   };
 
-  // EDIT
+  // ---------------- EDIT AUTHOR -----------------
   const handleEdit = (author: any) => {
     setSelectedAuthor(author);
-    setFormData(author);
+
+    setFormData({
+      id: author.id,
+      name: author.name,
+      yearOfBirth: author.yearOfBirth,
+      briefDescription: author.briefDescription || "",
+    });
+    setErrors({
+      name: "",
+      yearOfBirth: "",
+    });
     setIsEditOpen(true);
   };
 
   const handleUpdate = () => {
+    if (!validateForm()) return;
+    const { id, ...payload } = formData; // loại ID khỏi body
+
     updateMutation.mutate(
-      { id: selectedAuthor.id, data: formData },
+      { id, data: payload },
       {
         onSuccess: () => {
           setIsEditOpen(false);
@@ -98,7 +127,7 @@ export default function AuthorPage() {
     );
   };
 
-  // DELETE
+  // ---------------- DELETE AUTHOR -----------------
   const handleDelete = (author: any) => {
     setSelectedAuthor(author);
     setDeleteOpen(true);
@@ -132,24 +161,12 @@ export default function AuthorPage() {
             <UserPen className="h-5 w-5" />
             Authors
           </CardTitle>
-          <CardDescription>
-            Browse and manage all authors in the system
-          </CardDescription>
+          <CardDescription>Browse and manage all authors</CardDescription>
         </CardHeader>
+
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                {/* <Input
-                  placeholder="Search authors by name, email, or ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                /> */}
-              </div>
-            </div>
-
+            {/* TABLE */}
             <div className="rounded-md border">
               <AuthorTable
                 authors={authors}
@@ -158,16 +175,16 @@ export default function AuthorPage() {
               />
             </div>
 
+            {/* FOOTER */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <div>
-                Showing {totalItems.length} of {authors.length} author(s)
+                Showing <b>{authors.length}</b> of <b>{totalItems}</b> author(s)
               </div>
 
-              {/* PAGINATION */}
               <div className="pt-4 flex justify-center">
                 <SmartPagination
                   page={page}
-                  totalPages={authorsQuery.data?.totalPages ?? 1}
+                  totalPages={totalPages}
                   onChange={(p) => setPage(p)}
                 />
               </div>
@@ -176,8 +193,6 @@ export default function AuthorPage() {
         </CardContent>
       </Card>
 
-      {/* TABLE */}
-
       {/* ADD DIALOG */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent>
@@ -185,7 +200,11 @@ export default function AuthorPage() {
             <DialogTitle>Add Author</DialogTitle>
           </DialogHeader>
 
-          <AuthorForm formData={formData} setFormData={setFormData} />
+          <AuthorForm
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
 
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>
@@ -203,7 +222,11 @@ export default function AuthorPage() {
             <DialogTitle>Edit Author</DialogTitle>
           </DialogHeader>
 
-          <AuthorForm formData={formData} setFormData={setFormData} />
+          <AuthorForm
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
 
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>
@@ -214,11 +237,12 @@ export default function AuthorPage() {
         </DialogContent>
       </Dialog>
 
+      {/* DELETE DIALOG */}
       <DialogDelete
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title={`Delete  Author ${selectedAuthor?.name}`}
-        description="Are you sure you want to delete this author? This action cannot be undone."
+        title={`Delete Author "${selectedAuthor?.name}"`}
+        description="Are you sure? This action cannot be undone."
         onConfirm={confirmDelete}
       />
     </div>

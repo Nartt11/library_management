@@ -53,76 +53,66 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "./../../../../types/user";
-import { PasswordConfirmation } from "./../../../../components/PasswordConfirmation";
-import DialogDelete from "@/components/librarian/DialogDelete";
-import CreateBook from "@/components/librarian/book/CreateBook";
-import { Book } from "@/types/book";
-import { deleteBook, getAllBooks } from "@/services/book";
-import EditBook from "@/components/librarian/book/EditBook";
-import { useBooks } from "@/app/hooks/useBooks";
+import { useBooks } from "@/hooks/useBooks";
 import BooksTable from "@/components/librarian/book/BooksTable";
+import { Book } from "@/types/book";
+import { SmartPagination } from "@/components/ui/SmartPagination";
 
 export default function BookManagement() {
-  // const [books, setBooks] = useState<Book[]>([]);
-  // const [pageNumber, setPageNumber] = useState(1);
-  // const [pageSize] = useState(10);
-  // const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-  // // ---- FETCH DATA ----
-  // const fetchData = async () => {
-  //   try {
-  //     const data = await getAllBooks(pageNumber, pageSize);
-  //     console.log("Authors:", data);
+  const { booksQuery, createMutation } = useBooks(page, pageSize);
 
-  //     setBooks(data.data || []);
-  //     setTotalPages(data.totalPages || 1);
-  //   } catch (error) {
-  //     console.error("Error fetching authors:", error);
-  //   }
-  // };
+  const books: Book[] = booksQuery.data?.data ?? [];
+  console.log(booksQuery.data);
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, [pageNumber, pageSize]);
+  const totalPages = booksQuery.data?.totalPages ?? 1;
+  const currentPage = booksQuery.data?.pageNumber ?? page;
+  const totalItems = booksQuery.data?.totalItems ?? 0;
 
-  // const addBook = async (newBook: any) => {
-  //   await CreateBook(newBook);
-  //   toast.success("Book added successfully!");
-  //   fetchData();
-  // };
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  // const confirmDeleteBook = async (bookId: string) => {
-  //   alert("Delete book with ID: " + bookId);
-  //   // await deleteBook(bookId);
-  //   // toast.success("Book deleted successfully!");
-  //   // fetchData();
-  // };
+  const [selectedBook, setSelectedBooks] = useState<any>(null);
 
-  // // const editBook = async (book: Book) => {
-  // //   await EditBook();
-  // //   toast.success("Book edited successfully!");
-  // //   fetchData();
-  // // };
-  const [editingBook, setEditingBook] = useState<Book | null>(null);
-  const [deletingBook, setDeletingBook] = useState<Book | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const emptyForm = {
+    name: "",
+  };
+  const [formData, setFormData] = useState<any>(emptyForm);
+  const [errors, setErrors] = useState({
+    name: "",
+  });
 
-  const {
-    books,
-    loadingList,
-    errorList,
-    searchKeyword,
-    setSearchKeyword,
+  function validateForm() {
+    const newErrors: any = {};
 
-    handleCreate,
-    handleUpdate,
-    handleDelete,
-    loadingAction,
-    errorAction,
-  } = useBooks();
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
-  if (loadingList) return <p>Đang tải...</p>;
-  if (errorList) return <p>Lỗi: {errorList}</p>;
+  // ---------------- ADD publisher -----------------
+  const openAddDialog = () => {
+    setFormData(emptyForm);
+    setErrors({
+      name: "",
+    });
+    setIsAddOpen(true);
+  };
+
+  const handleAdd = () => {
+    if (!validateForm()) return;
+    createMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsAddOpen(false);
+        setFormData(emptyForm);
+      },
+    });
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -137,67 +127,15 @@ export default function BookManagement() {
           </p>
         </div>
 
-        <div className="flex gap-2">
-          {/* import */}
-          {/* <Dialog open={isBulkImportOpen} onOpenChange={setIsBulkImportOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Upload className="h-4 w-4" />
-                Bulk Import
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Bulk Import Books</DialogTitle>
-                <DialogDescription>
-                  Import multiple books from a CSV file.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Upload a CSV file with book information
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <Button onClick={() => fileInputRef.current?.click()}>
-                    Choose File
-                  </Button>
-                </div>
-
-                <div className="text-sm text-muted-foreground">
-                  <p className="mb-2">Required columns: title, author, isbn</p>
-                  <p className="mb-2">
-                    Optional columns: category, location, description, copies
-                  </p>
-                </div>
-
-                <Button
-                  variant="outline"
-                  onClick={downloadTemplate}
-                  className="w-full gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Template
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog> */}
-
-          <CreateBook addBook={handleCreate} />
-        </div>
+        <Button className="gap-2" onClick={openAddDialog}>
+          <Plus className="h-4 w-4" /> Add Book
+        </Button>
       </div>
 
       {/* Edit Book Dialog */}
 
       {/* Search and Filters */}
-      {/* <Card>
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
@@ -208,14 +146,14 @@ export default function BookManagement() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
+              {/* <Input
                 placeholder="Search by title, author, or ISBN..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
-              />
+              /> */}
             </div>
-            <Select
+            {/* <Select
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
@@ -240,44 +178,26 @@ export default function BookManagement() {
                 <SelectItem value="borrowed">Borrowed</SelectItem>
                 <SelectItem value="overdue">Overdue</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </CardContent>
-      </Card> */}
+      </Card>
 
-      {/* Results Summary */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {books.length} of {books.length} books
-        </p>
+      <BooksTable books={books} />
+
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing <b>{books.length}</b> of <b>{totalItems}</b> author(s)
+        </div>
+
+        <div className="pt-4 flex justify-center">
+          <SmartPagination
+            page={page}
+            totalPages={totalPages}
+            onChange={(p) => setPage(p)}
+          />
+        </div>
       </div>
-
-      {/* Books Table */}
-      <BooksTable
-        books={books}
-        onEdit={(b) => setEditingBook(b)}
-        onDelete={(b) => setDeletingBook(b)}
-      />
-
-      {editingBook && (
-        <EditBook
-          initialValue={editingBook}
-          onClose={() => setEditingBook(null)}
-          //loading={loadingAction}
-          //error={errorAction}
-          onSubmit={(data) => handleUpdate(editingBook.id, data)}
-        />
-      )}
-
-      {books.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">
-              No books found matching your criteria.
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
