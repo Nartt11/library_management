@@ -1,17 +1,16 @@
 import React from "react";
 import DialogDelete from "../DialogDelete";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
-import EditPublisher from "./EditPublisher";
+import { Edit, Trash2 } from "lucide-react";
 
 export default function TablePublishers({
   publishers,
-  handleEditPublisher,
-  handleDeletePublisher,
+  onEdit,
+  onDelete,
 }: {
   publishers: Publisher[];
-  handleEditPublisher: (publisher: Publisher) => void;
-  handleDeletePublisher: (publisher: Publisher) => void;
+  onEdit: any;
+  onDelete: any;
 }) {
   return (
     <table className="w-full">
@@ -40,15 +39,21 @@ export default function TablePublishers({
               <td className="p-3">{publisher.address}</td>
               <td className="p-3">
                 <div className="flex justify-end gap-2">
-                  <EditPublisher
-                    editingPublisher={publisher}
-                    handleEditPublisher={handleEditPublisher}
-                  />
-                  <DialogDelete
-                    title="Delete Publisher"
-                    description={`This will delete publisher "${publisher.name}". This action cannot be undone.`}
-                    onConfirm={() => handleDeletePublisher(publisher)}
-                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(publisher)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDelete(publisher)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </div>
               </td>
             </tr>

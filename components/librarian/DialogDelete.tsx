@@ -16,20 +16,24 @@ import { Author } from "@/types/author";
 import { title } from "process";
 
 export default function DialogDelete({
+  open,
+  onOpenChange,
   title,
   description,
   onConfirm,
 }: {
+  open?: boolean;
+  onOpenChange?: (v: boolean) => void;
   title: string;
   description?: string;
   onConfirm: () => void;
 }) {
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm">
+        {/* <Button variant="ghost" size="sm">
           <Trash2 className="h-4 w-4 text-destructive" />
-        </Button>
+        </Button> */}
       </AlertDialogTrigger>
 
       <AlertDialogContent>

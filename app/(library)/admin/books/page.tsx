@@ -53,66 +53,65 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "./../../../../types/user";
-import { PasswordConfirmation } from "./../../../../components/PasswordConfirmation";
-import DialogDelete from "@/components/librarian/DialogDelete";
-import CreateBook from "@/components/librarian/book/CreateBook";
+import { useBooks } from "@/hooks/useBooks";
+import BooksTable from "@/components/librarian/book/BooksTable";
 import { Book } from "@/types/book";
-import { deleteBook, getAllBooks } from "@/services/book";
-import EditBook from "@/components/librarian/book/EditBook";
+import { SmartPagination } from "@/components/ui/SmartPagination";
 
 export default function BookManagement() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-  // ---- FETCH DATA ----
-  const fetchData = async () => {
-    try {
-      const data = await getAllBooks(pageNumber, pageSize);
-      console.log("Authors:", data);
+  const { booksQuery, createMutation } = useBooks(page, pageSize);
 
-      setBooks(data.data || []);
-      setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error("Error fetching authors:", error);
+  const books: Book[] = booksQuery.data?.data ?? [];
+  console.log(booksQuery.data);
+
+  const totalPages = booksQuery.data?.totalPages ?? 1;
+  const currentPage = booksQuery.data?.pageNumber ?? page;
+  const totalItems = booksQuery.data?.totalItems ?? 0;
+
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const [selectedBook, setSelectedBooks] = useState<any>(null);
+
+  const emptyForm = {
+    name: "",
+  };
+  const [formData, setFormData] = useState<any>(emptyForm);
+  const [errors, setErrors] = useState({
+    name: "",
+  });
+
+  function validateForm() {
+    const newErrors: any = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
     }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  // ---------------- ADD publisher -----------------
+  const openAddDialog = () => {
+    setFormData(emptyForm);
+    setErrors({
+      name: "",
+    });
+    setIsAddOpen(true);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [pageNumber, pageSize]);
-
-  const addBook = async (newBook: any) => {
-    await CreateBook(newBook);
-    toast.success("Book added successfully!");
-    fetchData();
-  };
-
-  const confirmDeleteBook = async (bookId: string) => {
-    alert("Delete book with ID: " + bookId);
-    // await deleteBook(bookId);
-    // toast.success("Book deleted successfully!");
-    // fetchData();
-  };
-
-  // const editBook = async (book: Book) => {
-  //   await EditBook();
-  //   toast.success("Book edited successfully!");
-  //   fetchData();
-  // };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "available":
-        return "default";
-      case "borrowed":
-        return "secondary";
-      case "overdue":
-        return "destructive";
-      default:
-        return "default";
-    }
+  const handleAdd = () => {
+    if (!validateForm()) return;
+    createMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsAddOpen(false);
+        setFormData(emptyForm);
+      },
+    });
   };
 
   return (
@@ -128,67 +127,15 @@ export default function BookManagement() {
           </p>
         </div>
 
-        <div className="flex gap-2">
-          {/* import */}
-          {/* <Dialog open={isBulkImportOpen} onOpenChange={setIsBulkImportOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Upload className="h-4 w-4" />
-                Bulk Import
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Bulk Import Books</DialogTitle>
-                <DialogDescription>
-                  Import multiple books from a CSV file.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Upload a CSV file with book information
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <Button onClick={() => fileInputRef.current?.click()}>
-                    Choose File
-                  </Button>
-                </div>
-
-                <div className="text-sm text-muted-foreground">
-                  <p className="mb-2">Required columns: title, author, isbn</p>
-                  <p className="mb-2">
-                    Optional columns: category, location, description, copies
-                  </p>
-                </div>
-
-                <Button
-                  variant="outline"
-                  onClick={downloadTemplate}
-                  className="w-full gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Template
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog> */}
-
-          <CreateBook addBook={addBook} />
-        </div>
+        <Button className="gap-2" onClick={openAddDialog}>
+          <Plus className="h-4 w-4" /> Add Book
+        </Button>
       </div>
 
       {/* Edit Book Dialog */}
 
       {/* Search and Filters */}
-      {/* <Card>
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
@@ -199,14 +146,14 @@ export default function BookManagement() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
+              {/* <Input
                 placeholder="Search by title, author, or ISBN..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
-              />
+              /> */}
             </div>
-            <Select
+            {/* <Select
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
@@ -231,77 +178,26 @@ export default function BookManagement() {
                 <SelectItem value="borrowed">Borrowed</SelectItem>
                 <SelectItem value="overdue">Overdue</SelectItem>
               </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card> */}
-
-      {/* Results Summary */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {books.length} of {books.length} books
-        </p>
-      </div>
-
-      {/* Books Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b">
-                <tr className="text-left">
-                  <th className="p-4 text-sm">Book Image</th>
-                  <th className="p-4 text-sm">Book Details</th>
-                  <th className="p-4 text-sm">Category</th>
-                  <th className="p-4 text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {books.map((book) => (
-                  <tr key={book.id} className="border-b hover:bg-muted/50">
-                    <td className="p-4">
-                      <div>
-                        <p className="line-clamp-1">{book.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          by {book.authors.map((a) => a.name).join(", ")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          ISBN: {book.isbn}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm">
-                      {book.bookCategories.map((c) => c.name).join(", ")}
-                    </td>
-
-                    <td className="p-4">
-                      <div className="flex gap-2">
-                        <EditBook />
-
-                        <DialogDelete
-                          title="Delete Book"
-                          description={`Are you sure you want to delete "${book.title}"? This action cannot be undone.`}
-                          onConfirm={() => confirmDeleteBook(book.id)}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            </Select> */}
           </div>
         </CardContent>
       </Card>
 
-      {books.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">
-              No books found matching your criteria.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <BooksTable books={books} />
+
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div>
+          Showing <b>{books.length}</b> of <b>{totalItems}</b> author(s)
+        </div>
+
+        <div className="pt-4 flex justify-center">
+          <SmartPagination
+            page={page}
+            totalPages={totalPages}
+            onChange={(p) => setPage(p)}
+          />
+        </div>
+      </div>
     </div>
   );
 }

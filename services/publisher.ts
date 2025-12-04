@@ -2,7 +2,7 @@ import { apiFetch } from "./base";
 
 // GET /api/publishers?page=1&pageSize=10
 export function getAllPublishers(page: number, pageSize: number) {
-  return apiFetch(`/publishers?page=${page}&pageSize=${pageSize}`);
+  return apiFetch(`/publishers?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/publishers/{id}

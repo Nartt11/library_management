@@ -4,3 +4,12 @@ export interface Author {
   yearOfBirth: number;
   briefDescription: string;
 }
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+

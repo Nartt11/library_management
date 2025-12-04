@@ -1,17 +1,65 @@
 import { Author } from "@/types/author";
-import { apiFetch } from "./base";
+
 
 export interface PaginatedResponse<T> {
-  data: T[];
+  data: Author[];
   totalPages: number;
   totalCount: number;
   pageNumber: number;
   pageSize: number;
 }
 
-// GET /api/authors?pageNumber=1&pageSize=10
-export function getAllAuthors(pageNumber: number = 1, pageSize: number = 10): Promise<PaginatedResponse<Author>> {
-  return apiFetch<PaginatedResponse<Author>>(`/authors?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+import { apiGet } from './../lib/api';
+
+export async function getAuthors(
+  pageNumber: number = 1,
+  pageSize: number = 10
+): Promise<PaginatedResponse<Author>> {
+  return apiGet<PaginatedResponse<Author>>('/authors', { pageNumber, pageSize });
+}
+
+interface AuthorFormData {
+  name: string;
+  yearOfBirth: number;
+  briefDescription: string;
+}
+export async function AddAuthor(formData: AuthorFormData) {
+  try {
+    const res = await fetch(
+      "https://librarymanagementapi-x5bq.onrender.com/api/authors",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData), // truyền thẳng formData
+      }
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to add author");
+    }
+
+    const data: Author = await res.json();
+    return {
+      success: true,
+      author: data,
+    };
+  } catch (error: any) {
+    console.error("Error adding author:", error);
+    return {
+      success: false,
+      message: error.message || "Unknown error",
+    };
+  }
+}
+
+import { apiFetch } from "./base";
+
+// GET /api/authors?page=1&pageSize=10
+export function getAllAuthors(page: number, pageSize: number) {
+  return apiFetch(`/authors?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/authors/{id}

@@ -7,7 +7,7 @@ export function getCategories() {
 
 // GET /api/book-categories?page=1&pageSize=10
 export function getAllBookCategories(page: number, pageSize: number) {
-  return apiFetch(`/book-categories?page=${page}&pageSize=${pageSize}`);
+  return apiFetch(`/book-categories?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/book-categories/{id}

@@ -18,17 +18,4 @@ export function createBook(book: any) {
   });
 }
 
-// PUT /api/books/{id}
-export function updateBook(id: string, book: any) {
-  return apiFetch(`/books/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(book),
-  });
-}
 
-// DELETE /api/books/{id}
-export function deleteBook(id: string) {
-  return apiFetch(`/books/${id}`, {
-    method: "DELETE",
-  });
-}
