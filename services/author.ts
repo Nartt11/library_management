@@ -59,7 +59,7 @@ import { apiFetch } from "./base";
 
 // GET /api/authors?page=1&pageSize=10
 export function getAllAuthors(page: number, pageSize: number) {
-  return apiFetch(`/authors?page=${page}&pageSize=${pageSize}`);
+  return apiFetch(`/authors?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/authors/{id}

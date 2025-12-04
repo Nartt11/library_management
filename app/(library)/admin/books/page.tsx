@@ -59,61 +59,70 @@ import CreateBook from "@/components/librarian/book/CreateBook";
 import { Book } from "@/types/book";
 import { deleteBook, getAllBooks } from "@/services/book";
 import EditBook from "@/components/librarian/book/EditBook";
+import { useBooks } from "@/app/hooks/useBooks";
+import BooksTable from "@/components/librarian/book/BooksTable";
 
 export default function BookManagement() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
+  // const [books, setBooks] = useState<Book[]>([]);
+  // const [pageNumber, setPageNumber] = useState(1);
+  // const [pageSize] = useState(10);
+  // const [totalPages, setTotalPages] = useState(1);
 
-  // ---- FETCH DATA ----
-  const fetchData = async () => {
-    try {
-      const data = await getAllBooks(pageNumber, pageSize);
-      console.log("Authors:", data);
+  // // ---- FETCH DATA ----
+  // const fetchData = async () => {
+  //   try {
+  //     const data = await getAllBooks(pageNumber, pageSize);
+  //     console.log("Authors:", data);
 
-      setBooks(data.data || []);
-      setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error("Error fetching authors:", error);
-    }
-  };
+  //     setBooks(data.data || []);
+  //     setTotalPages(data.totalPages || 1);
+  //   } catch (error) {
+  //     console.error("Error fetching authors:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchData();
-  }, [pageNumber, pageSize]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [pageNumber, pageSize]);
 
-  const addBook = async (newBook: any) => {
-    await CreateBook(newBook);
-    toast.success("Book added successfully!");
-    fetchData();
-  };
-
-  const confirmDeleteBook = async (bookId: string) => {
-    alert("Delete book with ID: " + bookId);
-    // await deleteBook(bookId);
-    // toast.success("Book deleted successfully!");
-    // fetchData();
-  };
-
-  // const editBook = async (book: Book) => {
-  //   await EditBook();
-  //   toast.success("Book edited successfully!");
+  // const addBook = async (newBook: any) => {
+  //   await CreateBook(newBook);
+  //   toast.success("Book added successfully!");
   //   fetchData();
   // };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "available":
-        return "default";
-      case "borrowed":
-        return "secondary";
-      case "overdue":
-        return "destructive";
-      default:
-        return "default";
-    }
-  };
+  // const confirmDeleteBook = async (bookId: string) => {
+  //   alert("Delete book with ID: " + bookId);
+  //   // await deleteBook(bookId);
+  //   // toast.success("Book deleted successfully!");
+  //   // fetchData();
+  // };
+
+  // // const editBook = async (book: Book) => {
+  // //   await EditBook();
+  // //   toast.success("Book edited successfully!");
+  // //   fetchData();
+  // // };
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [deletingBook, setDeletingBook] = useState<Book | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const {
+    books,
+    loadingList,
+    errorList,
+    searchKeyword,
+    setSearchKeyword,
+
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    loadingAction,
+    errorAction,
+  } = useBooks();
+
+  if (loadingList) return <p>Đang tải...</p>;
+  if (errorList) return <p>Lỗi: {errorList}</p>;
 
   return (
     <div className="p-6 space-y-6">
@@ -181,7 +190,7 @@ export default function BookManagement() {
             </DialogContent>
           </Dialog> */}
 
-          <CreateBook addBook={addBook} />
+          <CreateBook addBook={handleCreate} />
         </div>
       </div>
 
@@ -244,54 +253,21 @@ export default function BookManagement() {
       </div>
 
       {/* Books Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b">
-                <tr className="text-left">
-                  <th className="p-4 text-sm">Book Image</th>
-                  <th className="p-4 text-sm">Book Details</th>
-                  <th className="p-4 text-sm">Category</th>
-                  <th className="p-4 text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {books.map((book) => (
-                  <tr key={book.id} className="border-b hover:bg-muted/50">
-                    <td className="p-4">
-                      <div>
-                        <p className="line-clamp-1">{book.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          by {book.authors.map((a) => a.name).join(", ")}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          ISBN: {book.isbn}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm">
-                      {book.bookCategories.map((c) => c.name).join(", ")}
-                    </td>
+      <BooksTable
+        books={books}
+        onEdit={(b) => setEditingBook(b)}
+        onDelete={(b) => setDeletingBook(b)}
+      />
 
-                    <td className="p-4">
-                      <div className="flex gap-2">
-                        <EditBook />
-
-                        <DialogDelete
-                          title="Delete Book"
-                          description={`Are you sure you want to delete "${book.title}"? This action cannot be undone.`}
-                          onConfirm={() => confirmDeleteBook(book.id)}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {editingBook && (
+        <EditBook
+          initialValue={editingBook}
+          onClose={() => setEditingBook(null)}
+          //loading={loadingAction}
+          //error={errorAction}
+          onSubmit={(data) => handleUpdate(editingBook.id, data)}
+        />
+      )}
 
       {books.length === 0 && (
         <Card>

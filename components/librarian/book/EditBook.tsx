@@ -1,6 +1,19 @@
+import { Book } from "@/types/book";
 import React from "react";
 
-export default function EditBook() {
+interface BookPayload {
+  isbn: string;
+  title: string;
+}
+export default function EditBook({
+  initialValue,
+  onSubmit,
+  onClose,
+}: {
+  initialValue?: Book;
+  onSubmit: (data: BookPayload) => void;
+  onClose: () => void;
+}) {
   return <div>EditBook</div>;
 }
 {
