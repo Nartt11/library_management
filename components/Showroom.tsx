@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import {
   Card,
   CardContent,
@@ -30,19 +29,18 @@ import {
 
 import {
   Search,
-  Filter,
   BookOpen,
-  Calendar,
   ShoppingCart,
   LogIn,
   Sparkles,
   Library,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Footer } from "./Footer";
 
-import { getBooks } from "@/services/bookService";
 import { Book } from "@/types/book";
 
 import { useAuth } from "@/context/authContext";
@@ -52,15 +50,28 @@ export function Showroom() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 24;
 
   useEffect(() => {
     let mounted = true;
     async function fetchBooks() {
       setLoading(true);
       try {
-        const res = await getBooks(1, 50);
+        const response = await fetch(`/api/books?pageNumber=${currentPage}&pageSize=${pageSize}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch books: ${response.status}`);
+        }
+        const data = await response.json();
         if (!mounted) return;
-        setBooks(res.items ?? []);
+        setBooks(data.data ?? []);
+        setTotalPages(data.totalPages ?? 1);
+        setTotalCount(data.totalCount ?? 0);
+        
+        // Scroll to top when page changes
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err: any) {
         console.error(err);
         if (!mounted) return;
@@ -74,8 +85,9 @@ export function Showroom() {
     return () => {
       mounted = false;
     };
-  }, []);
-  const categories = ["all", ...Array.from(new Set(books.map((book) => book.category)))];
+  }, [currentPage]);
+  
+  const categories = ["all", ...Array.from(new Set(books.flatMap((book) => book.bookCategories.map(c => c.name))))];
 
   const {currentUser, setPendingBook} = useAuth();
 
@@ -86,16 +98,17 @@ export function Showroom() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const filteredBooks = books.filter((book) => {
+    const authorNames = book.authors.map(a => a.name).join(' ').toLowerCase();
     const matchesSearch =
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn.includes(searchTerm) ||
-      book.bookId.toLowerCase().includes(searchTerm.toLowerCase());
+      authorNames.includes(searchTerm.toLowerCase()) ||
+      book.isbn.includes(searchTerm);
 
     const matchesCategory =
-      selectedCategory === "all" || book.category === selectedCategory;
+      selectedCategory === "all" || book.bookCategories.some(c => c.name === selectedCategory);
 
-    const matchesStatus = statusFilter === "all" || book.status === statusFilter;
+    // Remove status filter since API doesn't provide status
+    const matchesStatus = statusFilter === "all";
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -111,10 +124,10 @@ export function Showroom() {
     const pendingBook = {
       id: selectedBook.id,
       title: selectedBook.title,
-      author: selectedBook.author,
+      author: selectedBook.authors.map((a: { name: string }) => a.name).join(', ') || 'Unknown',
       isbn: selectedBook.isbn,
-      bookId: selectedBook.bookId,
-      category: selectedBook.category,
+      bookId: selectedBook.isbn,
+      category: selectedBook.bookCategories[0]?.name || 'Uncategorized',
       action,
     };
 
@@ -129,28 +142,6 @@ export function Showroom() {
 
     // TODO: Handle logged-in users - implement actual borrow/reserve logic
     console.log("Processing request for logged in user", { pendingBook, currentUser });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "available":
-        return "default";
-      case "borrowed":
-        return "secondary";
-      case "overdue":
-        return "destructive";
-      default:
-        return "default";
-    }
-  };
-
-  const formatExpectedDate = (dateString?: string) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   return (
@@ -314,14 +305,13 @@ export function Showroom() {
               variant="outline"
               className="px-4 py-2 text-sm border-green-200 bg-green-50 text-green-700"
             >
-              Available:{" "}
-              {books.filter((book) => book.status === "available").length}
+              Categories: {categories.length - 1}
             </Badge>
             <Badge
               variant="outline"
               className="px-4 py-2 text-sm border-amber-200 bg-amber-50 text-amber-700"
             >
-              Total Copies: {books.reduce((sum, book) => sum + book.copies, 0)}
+              Authors: {new Set(books.flatMap(b => b.authors.map(a => a.name))).size}
             </Badge>
           </div>
         </div>
@@ -337,32 +327,27 @@ export function Showroom() {
               <CardContent className="p-0">
                 <div className="aspect-3/4 relative overflow-hidden">
                   <ImageWithFallback
-                    src="/UITLogo.jpg"
-                    alt={book.title}
+                    src={book.imgUrl}
+                    alt="/UITLogo.jpg"
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <Badge
-                    variant={getStatusColor(book.status)}
+                    variant="default"
                     className="absolute top-3 right-3 text-xs font-semibold shadow-lg"
                   >
-                    {book.status}
+                    {book.publicationYear}
                   </Badge>
-                  {book.status === "available" && book.availableCopies > 0 && (
-                    <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                      {book.availableCopies} left
-                    </div>
-                  )}
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm font-semibold line-clamp-2 text-foreground mb-2 group-hover:text-orange-600 transition-colors">
                     {book.title}
                   </h3>
                   <p className="text-xs text-muted-foreground mb-1">
-                    by {book.author}
+                    by {book.authors.map(a => a.name).join(', ') || 'Unknown'}
                   </p>
                   <p className="text-xs text-orange-600 font-medium">
-                    {book.category}
+                    {book.bookCategories[0]?.name || 'Uncategorized'}
                   </p>
                 </div>
               </CardContent>
@@ -382,6 +367,70 @@ export function Showroom() {
               <p className="text-muted-foreground">
                 Try adjusting your search criteria or browse all categories.
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="py-6">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Showing page {currentPage} of {totalPages} ({totalCount} total books)
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1 || loading}
+                    className="gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          disabled={loading}
+                          className="w-10 h-10"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages || loading}
+                    className="gap-2"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -433,7 +482,7 @@ export function Showroom() {
                     {selectedBook.title}
                   </DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">
-                    by {selectedBook.author}
+                    by {selectedBook.authors.map((a: { name: string }) => a.name).join(', ') || 'Unknown'}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -441,8 +490,8 @@ export function Showroom() {
                 <div className="flex justify-center shrink-0">
                   <div className="w-20 h-28 relative rounded-lg overflow-hidden shadow-md">
                       <ImageWithFallback
-                        src="/UITLogo.jpg"
-                        alt={selectedBook.title}
+                        src={selectedBook.imgUrl}
+                        alt="/UITLogo.jpg"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -452,97 +501,51 @@ export function Showroom() {
                     <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Book ID
-                        </span>
-                        <span className="font-mono text-xs truncate block text-orange-600 font-semibold">
-                          {selectedBook.bookId}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs uppercase tracking-wide block">
                           ISBN
                         </span>
-                        <span className="font-mono text-xs truncate block">
+                        <span className="font-mono text-xs truncate block text-orange-600 font-semibold">
                           {selectedBook.isbn}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Category
+                          Categories
                         </span>
-                        <span className="text-xs truncate block">
-                          {selectedBook.category}
+                        <span className="text-xs block">
+                          {selectedBook.bookCategories.map((c: { name: string }) => c.name).join(', ')}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Location
+                          Publisher
                         </span>
                         <span className="text-xs truncate block">
-                          {selectedBook.location}
+                          {selectedBook.publisher || 'N/A'}
                         </span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Status
+                          Year
                         </span>
                         <Badge
-                          variant={getStatusColor(selectedBook.status)}
+                          variant="default"
                           className="text-xs mt-1"
                         >
-                          {selectedBook.status}
+                          {selectedBook.publicationYear}
                         </Badge>
                       </div>
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Available
+                          Authors
                         </span>
-                        <span
-                          className={`text-xs font-semibold ${
-                            selectedBook.availableCopies > 0
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {selectedBook.availableCopies} of{" "}
-                          {selectedBook.copies}
+                        <span className="text-xs">
+                          {selectedBook.authors.length || 'Unknown'}
                         </span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Expected Return Date */}
-                  {selectedBook.status === "borrowed" &&
-                    selectedBook.expectedReturnDate && (
-                      <div className="flex items-center gap-2 text-xs bg-blue-50 text-blue-700 rounded-lg p-2 shrink-0">
-                        <Calendar className="h-3 w-3 text-blue-500 shrink-0" />
-                        <div className="min-w-0">
-                          <p className="font-medium">Next available</p>
-                          <p className="truncate">
-                            {formatExpectedDate(
-                              selectedBook.expectedReturnDate
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                  {selectedBook.status === "overdue" &&
-                    selectedBook.expectedReturnDate && (
-                      <div className="flex items-center gap-2 text-xs bg-red-50 text-red-700 rounded-lg p-2 shrink-0">
-                        <Calendar className="h-3 w-3 text-red-500 shrink-0" />
-                        <div className="min-w-0">
-                          <p className="font-medium">Expected return</p>
-                          <p className="truncate">
-                            {formatExpectedDate(
-                              selectedBook.expectedReturnDate
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    )}
 
                   <div className="bg-linear-to-r from-orange-50 to-amber-50 rounded-lg p-3 flex-1 min-h-0">
                     <h4 className="font-medium text-xs text-orange-900 mb-2">
@@ -555,48 +558,24 @@ export function Showroom() {
                     </div>
                   </div>
 
-                  {/* Action buttons - only show for available books */}
-                  {selectedBook.status === "available" && (
-                    <div className="shrink-0">
-                      <Button
-                        className="w-full gap-2 h-12 shadow-lg hover:shadow-xl transition-all duration-200 touch-manipulation"
-                        disabled={selectedBook.availableCopies === 0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleCheckoutReserve("borrow");
-                        }}
-                        style={{
-                          WebkitTapHighlightColor: "transparent",
-                          fontSize: "16px",
-                        }}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        {selectedBook.availableCopies > 0
-                          ? "Add to Cart"
-                          : "Not Available"}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* For borrowed/overdue books, show return information instead of action buttons */}
-                  {(selectedBook.status === "borrowed" ||
-                    selectedBook.status === "overdue") && (
-                    <div className="bg-linear-to-r from-gray-50 to-gray-100 rounded-lg p-3 text-center border shrink-0">
-                      <div className="p-2 bg-gray-200 rounded-full w-fit mx-auto mb-2">
-                        <Calendar className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <h4 className="font-semibold text-gray-900 mb-1 text-sm">
-                        Currently Unavailable
-                      </h4>
-                      <p className="text-xs text-gray-600 mb-1">
-                        This book is not available for reservation at this time.
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Please check back after the expected return date above.
-                      </p>
-                    </div>
-                  )}
+                  {/* Action buttons */}
+                  <div className="shrink-0">
+                    <Button
+                      className="w-full gap-2 h-12 shadow-lg hover:shadow-xl transition-all duration-200 touch-manipulation"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleCheckoutReserve("borrow");
+                      }}
+                      style={{
+                        WebkitTapHighlightColor: "transparent",
+                        fontSize: "16px",
+                      }}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Add to Cart
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
