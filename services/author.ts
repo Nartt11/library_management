@@ -1,5 +1,5 @@
 import { Author } from "@/types/author";
-
+import { apiFetch } from "./base";
 
 export interface PaginatedResponse<T> {
   data: Author[];
@@ -7,15 +7,6 @@ export interface PaginatedResponse<T> {
   totalCount: number;
   pageNumber: number;
   pageSize: number;
-}
-
-import { apiGet } from './../lib/api';
-
-export async function getAuthors(
-  pageNumber: number = 1,
-  pageSize: number = 10
-): Promise<PaginatedResponse<Author>> {
-  return apiGet<PaginatedResponse<Author>>('/authors', { pageNumber, pageSize });
 }
 
 interface AuthorFormData {
@@ -55,7 +46,6 @@ export async function AddAuthor(formData: AuthorFormData) {
   }
 }
 
-import { apiFetch } from "./base";
 
 // GET /api/authors?page=1&pageSize=10
 export function getAllAuthors(page: number, pageSize: number) {

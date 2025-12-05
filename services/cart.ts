@@ -1,6 +1,6 @@
-import { apiFetch } from "./base";
-import { QRTicketData, CheckoutResponse, BorrowRequestResponse, BorrowRequestPayload } from "../types/student";
-import { Book } from "../types/book";
+import { apiFetch, getApi, postApi, deleteApi } from "./base";
+import { BorrowRequestResponse, BorrowRequestPayload } from "../types/student";
+import { CartDto, CartItemDto } from "../types/cart";
 import { getUserFromToken } from "./auth/authService";
 
 // POST /api/borrow-requests - Create borrow request and get QR code
@@ -27,23 +27,28 @@ export async function createBorrowRequest(
   return response;
 }
 
-// GET /api/student/cart - Get student's cart books
-export async function getCartBooks(): Promise<Book[]> {
-  const data = await apiFetch<{ books: Book[] }>('/student/cart');
-  return data.books ?? [];
+// GET /api/cart - Get student's cart with items
+export async function getCart(): Promise<CartDto> {
+  return await getApi<CartDto>('/cart');
 }
 
-// POST /api/student/cart - Add book to cart
-export async function addBookToCart(bookId: string): Promise<{ success: boolean; message?: string }> {
-  return await apiFetch('/student/cart/add', {
-    method: 'POST',
-    body: JSON.stringify({ bookId }),
-  });
+// GET /api/cart - Get just the cart items
+export async function getCartItems(): Promise<CartItemDto[]> {
+  const cart = await getCart();
+  return cart.items ?? [];
 }
 
-// DELETE /api/student/cart - Remove book from cart
-export async function removeBookFromCart(bookId: string): Promise<{ success: boolean; message?: string }> {
-  return await apiFetch(`/student/cart/remove?bookId=${bookId}`, {
-    method: 'DELETE',
-  });
+// POST /api/cart/items - Add book to cart
+export async function addBookToCart(bookId: string): Promise<CartDto> {
+  return await postApi<CartDto>('/cart/add', { bookId });
+}
+
+// DELETE /api/cart/items/{bookId} - Remove book from cart
+export async function removeBookFromCart(bookId: string): Promise<CartDto> {
+  return await deleteApi<CartDto>(`/cart/items/${bookId}`);
+}
+
+// DELETE /api/cart - Clear entire cart
+export async function clearCart(): Promise<void> {
+  await deleteApi('/cart');
 }

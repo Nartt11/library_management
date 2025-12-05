@@ -2,5 +2,5 @@
  * Centralized API configuration
  * Use this constant across all API route handlers
  */
-export const API_BASE = 'https://librarymanagementapi-x5bq.onrender.com/api';
-    // export const API_BASE = 'http://localhost:5024/api'; // For local development
+// export const API_BASE = 'https://librarymanagementapi-328h.onrender.com/api';
+    export const API_BASE = 'https://localhost:7244/api'; // For local development

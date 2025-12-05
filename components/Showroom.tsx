@@ -42,6 +42,8 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Footer } from "./Footer";
 
 import { Book } from "@/types/book";
+import { addBookToCart } from "@/services/cart";
+import { toast } from "sonner";
 
 import { useAuth } from "@/context/authContext";
 import { getAllBooks } from "@/services/book";
@@ -116,7 +118,9 @@ export function Showroom() {
     setIsDialogOpen(true);
   };
 
-  const handleCheckoutReserve = (action: "borrow" | "reserve") => {
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  const handleCheckoutReserve = async (action: "borrow" | "reserve") => {
     if (!selectedBook) return;
 
     const pendingBook = {
@@ -138,8 +142,20 @@ export function Showroom() {
       return;
     }
 
-    // TODO: Handle logged-in users - implement actual borrow/reserve logic
-    console.log("Processing request for logged in user", { pendingBook, currentUser });
+    // Logged-in users: add book to cart
+    try {
+      setAddingToCart(true);
+      const response = await addBookToCart(selectedBook.id);
+      // Show API response message if present, otherwise a default
+      const message = (response as any)?.message || `"${selectedBook.title}" added to cart`;
+      toast.success(message);
+    } catch (err: any) {
+      const msg = err?.message || "Failed to add book to cart";
+      toast.error(msg);
+      console.error("Add to cart error:", err);
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   return (
@@ -606,13 +622,14 @@ export function Showroom() {
                         e.stopPropagation();
                         handleCheckoutReserve("borrow");
                       }}
+                      disabled={addingToCart}
                       style={{
                         WebkitTapHighlightColor: "transparent",
                         fontSize: "16px",
                       }}
                     >
                       <ShoppingCart className="h-4 w-4" />
-                      Add to Cart
+                      {addingToCart ? "Adding..." : "Add to Cart"}
                     </Button>
                   </div>
                 </div>

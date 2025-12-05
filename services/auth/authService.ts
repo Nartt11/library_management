@@ -1,79 +1,67 @@
-// services/auth.service.ts
+// services/authService.ts
 import type { User } from "@/types/user";
-import { decodeJwt, extractUserFromToken } from "@/lib/jwtUtils";
+import { extractUserFromToken } from "@/lib/jwtUtils";
+import { postApi } from "../base";
 
 export async function loginService(username: string, password: string) {
-  const res = await fetch("/api/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    // the API route expects `email` and `password` in the body
-    body: JSON.stringify({ userName: username, password }),
+  // Use centralized postApi which attaches headers and base URL
+  const data = await postApi<any>("/auth/login", {
+    userName: username,
+    password,
   });
 
-  if (!res.ok) {
-    let errMsg = "Login failed";
-    try {
-      const err = await res.json();
-      errMsg = err?.error || err?.message || errMsg;
-    } catch (_) {}
-    throw new Error(errMsg);
-  }
-
-  const data = await res.json();
-  // The API route currently returns `{ token: string }` (see server route),
-  // and the backend may return `{ data: { JWTtoken: string } }` in other flows.
-  const token = data?.token ?? data?.data?.JWTtoken ?? null;
+  // Normalize token location (some APIs return { token } or { data: { JWTtoken } })
+  const token = data?.data ?? data?.data?.JWTtoken ?? null;
   if (!token) throw new Error("Invalid login response: no token returned");
 
   // Save token
-  localStorage.setItem("token", token);
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("token", token);
+    } catch (_) {}
+  }
 
-  // Extract user info from the token using centralized utility
+  // Extract user info from token
   const user = extractUserFromToken(token);
-  
-  if (user) {
+  if (user && typeof window !== "undefined") {
     try {
       localStorage.setItem("user", JSON.stringify(user));
     } catch (_) {}
   }
 
-    // Notify other parts of the app about login (so AuthContext can pick it up)
-    try {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
-      }
-    } catch (_) {}
+  // Notify app about login
+  try {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("auth-login", { detail: user }));
+    }
+  } catch (_) {}
 
-    return { token, user };
+  return { token, user };
 }
 
-  export function getToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("token");
-  }
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
 
 export function getUserFromToken(): User | null {
   if (typeof window === "undefined") return null;
   const token = getToken();
   if (!token) return null;
-
   return extractUserFromToken(token);
 }
 
 export function logout() {
   if (typeof window === "undefined") return;
-  // Clear both possible stored keys
   localStorage.removeItem("user");
   localStorage.removeItem("token");
-  // Notify other parts of the app about logout
-  window.dispatchEvent(new CustomEvent("auth-logout"));
+  try {
+    window.dispatchEvent(new CustomEvent("auth-logout"));
+  } catch (_) {}
 }
 
 export function getCurrentUser() {
   if (typeof window === "undefined") return null;
-  // Prefer full user object if available, otherwise return token wrapper
   const userJson = localStorage.getItem("user");
   if (userJson) {
     try {

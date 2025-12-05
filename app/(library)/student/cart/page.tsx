@@ -10,6 +10,7 @@ import {
 } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
+import { Checkbox } from "../../../../components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -27,77 +28,57 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { BorrowRequestResponse } from "../../../../types/student";
-import { Book } from "../../../../types/book";
-import { getCartBooks, createBorrowRequest, removeBookFromCart } from "../../../../services/cart";
-import { getCartItems, setCartItems as saveCartItems, clearCart as clearCartItems } from "../../../../lib/cartUtils";
+import { CartItemDto } from "../../../../types/cart";
+import { getCartItems, createBorrowRequest, removeBookFromCart, clearCart as clearCartApi } from "../../../../services/cart";
 import { getUserFromToken } from "../../../../services/auth/authService";
 
 export default function BookCart() {
   const router = useRouter();
   const [showQRDisplay, setShowQRDisplay] = useState(false);
   const [currentQR, setCurrentQR] = useState<BorrowRequestResponse | null>(null);
-  const [cartBooks, setCartBooks] = useState<Book[]>([]);
-  const [cartItems, setCartItems] = useState<string[]>([]);
+  const [cartItems, setCartItems] = useState<CartItemDto[]>([]);
+  const [selectedBookIds, setSelectedBookIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Load cart items from localStorage on mount
+  // Set mounted flag
   useEffect(() => {
     setMounted(true);
-    setCartItems(getCartItems());
   }, []);
 
-  // Listen for cart updates from other tabs/components
+  // Fetch cart items from backend
   useEffect(() => {
-    const handleCartUpdate = () => {
-      setCartItems(getCartItems());
-    };
-    
-    window.addEventListener("cart-updated", handleCartUpdate);
-    return () => {
-      window.removeEventListener("cart-updated", handleCartUpdate);
-    };
-  }, []);
-
-  // Fetch cart books when component mounts or cart updates
-  useEffect(() => {
-    async function fetchCartBooks() {
+    async function fetchCart() {
+      if (!mounted) return;
+      
       try {
         setLoading(true);
-        const books = await getCartBooks();
-        setCartBooks(books);
-        
-        // Update local cart items with fetched book IDs
-        const bookIds = books.map(book => book.id);
-        setCartItems(bookIds);
-        saveCartItems(bookIds);
+        const items = await getCartItems();
+        setCartItems(items);
+        // Auto-select all available books
+        const availableIds = items.filter(item => item.isAvailable).map(item => item.bookId);
+        setSelectedBookIds(new Set(availableIds));
       } catch (error) {
-        console.error('Error fetching cart books:', error);
-        toast.error('Failed to load cart books');
-        setCartBooks([]);
+        console.error('Error fetching cart:', error);
+        toast.error('Failed to load cart');
+        setCartItems([]);
       } finally {
         setLoading(false);
       }
     }
 
-    if (mounted) {
-      fetchCartBooks();
-    }
+    fetchCart();
   }, [mounted]);
 
   const removeFromCart = async (bookId: string, bookTitle: string) => {
     try {
-      // Call API to remove from backend cart
       await removeBookFromCart(bookId);
-      
-      // Update local state
-      const newCartItems = cartItems.filter((id) => id !== bookId);
-      setCartItems(newCartItems);
-      saveCartItems(newCartItems);
-      
-      // Update displayed books
-      setCartBooks(cartBooks.filter(book => book.id !== bookId));
-      
+      setCartItems(cartItems.filter(item => item.bookId !== bookId));
+      setSelectedBookIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(bookId);
+        return newSet;
+      });
       toast.success(`"${bookTitle}" removed from cart`);
     } catch (error) {
       console.error('Error removing from cart:', error);
@@ -105,16 +86,11 @@ export default function BookCart() {
     }
   };
 
-  const clearCart = async () => {
+  const handleClearCart = async () => {
     try {
-      // Remove all books from backend cart
-      for (const bookId of cartItems) {
-        await removeBookFromCart(bookId);
-      }
-      
+      await clearCartApi();
       setCartItems([]);
-      clearCartItems();
-      setCartBooks([]);
+      setSelectedBookIds(new Set());
       toast.success("Cart cleared");
     } catch (error) {
       console.error('Error clearing cart:', error);
@@ -122,9 +98,30 @@ export default function BookCart() {
     }
   };
 
+  const toggleBookSelection = (bookId: string) => {
+    setSelectedBookIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookId)) {
+        newSet.delete(bookId);
+      } else {
+        newSet.add(bookId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedBookIds.size === cartItems.filter(item => item.isAvailable).length) {
+      setSelectedBookIds(new Set());
+    } else {
+      const availableIds = cartItems.filter(item => item.isAvailable).map(item => item.bookId);
+      setSelectedBookIds(new Set(availableIds));
+    }
+  };
+
   const handleCheckout = async () => {
-    if (cartBooks.length === 0) {
-      toast.error("Your cart is empty");
+    if (selectedBookIds.size === 0) {
+      toast.error("Please select at least one book to borrow");
       return;
     }
 
@@ -138,18 +135,16 @@ export default function BookCart() {
     try {
       setLoading(true);
       
-      // Send borrow request to backend
-      const bookIds = cartBooks.map(book => book.id);
+      const bookIds = Array.from(selectedBookIds);
       const borrowResponse = await createBorrowRequest(bookIds, "Student borrow request");
       
-      // Show QR immediately
       setCurrentQR(borrowResponse);
       setShowQRDisplay(true);
-
-      // Clear cart
-      setCartItems([]);
-      clearCartItems();
-      setCartBooks([]);
+      
+      // Remove borrowed books from cart
+      const remainingItems = cartItems.filter(item => !selectedBookIds.has(item.bookId));
+      setCartItems(remainingItems);
+      setSelectedBookIds(new Set());
 
       toast.success(borrowResponse.message || "Borrow request created successfully!");
     } catch (error: any) {
@@ -196,15 +191,24 @@ export default function BookCart() {
           </p>
         </div>
         <div className="flex gap-2">
-          {cartBooks.length > 0 && (
-            <Button variant="outline" onClick={clearCart}>
-              Clear Cart
-            </Button>
+          {cartItems.length > 0 && (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={toggleSelectAll}
+                disabled={cartItems.filter(item => item.isAvailable).length === 0}
+              >
+                {selectedBookIds.size === cartItems.filter(item => item.isAvailable).length ? 'Deselect All' : 'Select All'}
+              </Button>
+              <Button variant="outline" onClick={handleClearCart}>
+                Clear Cart
+              </Button>
+            </>
           )}
         </div>
       </div>
 
-      {cartBooks.length === 0 ? (
+      {cartItems.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -221,7 +225,7 @@ export default function BookCart() {
             <CardHeader>
               <CardTitle>Checkout Summary</CardTitle>
               <CardDescription>
-                {cartBooks.length} book(s) selected for borrowing
+                {selectedBookIds.size} of {cartItems.length} book(s) selected for borrowing
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -238,9 +242,9 @@ export default function BookCart() {
                 <Button 
                   onClick={handleCheckout} 
                   className="flex-1"
-                  disabled={loading}
+                  disabled={loading || selectedBookIds.size === 0}
                 >
-                  {loading ? 'Processing...' : 'Checkout & Generate QR'}
+                  {loading ? 'Processing...' : `Borrow ${selectedBookIds.size} Book${selectedBookIds.size !== 1 ? 's' : ''}`}
                 </Button>
               </div>
             </CardContent>
@@ -248,34 +252,65 @@ export default function BookCart() {
 
           {/* Cart Items */}
           <div className="space-y-4">
-            <h3 className="text-lg">Selected Books</h3>
-            {cartBooks.map((book) => (
-              <Card key={book.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="line-clamp-1 mb-1">{book.title}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        by {book.authors?.map(a => a.name).join(', ') || 'Unknown'}
-                      </p>
-                      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                        <span>ISBN: {book.isbn}</span>
-                        <span>Category: {book.bookCategories?.map(c => c.name).join(', ') || 'N/A'}</span>
-                        {book.publisher && <span>Publisher: {book.publisher}</span>}
+            <h3 className="text-lg">Books in Cart</h3>
+            {cartItems.map((item) => {
+              const isSelected = selectedBookIds.has(item.bookId);
+              const canSelect = item.isAvailable;
+              
+              return (
+                <Card key={item.id} className={isSelected ? 'border-primary' : ''}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      {/* Checkbox */}
+                      <div className="pt-1">
+                        <Checkbox
+                          checked={isSelected}
+                          disabled={!canSelect}
+                          onCheckedChange={() => canSelect && toggleBookSelection(item.bookId)}
+                        />
                       </div>
+
+                      {/* Book Image */}
+                      <div className="shrink-0">
+                        <img
+                          src={item.bookImageUrl || '/placeholder-book.jpg'}
+                          alt={item.bookTitle || 'Book cover'}
+                          className="w-20 h-28 object-cover rounded border"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder-book.jpg';
+                          }}
+                        />
+                      </div>
+
+                      {/* Book Info */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold line-clamp-2 mb-2">
+                          {item.bookTitle || 'Unknown Title'}
+                        </h4>
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-2">
+                          {item.bookISBN && <span>ISBN: {item.bookISBN}</span>}
+                        </div>
+                        {!item.isAvailable && (
+                          <Badge variant="destructive" className="text-xs">
+                            Currently Unavailable
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Remove Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeFromCart(item.bookId, item.bookTitle || 'Book')}
+                        className="shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeFromCart(book.id, book.title)}
-                      className="shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </>
       )}
