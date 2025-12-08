@@ -22,7 +22,7 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -54,7 +54,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("auth-login", handleAuthLogin as EventListener);
+      window.removeEventListener(
+        "auth-login",
+        handleAuthLogin as EventListener
+      );
       window.removeEventListener("auth-logout", handleAuthLogout);
     };
   }, []);
@@ -115,8 +118,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
               <div>
                 <h1 className="text-xl text-foreground capitalize">
-                  {/* {user.role.replace("-", " ")} Dashboard */}
-                  Dashboard
+                  {currentUser?.role.replace("-", "")} Dashboard
                 </h1>
               </div>
             </div>
@@ -133,9 +135,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </Avatar>
                 <div className="hidden sm:block">
                   <p className="text-sm text-foreground">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {user?.email}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </div>
 
