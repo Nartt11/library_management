@@ -173,7 +173,13 @@ export function Showroom() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-orange-50 via-amber-50 to-green-50">
+    <div
+      className={`min-h-screen  ${
+        currentUser
+          ? "bg-white"
+          : "bg-linear-to-br from-orange-50 via-amber-50 to-green-50"
+      }`}
+    >
       <div className="container mx-auto p-6 space-y-8">
         {/* Enhanced Header */}
         {!currentUser && (

@@ -115,13 +115,7 @@ export const StudentNavBarData = [
     id: "qr-ticket",
     label: "QR Borrow Ticket",
     icon: QrCode,
-    link: "/student/qr-ticket",
-  },
-  {
-    id: "attendance",
-    label: "My Attendance",
-    icon: UserCheck,
-    link: "/student/attendance",
+    link: "/student/borrow",
   },
   {
     id: "history",
