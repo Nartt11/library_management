@@ -42,7 +42,7 @@ export default function BooksTable({
                       height={80}
                       width={60}
                       alt={book.title}
-                      className="object-cover rounded-md"
+                      className="h-20 w-auto object-cover rounded-md"
                     />
                   </td>
                   <td className="p-4">
@@ -70,13 +70,13 @@ export default function BooksTable({
                         <Edit className="h-4 w-4" />
                       </Button>
 
-                      <Button
+                      {/* <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onDelete(book)}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      </Button> */}
                     </div>
                   </td>
                 </tr>

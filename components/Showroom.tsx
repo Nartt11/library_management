@@ -47,6 +47,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/context/authContext";
 import { getAllBooks } from "@/services/book";
+import RecommendBooks from "./showroom/RecommendBooks";
 
 export function Showroom() {
   const router = useRouter();
@@ -69,9 +70,9 @@ export function Showroom() {
         setBooks(data.data ?? []);
         setTotalPages(data.totalPages ?? 1);
         setTotalCount(data.totalItems ?? 0);
-        
+
         // Scroll to top when page changes
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err: any) {
         console.error(err);
         if (!mounted) return;
@@ -86,10 +87,15 @@ export function Showroom() {
       mounted = false;
     };
   }, [currentPage]);
-  
-  const categories = ["all", ...Array.from(new Set(books.flatMap((book) => book.bookCategories.map(c => c.name))))];
 
-  const {currentUser, setPendingBook} = useAuth();
+  const categories = [
+    "all",
+    ...Array.from(
+      new Set(books.flatMap((book) => book.bookCategories.map((c) => c.name)))
+    ),
+  ];
+
+  const { currentUser, setPendingBook } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -98,14 +104,18 @@ export function Showroom() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const filteredBooks = books.filter((book) => {
-    const authorNames = book.authors.map(a => a.name).join(' ').toLowerCase();
+    const authorNames = book.authors
+      .map((a) => a.name)
+      .join(" ")
+      .toLowerCase();
     const matchesSearch =
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       authorNames.includes(searchTerm.toLowerCase()) ||
       book.isbn.includes(searchTerm);
 
     const matchesCategory =
-      selectedCategory === "all" || book.bookCategories.some(c => c.name === selectedCategory);
+      selectedCategory === "all" ||
+      book.bookCategories.some((c) => c.name === selectedCategory);
 
     // Remove status filter since API doesn't provide status
     const matchesStatus = statusFilter === "all";
@@ -113,6 +123,7 @@ export function Showroom() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  const recommendBooks: Book[] = filteredBooks.slice(0, 10);
   const handleBookClick = (book: Book) => {
     setSelectedBook(book);
     setIsDialogOpen(true);
@@ -126,10 +137,12 @@ export function Showroom() {
     const pendingBook = {
       id: selectedBook.id,
       title: selectedBook.title,
-      author: selectedBook.authors.map((a: { name: string }) => a.name).join(', ') || 'Unknown',
+      author:
+        selectedBook.authors.map((a: { name: string }) => a.name).join(", ") ||
+        "Unknown",
       isbn: selectedBook.isbn,
       bookId: selectedBook.isbn,
-      category: selectedBook.bookCategories[0]?.name || 'Uncategorized',
+      category: selectedBook.bookCategories[0]?.name || "Uncategorized",
       action,
     };
 
@@ -147,7 +160,8 @@ export function Showroom() {
       setAddingToCart(true);
       const response = await addBookToCart(selectedBook.id);
       // Show API response message if present, otherwise a default
-      const message = (response as any)?.message || `"${selectedBook.title}" added to cart`;
+      const message =
+        (response as any)?.message || `"${selectedBook.title}" added to cart`;
       toast.success(message);
     } catch (err: any) {
       const msg = err?.message || "Failed to add book to cart";
@@ -163,33 +177,52 @@ export function Showroom() {
       <div className="container mx-auto p-6 space-y-8">
         {/* Enhanced Header */}
         {!currentUser && (
-        <div className="relative overflow-hidden rounded-xl bg-linear-to-r from-orange-600 via-orange-500 to-amber-500 p-8 text-white shadow-2xl">
-          <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
-          <div className="relative flex items-center justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <Library className="h-10 w-10" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-bold tracking-tight">
-                    Book Collections
-                  </h1>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Sparkles className="h-4 w-4" />
-                    <p className="text-orange-100">
-                      Discover your next great read
-                    </p>
+          <div className="relative overflow-hidden rounded-xl bg-linear-to-r from-orange-600 via-orange-500 to-amber-500 p-8 text-white shadow-2xl">
+            <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
+            <div className="relative flex items-center justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <Library className="h-10 w-10" />
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-bold tracking-tight">
+                      Book Collections
+                    </h1>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Sparkles className="h-4 w-4" />
+                      <p className="text-orange-100">
+                        Discover your next great read
+                      </p>
+                    </div>
                   </div>
                 </div>
+                <p className="text-orange-100 max-w-md">
+                  Browse our comprehensive collection of academic resources.
+                  Find books, check availability, and seamlessly add them to
+                  your borrowing cart.
+                </p>
               </div>
-              <p className="text-orange-100 max-w-md">
-                Browse our comprehensive collection of academic resources. Find
-                books, check availability, and seamlessly add them to your
-                borrowing cart.
-              </p>
+              <div className="hidden lg:block">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push("/login");
+                  }}
+                  size="lg"
+                  className="bg-white text-orange-600 hover:bg-orange-50 active:bg-orange-100 shadow-lg hover:shadow-xl transition-all duration-200 gap-3 touch-manipulation"
+                  style={{
+                    WebkitTapHighlightColor: "transparent",
+                    minHeight: "48px",
+                  }}
+                >
+                  <LogIn className="h-5 w-5" />
+                  Sign In to Borrow
+                </Button>
+              </div>
             </div>
-            <div className="hidden lg:block">
+            <div className="relative lg:hidden mt-6 z-10">
               <Button
                 onClick={(e) => {
                   e.preventDefault();
@@ -197,10 +230,13 @@ export function Showroom() {
                   router.push("/login");
                 }}
                 size="lg"
-                className="bg-white text-orange-600 hover:bg-orange-50 active:bg-orange-100 shadow-lg hover:shadow-xl transition-all duration-200 gap-3 touch-manipulation"
+                className="relative w-full bg-white text-orange-600 hover:bg-orange-50 active:bg-orange-100 shadow-lg hover:shadow-xl transition-all duration-200 gap-3 touch-manipulation z-20"
                 style={{
                   WebkitTapHighlightColor: "transparent",
                   minHeight: "48px",
+                  fontSize: "16px",
+                  position: "relative",
+                  zIndex: 50,
                 }}
               >
                 <LogIn className="h-5 w-5" />
@@ -208,28 +244,6 @@ export function Showroom() {
               </Button>
             </div>
           </div>
-          <div className="relative lg:hidden mt-6 z-10">
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                router.push("/login");
-              }}
-              size="lg"
-              className="relative w-full bg-white text-orange-600 hover:bg-orange-50 active:bg-orange-100 shadow-lg hover:shadow-xl transition-all duration-200 gap-3 touch-manipulation z-20"
-              style={{
-                WebkitTapHighlightColor: "transparent",
-                minHeight: "48px",
-                fontSize: "16px",
-                position: "relative",
-                zIndex: 50,
-              }}
-            >
-              <LogIn className="h-5 w-5" />
-              Sign In to Borrow
-            </Button>
-          </div>
-        </div>
         )}
 
         {/* Enhanced Search and Filters */}
@@ -301,6 +315,8 @@ export function Showroom() {
           </CardContent>
         </Card>
 
+        <RecommendBooks recommendBooks={recommendBooks} />
+
         {/* Enhanced Results Summary */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -343,10 +359,10 @@ export function Showroom() {
                     {book.title}
                   </h3>
                   <p className="text-xs text-muted-foreground mb-1">
-                    by {book.authors.map(a => a.name).join(', ') || 'Unknown'}
+                    by {book.authors.map((a) => a.name).join(", ") || "Unknown"}
                   </p>
                   <p className="text-xs text-orange-600 font-medium">
-                    {book.bookCategories[0]?.name || 'Uncategorized'}
+                    {book.bookCategories[0]?.name || "Uncategorized"}
                   </p>
                 </div>
               </CardContent>
@@ -376,29 +392,31 @@ export function Showroom() {
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  Showing page {currentPage} of {totalPages} 
+                  Showing page {currentPage} of {totalPages}
                 </div>
                 <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(1)}
-                          disabled={currentPage === 1 || loading}
-                          className="gap-2"
-                        >
-                          First
-                        </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1 || loading}
+                    className="gap-2"
+                  >
+                    First
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
                     disabled={currentPage === 1 || loading}
                     className="gap-2"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
                   </Button>
-                  
+
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum;
@@ -411,11 +429,13 @@ export function Showroom() {
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <Button
                           key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
+                          variant={
+                            currentPage === pageNum ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setCurrentPage(pageNum)}
                           disabled={loading}
@@ -434,14 +454,14 @@ export function Showroom() {
                       value={jumpPage}
                       onChange={(e) => setJumpPage(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === "Enter") {
                           const n = Number(jumpPage);
                           if (!Number.isInteger(n) || n < 1 || n > totalPages) {
-                            setJumpPage('');
+                            setJumpPage("");
                             return;
                           }
                           setCurrentPage(n);
-                          setJumpPage('');
+                          setJumpPage("");
                         }
                       }}
                       className="w-20 h-10 text-sm"
@@ -452,11 +472,11 @@ export function Showroom() {
                       onClick={() => {
                         const n = Number(jumpPage);
                         if (!Number.isInteger(n) || n < 1 || n > totalPages) {
-                          setJumpPage('');
+                          setJumpPage("");
                           return;
                         }
                         setCurrentPage(n);
-                        setJumpPage('');
+                        setJumpPage("");
                       }}
                       disabled={loading}
                       className="h-10"
@@ -468,7 +488,9 @@ export function Showroom() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
                     disabled={currentPage === totalPages || loading}
                     className="gap-2"
                   >
@@ -491,41 +513,43 @@ export function Showroom() {
         )}
 
         {/* Enhanced Call-to-Action */}
-        <Card className="shadow-xl border-0 bg-linear-to-r from-green-500 via-teal-500 to-green-600 text-white overflow-hidden relative">
-          <div className="absolute inset-0 bg-white/5 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-size-[20px_20px] opacity-50"></div>
-          <CardContent className="relative py-8 text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                <Sparkles className="h-8 w-8" />
+        {!currentUser && (
+          <Card className="shadow-xl border-0 bg-linear-to-r from-green-500 via-teal-500 to-green-600 text-white overflow-hidden relative">
+            <div className="absolute inset-0 bg-white/5 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-size-[20px_20px] opacity-50"></div>
+            <CardContent className="relative py-8 text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <Sparkles className="h-8 w-8" />
+                </div>
               </div>
-            </div>
-            <div className="space-y-3">
-              <h3 className="text-2xl font-bold">Ready to Start Reading?</h3>
-              <p className="text-green-100 text-lg max-w-2xl mx-auto">
-                Sign in with your student credentials to add books to your cart
-                and generate QR borrow tickets. Access thousands of academic
-                resources instantly.
-              </p>
-            </div>
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                router.push("/login");
-              }}
-              size="lg"
-              className="bg-white text-green-600 hover:bg-green-50 active:bg-green-100 shadow-xl hover:shadow-2xl transition-all duration-200 gap-3 px-8 py-3 touch-manipulation"
-              style={{
-                WebkitTapHighlightColor: "transparent",
-                minHeight: "48px",
-                fontSize: "16px",
-              }}
-            >
-              <LogIn className="h-5 w-5" />
-              Get Started Now
-            </Button>
-          </CardContent>
-        </Card>
+              <div className="space-y-3">
+                <h3 className="text-2xl font-bold">Ready to Start Reading?</h3>
+                <p className="text-green-100 text-lg max-w-2xl mx-auto">
+                  Sign in with your student credentials to add books to your
+                  cart and generate QR borrow tickets. Access thousands of
+                  academic resources instantly.
+                </p>
+              </div>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push("/login");
+                }}
+                size="lg"
+                className="bg-white text-green-600 hover:bg-green-50 active:bg-green-100 shadow-xl hover:shadow-2xl transition-all duration-200 gap-3 px-8 py-3 touch-manipulation"
+                style={{
+                  WebkitTapHighlightColor: "transparent",
+                  minHeight: "48px",
+                  fontSize: "16px",
+                }}
+              >
+                <LogIn className="h-5 w-5" />
+                Get Started Now
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Enhanced Book Details Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -537,13 +561,16 @@ export function Showroom() {
                     {selectedBook.title}
                   </DialogTitle>
                   <DialogDescription className="text-sm text-muted-foreground">
-                    by {selectedBook.authors.map((a: { name: string }) => a.name).join(', ') || 'Unknown'}
+                    by{" "}
+                    {selectedBook.authors
+                      .map((a: { name: string }) => a.name)
+                      .join(", ") || "Unknown"}
                   </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex-1 flex flex-col space-y-4">
-                <div className="flex justify-center shrink-0">
-                  <div className="w-20 h-28 relative rounded-lg overflow-hidden shadow-md">
+                  <div className="flex justify-center shrink-0">
+                    <div className="w-20 h-28 relative rounded-lg overflow-hidden shadow-md">
                       <ImageWithFallback
                         src={selectedBook.imgUrl}
                         alt="/UITLogo.jpg"
@@ -567,7 +594,9 @@ export function Showroom() {
                           Categories
                         </span>
                         <span className="text-xs block">
-                          {selectedBook.bookCategories.map((c: { name: string }) => c.name).join(', ')}
+                          {selectedBook.bookCategories
+                            .map((c: { name: string }) => c.name)
+                            .join(", ")}
                         </span>
                       </div>
                       <div>
@@ -575,7 +604,7 @@ export function Showroom() {
                           Publisher
                         </span>
                         <span className="text-xs truncate block">
-                          {selectedBook.publisher || 'N/A'}
+                          {selectedBook.publisher || "N/A"}
                         </span>
                       </div>
                     </div>
@@ -584,10 +613,7 @@ export function Showroom() {
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
                           Year
                         </span>
-                        <Badge
-                          variant="default"
-                          className="text-xs mt-1"
-                        >
+                        <Badge variant="default" className="text-xs mt-1">
                           {selectedBook.publicationYear}
                         </Badge>
                       </div>
@@ -596,7 +622,7 @@ export function Showroom() {
                           Authors
                         </span>
                         <span className="text-xs">
-                          {selectedBook.authors.length || 'Unknown'}
+                          {selectedBook.authors.length || "Unknown"}
                         </span>
                       </div>
                     </div>
@@ -638,7 +664,7 @@ export function Showroom() {
           </DialogContent>
         </Dialog>
       </div>
-      <Footer />
+      {!currentUser && <Footer />}
     </div>
   );
 }

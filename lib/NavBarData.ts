@@ -75,30 +75,14 @@ export const AdminNavBarData = [
     icon: AlertTriangle,
     link: "/staff/return",
   },
+  // fix
   {
     id: "history",
     label: "Borrowing History",
     icon: History,
     link: "/admin/history",
   },
-  {
-    id: "logs",
-    label: "Global Logs",
-    icon: Activity,
-    link: "/admin/logs",
-  },
-  {
-    id: "backup",
-    label: "Backup & Restore",
-    icon: Database,
-    link: "/admin/backup",
-  },
-  {
-    id: "features",
-    label: "Features",
-    icon: Settings,
-    link: "/admin/feature",
-  },
+
   {
     id: "account",
     label: "Manage My Account",
