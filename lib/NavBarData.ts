@@ -64,16 +64,16 @@ export const AdminNavBarData = [
     link: "/admin/inventory",
   },
   {
-    id: "scanner",
-    label: "QR Scanner",
+    id: "requests",
+    label: "Borrow Requests",
     icon: QrCode,
-    link: "/admin/scanner",
+    link: "/staff/requests",
   },
   {
-    id: "overdue",
-    label: "Overdue Alerts",
+    id: "Returns",
+    label: "Return book copies",
     icon: AlertTriangle,
-    link: "/admin/overdue",
+    link: "/staff/return",
   },
   // fix
   {

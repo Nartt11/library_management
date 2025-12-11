@@ -50,5 +50,5 @@ export async function removeBookFromCart(bookId: string): Promise<CartDto> {
 
 // DELETE /api/cart - Clear entire cart
 export async function clearCart(): Promise<void> {
-  await deleteApi('/cart');
+  await deleteApi('/cart/clear');
 }
