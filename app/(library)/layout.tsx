@@ -115,8 +115,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
               <div>
                 <h1 className="text-xl text-foreground capitalize">
-                  {/* {user.role.replace("-", " ")} Dashboard */}
-                  Dashboard
+                  {user?.role.replace("-", " ")} Dashboard
                 </h1>
               </div>
             </div>
