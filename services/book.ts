@@ -46,3 +46,19 @@ export function updateBookAuthors(id: string, authorIds: string[]) {
   });
 }
 
+// POST /api/books/import
+export function importBooks(payload: {
+  supplierId: string;
+  notes: string;
+  details: {
+    bookId: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
+}) {
+  return apiFetch(`/books/import`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+

@@ -106,14 +106,14 @@ export default function BookManagement() {
     isbn: "",
     title: "",
     imgUrl: "",
-    categoryIds: [""],
-    authorIds: [""],
-    publicationYear: 0,
+    categoryIds: [],
+    authorIds: [],
+    publicationYear: new Date().getFullYear(),
     description: "",
   };
   const [formData, setFormData] = useState<any>(emptyForm);
   const [errors, setErrors] = useState({
-    name: "",
+    isbn: "",
   });
 
   function validateForm() {
@@ -129,21 +129,29 @@ export default function BookManagement() {
   // ---------------- ADD publisher -----------------
   const openAddDialog = () => {
     setFormData(emptyForm);
-    setErrors({
-      name: "",
-    });
+    setErrors({ isbn: "" });
     setIsAddOpen(true);
   };
 
   const handleAdd = () => {
     if (!validateForm()) return;
-    createMutation.mutate(formData, {
+
+    const payload = {
+      ...formData,
+      categoryIds: (formData.categoryIds ?? []).filter(Boolean),
+      authorIds: (formData.authorIds ?? []).filter(Boolean),
+      publicationYear:
+        Number(formData.publicationYear) || new Date().getFullYear(),
+    };
+
+    createMutation.mutate(payload, {
       onSuccess: () => {
         setIsAddOpen(false);
         setFormData(emptyForm);
       },
     });
   };
+  const st = new FormData();
 
   // open update dialog with selected book
   const openUpdateDialog = (book: Book) => {
@@ -255,7 +263,7 @@ export default function BookManagement() {
 
       {/* ADD DIALOG */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent>
+        <DialogContent className="min-w-200">
           <DialogHeader>
             <DialogTitle>Add publisher</DialogTitle>
           </DialogHeader>

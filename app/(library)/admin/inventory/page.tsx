@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/authContext";
+import { useRouter } from "next/navigation";
 
 interface BookItem {
   id: string;
@@ -46,6 +47,7 @@ interface InventoryRevision {
 type ViewMode = "dashboard" | "create" | "edit" | "detail";
 
 export default function BookInventoryManagement() {
+  const router = useRouter();
   const { currentUser } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
   const [selectedRevision, setSelectedRevision] =
@@ -181,6 +183,7 @@ export default function BookInventoryManagement() {
         totalPrice: 0,
       },
     ]);
+    router.push("/admin/inventory/new");
     setViewMode("create");
   };
 
@@ -697,7 +700,7 @@ export default function BookInventoryManagement() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => setViewMode("dashboard")}
+            onClick={() => router.push("/admin/inventory/new")}
             className="gap-2"
             style={{ borderRadius: "8px" }}
           >
