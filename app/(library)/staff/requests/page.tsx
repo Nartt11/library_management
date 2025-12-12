@@ -46,7 +46,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
-import { BorrowRequestDto, BookCopyAssignment } from "../../../../types/borrow-request";
+import { BorrowRequestDto } from "../../../../types/borrow-request";
 import { 
   getBorrowRequests, 
   confirmBorrowRequest, 
@@ -61,7 +61,6 @@ export default function BorrowRequestsPage() {
   const [requests, setRequests] = useState<BorrowRequestDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<BorrowRequestDto | null>(null);
-  const [bookCopyAssignments, setBookCopyAssignments] = useState<Record<string, string>>({});
   
   // Dialog states
   const [showBookInfoDialog, setShowBookInfoDialog] = useState(false);
@@ -72,16 +71,16 @@ export default function BorrowRequestsPage() {
   // Form states
   const [rejectReason, setRejectReason] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<'pending' | 'borrowed' | 'overdue'>("pending");
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'borrowed' | 'overdue' | 'returned' | 'overdue-returned'>("pending");
   const [manualInput, setManualInput] = useState("");
-  const [currentScanningBookId, setCurrentScanningBookId] = useState<string | null>(null);
+  const [scannedBookCopyId, setScannedBookCopyId] = useState<string>("");
   
   // Admin create borrow request states
   const [showAdminCreateDialog, setShowAdminCreateDialog] = useState(false);
   const [memberSearchTerm, setMemberSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
-  const [scannedBookCopyIds, setScannedBookCopyIds] = useState<string[]>([]);
+  const [adminBookCopyId, setAdminBookCopyId] = useState<string>("");
   const [adminNotes, setAdminNotes] = useState("");
   const [adminCreateLoading, setAdminCreateLoading] = useState(false);
   const [showAdminScanner, setShowAdminScanner] = useState(false);
@@ -170,8 +169,7 @@ export default function BorrowRequestsPage() {
   };
 
   // Scanner handlers
-  const openScanner = (bookId: string) => {
-    setCurrentScanningBookId(bookId);
+  const openScanner = () => {
     setManualInput("");
     setShowBarcodeScanner(true);
     setTimeout(() => startCamera(), 100);
@@ -180,19 +178,18 @@ export default function BorrowRequestsPage() {
   const closeScanner = () => {
     stopCamera();
     setShowBarcodeScanner(false);
-    setCurrentScanningBookId(null);
     setManualInput("");
   };
 
   const processScannedCode = (barcodeData: string) => {
     const bookCopyId = parseBarcode(barcodeData);
-    if (bookCopyId && currentScanningBookId) {
-      setBookCopyAssignments(prev => ({
-        ...prev,
-        [currentScanningBookId]: bookCopyId
-      }));
-      toast.success(`Book copy ${bookCopyId} assigned`);
+    if (bookCopyId) {
+      setScannedBookCopyId(bookCopyId);
+      toast.success(`Book copy ${bookCopyId} scanned`);
       closeScanner();
+      // Auto-open confirm dialog
+      setShowBookInfoDialog(false);
+      setShowConfirmDialog(true);
     } else {
       toast.error('Invalid QR code format. Expected: COPY-{id}');
     }
@@ -241,12 +238,8 @@ export default function BorrowRequestsPage() {
   const processAdminScannedCode = (barcodeData: string) => {
     const bookCopyId = parseBarcode(barcodeData);
     if (bookCopyId) {
-      if (scannedBookCopyIds.includes(bookCopyId)) {
-        toast.warning('This book copy is already added');
-      } else {
-        setScannedBookCopyIds(prev => [...prev, bookCopyId]);
-        toast.success(`Book copy ${bookCopyId} added`);
-      }
+      setAdminBookCopyId(bookCopyId);
+      toast.success(`Book copy ${bookCopyId} scanned`);
       stopCamera();
       setShowAdminScanner(false);
     } else {
@@ -260,17 +253,13 @@ export default function BorrowRequestsPage() {
     }
   };
 
-  const removeBookCopy = (copyId: string) => {
-    setScannedBookCopyIds(prev => prev.filter(id => id !== copyId));
-  };
-
   const handleAdminCreateSubmit = async () => {
     if (!selectedMember) {
       toast.error('Please select a member');
       return;
     }
-    if (scannedBookCopyIds.length === 0) {
-      toast.error('Please scan at least one book copy');
+    if (!adminBookCopyId) {
+      toast.error('Please scan a book copy');
       return;
     }
 
@@ -278,10 +267,10 @@ export default function BorrowRequestsPage() {
       setAdminCreateLoading(true);
       await adminCreateBorrowRequest({
         memberId: selectedMember.id,
-        bookCopyIds: scannedBookCopyIds,
+        bookCopyId: adminBookCopyId,
         notes: adminNotes.trim() || undefined,
       });
-      toast.success('Borrow request created successfully');
+      toast.success('Borrow request created and confirmed successfully');
       setShowAdminCreateDialog(false);
       resetAdminCreateDialog();
       fetchRequests();
@@ -295,7 +284,7 @@ export default function BorrowRequestsPage() {
 
   const resetAdminCreateDialog = () => {
     setSelectedMember(null);
-    setScannedBookCopyIds([]);
+    setAdminBookCopyId("");
     setAdminNotes("");
     setMemberSearchTerm("");
     setSearchResults([]);
@@ -343,30 +332,22 @@ export default function BorrowRequestsPage() {
   const handleConfirm = async () => {
     if (!selectedRequest) return;
 
-    const missingAssignments = selectedRequest.items.filter(
-      item => !bookCopyAssignments[item.bookId]
-    );
-    if (missingAssignments.length > 0) {
-      toast.error('Please assign book copies for all books');
+    if (!scannedBookCopyId) {
+      toast.error('Please scan a book copy first');
       return;
     }
 
     try {
       setLoading(true);
-      const assignments: BookCopyAssignment[] = selectedRequest.items.map(item => ({
-        bookId: item.bookId,
-        bookCopyId: bookCopyAssignments[item.bookId],
-      }));
-
       await confirmBorrowRequest({
         requestId: selectedRequest.id,
-        bookCopyAssignments: assignments,
+        bookCopyId: scannedBookCopyId,
       });
 
       toast.success('Borrow request confirmed successfully');
       setShowConfirmDialog(false);
       setSelectedRequest(null);
-      setBookCopyAssignments({});
+      setScannedBookCopyId("");
       fetchRequests();
     } catch (error: any) {
       console.error('Error confirming request:', error);
@@ -411,45 +392,38 @@ export default function BorrowRequestsPage() {
     setShowRejectDialog(true);
   };
 
-  const removeAssignment = (bookId: string) => {
-    const newAssignments = { ...bookCopyAssignments };
-    delete newAssignments[bookId];
-    setBookCopyAssignments(newAssignments);
-  };
 
-  const proceedToConfirm = () => {
-    setShowBookInfoDialog(false);
-    setShowConfirmDialog(true);
-  };
 
   // Helper functions
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
         return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+      case 'borrowed':
       case 'confirmed':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="h-3 w-3 mr-1" />Confirmed</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200"><CheckCircle className="h-3 w-3 mr-1" />Borrowed</Badge>;
+      case 'overdue':
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className="h-3 w-3 mr-1" />Overdue</Badge>;
+      case 'returned':
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200"><CheckCircle className="h-3 w-3 mr-1" />Returned</Badge>;
+      case 'overduereturned':
+        return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200"><Clock className="h-3 w-3 mr-1" />Late Return</Badge>;
       case 'rejected':
         return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+      case 'cancelled':
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200"><XCircle className="h-3 w-3 mr-1" />Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  // Prefer API-provided due date fields (dueTo or dueDate). Fallback to computing from confirmedAt.
   const formatDueDate = (request: BorrowRequestDto) => {
-    const apiDue = (request as any).dueTo || (request as any).dueDate;
-    if (apiDue) {
+    if (request.dueDate) {
       try {
-        return new Date(apiDue).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return new Date(request.dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
       } catch (e) {
-        return String(apiDue);
+        return 'N/A';
       }
-    }
-    if (request.confirmedAt) {
-      const due = new Date(request.confirmedAt);
-      due.setDate(due.getDate() + 14);
-      return due.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     }
     return 'N/A';
   };
@@ -457,7 +431,7 @@ export default function BorrowRequestsPage() {
   const filteredRequests = requests.filter(request => {
     const matchesSearch = request.memberName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          request.memberEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         request.items.some(item => item.bookTitle?.toLowerCase().includes(searchTerm.toLowerCase()));
+                         request.bookTitle?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -467,8 +441,6 @@ export default function BorrowRequestsPage() {
     borrowed: borrowedCount,
     overdue: overdueCount,
   };
-
-  const allBooksScanned = selectedRequest?.items.every(item => bookCopyAssignments[item.bookId]) || false;
 
   return (
     <div className="p-6 space-y-6">
@@ -567,14 +539,16 @@ export default function BorrowRequestsPage() {
                 className="pl-10 shadow-sm"
               />
             </div>
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'pending' | 'borrowed' | 'overdue')}>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'pending' | 'borrowed' | 'overdue' | 'returned' | 'overdue-returned')}>
               <SelectTrigger className="w-full md:w-48 shadow-sm">
-                <SelectValue placeholder="Filter by Type" />
+                <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">Pending Requests</SelectItem>
                 <SelectItem value="borrowed">Borrowed Books</SelectItem>
                 <SelectItem value="overdue">Overdue Books</SelectItem>
+                <SelectItem value="returned">Returned (On Time)</SelectItem>
+                <SelectItem value="overdue-returned">Returned (Late)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -616,9 +590,6 @@ export default function BorrowRequestsPage() {
                             </div>
                             <div className="text-sm text-muted-foreground">
                               {request.memberEmail}
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {request.items.length} book(s) requested
                             </div>
                           </div>
                           <div className="flex-shrink-0 ml-4">
@@ -666,28 +637,21 @@ export default function BorrowRequestsPage() {
                           </div>
                         </div>
 
-                        {/* Books List */}
+                        {/* Book Info */}
                         <div className="mt-4">
-                          <div className="text-sm font-medium mb-2">Books</div>
-                          <div className="space-y-2">
-                            {request.items.map((item) => (
-                              <div 
-                                key={item.id} 
-                                className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm"
-                              >
-                                <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium truncate">{item.bookTitle || 'Unknown Book'}</div>
-                                  <div className="text-xs text-muted-foreground">ISBN: {item.bookISBN || 'N/A'}</div>
-                                </div>
-                                {item.isConfirmed && (
-                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs shrink-0">
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Confirmed
-                                  </Badge>
-                                )}
-                              </div>
-                            ))}
+                          <div className="text-sm font-medium mb-2">Book</div>
+                          <div className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm">
+                            <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{request.bookTitle || 'Unknown Book'}</div>
+                              <div className="text-xs text-muted-foreground">ISBN: {request.bookISBN || 'N/A'}</div>
+                            </div>
+                            {request.bookCopyId && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs shrink-0">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Copy: {request.bookCopyId}
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
@@ -769,74 +733,56 @@ export default function BorrowRequestsPage() {
               </div>
 
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">Books in Request</h4>
-                {selectedRequest.items.map((item) => (
-                  <Card key={item.id} className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div>
-                          <div className="font-medium">{item.bookTitle}</div>
-                          <div className="text-xs text-muted-foreground">ISBN: {item.bookISBN}</div>
-                        </div>
+                <h4 className="text-sm font-medium">Book Details</h4>
+                <Card className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="font-medium">{selectedRequest.bookTitle}</div>
+                        <div className="text-xs text-muted-foreground">ISBN: {selectedRequest.bookISBN}</div>
+                      </div>
 
-                        {bookCopyAssignments[item.bookId] ? (
-                          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-green-900">Scanned</div>
-                              <code className="text-xs text-green-700">COPY-{bookCopyAssignments[item.bookId]}</code>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => removeAssignment(item.bookId)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
+                      {scannedBookCopyId ? (
+                        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-green-900">Book Copy Scanned</div>
+                            <code className="text-xs text-green-700">COPY-{scannedBookCopyId}</code>
                           </div>
-                        ) : (
                           <Button
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => openScanner(item.bookId)}
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setScannedBookCopyId("")}
                           >
-                            <QrCode className="h-4 w-4 mr-2" />
-                            Scan Book Copy QR Code
+                            <X className="h-4 w-4" />
                           </Button>
-                        )}
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => openScanner()}
+                        >
+                          <QrCode className="h-4 w-4 mr-2" />
+                          Scan Book Copy QR Code
+                        </Button>
+                      )}
 
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <div className="text-xs text-muted-foreground mb-2">Expected QR code format:</div>
-                          <div className="bg-white p-2 rounded border text-center">
-                            <img
-                              src={generateBarcodeUrl('example-book-copy-id')}
-                              alt="Example QR code"
-                              className="w-24 h-24 mx-auto"
-                            />
-                            <div className="text-xs text-muted-foreground mt-1">COPY-{'{book-copy-id}'}</div>
-                          </div>
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <div className="text-xs text-muted-foreground mb-2">Expected QR code format:</div>
+                        <div className="bg-white p-2 rounded border text-center">
+                          <img
+                            src={generateBarcodeUrl('example-book-copy-id')}
+                            alt="Example QR code"
+                            className="w-24 h-24 mx-auto"
+                          />
+                          <div className="text-xs text-muted-foreground mt-1">COPY-{'{book-copy-id}'}</div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-
-              {selectedRequest.items.length > 0 && allBooksScanned && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="font-medium text-green-900">All books scanned!</span>
-                  </div>
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={proceedToConfirm}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Proceed to Confirm Request
-                  </Button>
-                </div>
-              )}
             </div>
           )}
 
@@ -981,25 +927,23 @@ export default function BorrowRequestsPage() {
 
             {/* Book Copy Scanning */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">2. Scan Book Copies</h4>
-              <Button variant="outline" onClick={openAdminScanner} disabled={!selectedMember}>
-                <QrCode className="h-4 w-4 mr-2" />
-                Scan Book Copy QR Code
-              </Button>
-              
-              {scannedBookCopyIds.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs text-muted-foreground">{scannedBookCopyIds.length} book(s) scanned</div>
-                  {scannedBookCopyIds.map((copyId) => (
-                    <div key={copyId} className="flex items-center gap-2 p-2 border rounded-lg bg-card">
-                      <BookOpen className="h-4 w-4 text-muted-foreground" />
-                      <code className="flex-1 text-xs">COPY-{copyId}</code>
-                      <Button size="sm" variant="ghost" onClick={() => removeBookCopy(copyId)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+              <h4 className="text-sm font-medium">2. Scan Book Copy</h4>
+              {adminBookCopyId ? (
+                <div className="flex items-center gap-2 p-3 border rounded-lg bg-green-50 border-green-200">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-green-900">Book Copy Scanned</div>
+                    <code className="text-xs text-green-700">COPY-{adminBookCopyId}</code>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => setAdminBookCopyId("")}>
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
+              ) : (
+                <Button variant="outline" onClick={openAdminScanner} disabled={!selectedMember}>
+                  <QrCode className="h-4 w-4 mr-2" />
+                  Scan Book Copy QR Code
+                </Button>
               )}
             </div>
 
@@ -1021,7 +965,7 @@ export default function BorrowRequestsPage() {
             </Button>
             <Button 
               onClick={handleAdminCreateSubmit} 
-              disabled={adminCreateLoading || !selectedMember || scannedBookCopyIds.length === 0}
+              disabled={adminCreateLoading || !selectedMember || !adminBookCopyId}
             >
               {adminCreateLoading ? 'Creating...' : 'Create Borrow Request'}
             </Button>
@@ -1112,21 +1056,21 @@ export default function BorrowRequestsPage() {
               </div>
 
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">Scanned Books</h4>
-                {selectedRequest.items.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-3 space-y-2">
-                    <div>
-                      <div className="font-medium text-sm">{item.bookTitle}</div>
-                      <div className="text-xs text-muted-foreground">ISBN: {item.bookISBN}</div>
-                    </div>
+                <h4 className="text-sm font-medium">Book & Copy Details</h4>
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div>
+                    <div className="font-medium text-sm">{selectedRequest.bookTitle}</div>
+                    <div className="text-xs text-muted-foreground">ISBN: {selectedRequest.bookISBN}</div>
+                  </div>
+                  {scannedBookCopyId && (
                     <div className="flex gap-2 items-center">
                       <CheckCircle className="h-4 w-4 text-green-500" />
                       <code className="text-xs bg-muted px-2 py-1 rounded">
-                        COPY-{bookCopyAssignments[item.bookId]}
+                        COPY-{scannedBookCopyId}
                       </code>
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
             </div>
           )}

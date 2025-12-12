@@ -89,11 +89,33 @@ export default function MyRequestsPage() {
             Pending
           </Badge>
         );
+      case 'borrowed':
       case 'confirmed':
         return (
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
             <CheckCircle className="h-3 w-3 mr-1" />
-            Confirmed
+            Borrowed
+          </Badge>
+        );
+      case 'overdue':
+        return (
+          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+            <XCircle className="h-3 w-3 mr-1" />
+            Overdue
+          </Badge>
+        );
+      case 'returned':
+        return (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Returned
+          </Badge>
+        );
+      case 'overduereturned':
+        return (
+          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+            <Clock className="h-3 w-3 mr-1" />
+            Late Return
           </Badge>
         );
       case 'rejected':
@@ -101,6 +123,13 @@ export default function MyRequestsPage() {
           <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
             <XCircle className="h-3 w-3 mr-1" />
             Rejected
+          </Badge>
+        );
+      case 'cancelled':
+        return (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+            <XCircle className="h-3 w-3 mr-1" />
+            Cancelled
           </Badge>
         );
       default:
@@ -130,9 +159,8 @@ export default function MyRequestsPage() {
   };
 
   const filteredRequests = requests.filter(request => {
-    const matchesSearch = request.items.some(item => 
-      item.bookTitle?.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || request.notes?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = request.bookTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.notes?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || request.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -140,8 +168,9 @@ export default function MyRequestsPage() {
   const stats = {
     total: totalItems,
     pending: requests.filter(r => r.status === 'Pending').length,
-    confirmed: requests.filter(r => r.status === 'Confirmed').length,
-    rejected: requests.filter(r => r.status === 'Rejected').length,
+    borrowed: requests.filter(r => r.status === 'Borrowed' || r.status === 'Confirmed').length,
+    overdue: requests.filter(r => r.status === 'Overdue').length,
+    returned: requests.filter(r => r.status === 'Returned' || r.status === 'OverdueReturned').length,
   };
 
   return (
@@ -192,11 +221,11 @@ export default function MyRequestsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Confirmed</p>
-                <p className="text-2xl font-medium text-green-600">{stats.confirmed}</p>
+                <p className="text-sm text-muted-foreground">Borrowed</p>
+                <p className="text-2xl font-medium text-green-600">{stats.borrowed}</p>
               </div>
               <div className="p-2 bg-green-50 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <BookOpen className="h-5 w-5 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -206,8 +235,8 @@ export default function MyRequestsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Rejected</p>
-                <p className="text-2xl font-medium text-red-600">{stats.rejected}</p>
+                <p className="text-sm text-muted-foreground">Overdue</p>
+                <p className="text-2xl font-medium text-red-600">{stats.overdue}</p>
               </div>
               <div className="p-2 bg-red-50 rounded-lg">
                 <XCircle className="h-5 w-5 text-red-600" />
@@ -243,8 +272,12 @@ export default function MyRequestsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="Confirmed">Confirmed</SelectItem>
+                <SelectItem value="Borrowed">Borrowed</SelectItem>
+                <SelectItem value="Overdue">Overdue</SelectItem>
+                <SelectItem value="Returned">Returned (On Time)</SelectItem>
+                <SelectItem value="OverdueReturned">Returned (Late)</SelectItem>
                 <SelectItem value="Rejected">Rejected</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
                 <SelectItem value="All">All Status</SelectItem>
               </SelectContent>
             </Select>
@@ -289,9 +322,7 @@ export default function MyRequestsPage() {
                               <FileText className="h-4 w-4 text-primary flex-shrink-0" />
                               <h4 className="font-medium">Request #{request.id.slice(0, 8)}</h4>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {request.items.length} book(s)
-                            </div>
+
                           </div>
                           <div className="flex items-center gap-2">
                             {getStatusBadge(request.status)}
@@ -341,7 +372,7 @@ export default function MyRequestsPage() {
                               <span className="text-xs font-medium text-blue-800">Due Date</span>
                             </div>
                             <p className="text-xs font-medium text-blue-900 whitespace-nowrap">
-                              {request.confirmedAt ? getDueDate(request.confirmedAt) : ''}
+                              {request.dueDate && mounted ? new Date(request.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                             </p>
                           </div>
                           
@@ -361,28 +392,21 @@ export default function MyRequestsPage() {
                           </div>
                         )}
 
-                        {/* Books List */}
+                        {/* Book Info */}
                         <div className="mt-4">
-                          <div className="text-sm font-medium mb-2">Books</div>
-                          <div className="space-y-2">
-                            {request.items.map((item) => (
-                              <div 
-                                key={item.id} 
-                                className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm"
-                              >
-                                <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium truncate">{item.bookTitle}</div>
-                                  <div className="text-xs text-muted-foreground">ISBN: {item.bookISBN}</div>
-                                </div>
-                                {item.isConfirmed && (
-                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs shrink-0">
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    Confirmed
-                                  </Badge>
-                                )}
-                              </div>
-                            ))}
+                          <div className="text-sm font-medium mb-2">Book</div>
+                          <div className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm">
+                            <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{request.bookTitle}</div>
+                              <div className="text-xs text-muted-foreground">ISBN: {request.bookISBN}</div>
+                            </div>
+                            {request.bookCopyId && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs shrink-0">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Copy: {request.bookCopyId}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </div>

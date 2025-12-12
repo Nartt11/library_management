@@ -5,31 +5,25 @@ export interface BorrowRequestDto {
   memberEmail?: string;
   staffId?: string;
   staffName?: string;
-  createdAt: string;
-  confirmedAt?: string;
-  status: string;
-  qrCode?: string;
-  notes?: string;
-  items: BorrowRequestItemDto[];
-}
-
-export interface BorrowRequestItemDto {
-  id: string;
   bookId: string;
   bookTitle?: string;
   bookISBN?: string;
+  bookImageUrl?: string;
   bookCopyId?: string;
-  isConfirmed: boolean;
-}
-
-export interface BookCopyAssignment {
-  bookId: string;
-  bookCopyId: string;
+  createdAt: string;
+  confirmedAt?: string;
+  borrowDate?: string;
+  dueDate?: string;
+  returnedAt?: string;
+  status: string;
+  qrCode?: string;
+  notes?: string;
+  isOverdue: boolean;
 }
 
 export interface ConfirmBorrowRequestPayload {
   requestId: string;
-  bookCopyAssignments: BookCopyAssignment[];
+  bookCopyId: string;
 }
 
 export interface RejectBorrowRequestPayload {

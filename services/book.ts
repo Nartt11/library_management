@@ -62,3 +62,8 @@ export function importBooks(payload: {
   });
 }
 
+// GET /api/books/{id}/copies/qrs
+export function getBookCopiesQRs(id: string) {
+  return apiFetch(`/books/${id}/copies/qrs`);
+}
+

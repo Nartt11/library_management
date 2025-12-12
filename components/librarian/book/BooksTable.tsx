@@ -8,17 +8,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, QrCode } from "lucide-react";
 import Image from "next/image";
 
 export default function BooksTable({
   books,
   onEdit,
   onDelete,
+  onViewQRs,
 }: {
   books: Book[];
   onEdit?: any;
   onDelete?: any;
+  onViewQRs?: any;
 }) {
   return (
     <Card>
@@ -69,6 +71,16 @@ export default function BooksTable({
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
+
+                      {onViewQRs && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onViewQRs(book)}
+                        >
+                          <QrCode className="h-4 w-4" />
+                        </Button>
+                      )}
 
                       {/* <Button
                         variant="ghost"

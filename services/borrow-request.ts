@@ -10,13 +10,13 @@ import {
 export async function getBorrowRequests(
   pageNumber: number = 1,
   pageSize: number = 10,
-  type: 'pending' | 'borrowed' | 'overdue' = 'pending'
+  type: 'pending' | 'borrowed' | 'overdue' | 'returned' | 'overdue-returned' = 'pending'
 ): Promise<PaginatedBorrowRequests> {
   const url = `/borrow-requests/${type}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
   return await getApi<PaginatedBorrowRequests>(url);
 }
 
-// GET /api/borrow-requests/my-requests - Student: Get my requests with pagination
+// GET /api/borrow-requests/my-requests - Student: Get my requests with pagination (all statuses)
 export async function getMyBorrowRequests(
   pageNumber: number = 1,
   pageSize: number = 20
@@ -24,16 +24,29 @@ export async function getMyBorrowRequests(
   return await getApi<PaginatedBorrowRequests>(`/borrow-requests/my-requests?pageNumber=${pageNumber}&pageSize=${pageSize}`);
 }
 
+// GET /api/borrow-requests/my-history - Student: Get my completed requests (Returned or OverdueReturned)
+export async function getMyHistory(
+  pageNumber: number = 1,
+  pageSize: number = 20
+): Promise<PaginatedBorrowRequests> {
+  return await getApi<PaginatedBorrowRequests>(`/borrow-requests/my-history?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+}
+
 // GET /api/borrow-requests/{id} - Get single request details
 export async function getBorrowRequestById(id: string): Promise<BorrowRequestDto> {
   return await getApi<BorrowRequestDto>(`/borrow-requests/${id}`);
 }
 
-// POST /api/borrow-requests/confirm - Admin: Confirm request with book copies
+// GET /api/borrow-requests/qr/{qrCode} - Staff: Get request by QR code
+export async function getRequestByQR(qrCode: string): Promise<BorrowRequestDto> {
+  return await getApi<BorrowRequestDto>(`/borrow-requests/qr/${qrCode}`);
+}
+
+// POST /api/borrow-requests/confirm - Staff: Confirm request with single book copy
 export async function confirmBorrowRequest(
   payload: ConfirmBorrowRequestPayload
-): Promise<BorrowRequestDto> {
-  return await postApi<BorrowRequestDto>('/borrow-requests/confirm', payload);
+): Promise<{ message: string }> {
+  return await postApi<{ message: string }>('/borrow-requests/confirm', payload);
 }
 
 // PUT /api/borrow-requests/{id}/reject - Admin: Reject request
@@ -75,10 +88,10 @@ export async function searchMembers(searchTerm: string): Promise<any[]> {
   return await getApi<any[]>(`/borrow-requests/search-members?searchTerm=${encodeURIComponent(searchTerm)}`);
 }
 
-// POST /api/borrow-requests/admin-create - Admin: Create borrow request for a member
+// POST /api/borrow-requests/admin-create - Admin: Create and confirm borrow request immediately
 export async function adminCreateBorrowRequest(payload: {
   memberId: string;
-  bookCopyIds: string[];
+  bookCopyId: string;
   notes?: string;
 }): Promise<BorrowRequestDto> {
   return await postApi<BorrowRequestDto>('/borrow-requests/admin-create', payload);

@@ -208,18 +208,19 @@ export default function ReturnBooksPage() {
     }
   };
 
-  const isOverdue = (confirmedAt?: string) => {
-    if (!confirmedAt) return false;
-    const dueDate = new Date(confirmedAt);
-    dueDate.setDate(dueDate.getDate() + 14);
-    return new Date() > dueDate;
+  const isOverdue = (borrow: BorrowRequestDto) => {
+    return borrow.isOverdue || false;
   };
 
-  const getDueDate = (confirmedAt?: string) => {
-    if (!confirmedAt) return 'N/A';
-    const dueDate = new Date(confirmedAt);
-    dueDate.setDate(dueDate.getDate() + 14);
-    return dueDate.toLocaleDateString();
+  const getDueDate = (borrow: BorrowRequestDto) => {
+    if (borrow.dueDate) {
+      try {
+        return new Date(borrow.dueDate).toLocaleDateString();
+      } catch {
+        return 'N/A';
+      }
+    }
+    return 'N/A';
   };
 
   return (
@@ -268,56 +269,38 @@ export default function ReturnBooksPage() {
                           <div className="text-right flex-shrink-0 ml-4">
                             <div className="text-xs text-muted-foreground flex items-center gap-1 whitespace-nowrap">
                               <Calendar className="h-3 w-3" />
-                              Due: {getDueDate(borrow.confirmedAt)}
+                              Due: {getDueDate(borrow)}
                             </div>
-                            {isOverdue(borrow.confirmedAt) && (
+                            {isOverdue(borrow) && (
                               <Badge variant="destructive" className="text-xs mt-1">Overdue</Badge>
                             )}
                           </div>
                         </div>
 
-                        <div className="border rounded-lg overflow-hidden">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead className="w-[40%]">Book</TableHead>
-                                <TableHead className="w-[25%]">ISBN</TableHead>
-                                <TableHead className="w-[20%]">Copy ID</TableHead>
-                                <TableHead className="w-[15%]">Action</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {borrow.items.map((item) => (
-                                <TableRow key={item.id}>
-                                  <TableCell className="max-w-0">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <BookOpen className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                      <span className="font-medium truncate">{item.bookTitle}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="text-sm text-muted-foreground truncate">{item.bookISBN}</TableCell>
-                                  <TableCell>
-                                    <code className="text-xs bg-muted px-2 py-1 rounded whitespace-nowrap">
-                                      {item.bookCopyId || 'N/A'}
-                                    </code>
-                                  </TableCell>
-                                  <TableCell>
-                                    {item.isConfirmed && item.bookCopyId && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => openReturnDialog(borrow, item.bookCopyId)}
-                                        className="whitespace-nowrap"
-                                      >
-                                        <PackageCheck className="h-3 w-3 mr-1" />
-                                        Return
-                                      </Button>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                        <div className="border rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <BookOpen className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{borrow.bookTitle}</div>
+                              <div className="text-xs text-muted-foreground">ISBN: {borrow.bookISBN}</div>
+                            </div>
+                          </div>
+                          {borrow.bookCopyId && (
+                            <div className="flex items-center justify-between gap-2">
+                              <code className="text-xs bg-muted px-2 py-1 rounded whitespace-nowrap">
+                                Copy: {borrow.bookCopyId}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openReturnDialog(borrow, borrow.bookCopyId)}
+                                className="whitespace-nowrap"
+                              >
+                                <PackageCheck className="h-3 w-3 mr-1" />
+                                Return
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
