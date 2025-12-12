@@ -8,13 +8,13 @@ import {
 } from "@/services/author";
 import { toast } from "sonner";
 
-export function useAuthors(page: number, pageSize: number) {
+export function useAuthors(page: number, pageSize: number, nameQuery:string) {
   const queryClient = useQueryClient();
 
   // GET LIST
   const authorsQuery = useQuery({
-    queryKey: ["authors", page, pageSize],
-    queryFn: () => getAllAuthors(page, pageSize),
+    queryKey: ["authors", page, pageSize,nameQuery],
+    queryFn: () => getAllAuthors(page, pageSize, nameQuery),
   });
 
   // CREATE

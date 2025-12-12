@@ -46,12 +46,13 @@ import { addBookToCart } from "@/services/cart";
 import { toast } from "sonner";
 
 import { useAuth } from "@/context/authContext";
-import { getAllBooks } from "@/services/book";
+import { getAllBooks, getAllBooksRecommend } from "@/services/book";
 import RecommendBooks from "./showroom/RecommendBooks";
 
 export function Showroom() {
   const router = useRouter();
   const [books, setBooks] = useState<Book[]>([]);
+  const [booksRecommend, setBooksRecommend] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,7 +124,30 @@ export function Showroom() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const recommendBooks: Book[] = filteredBooks.slice(0, 10);
+  useEffect(() => {
+    let mounted = true;
+    async function fetchBooks() {
+      setLoading(true);
+      try {
+        const data = await getAllBooksRecommend(1, 10);
+        if (!mounted) return;
+        setBooksRecommend(data.data ?? []);
+        // Scroll to top when page changes
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err: any) {
+        console.error(err);
+        if (!mounted) return;
+        setError(err.message || String(err));
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchBooks();
+    return () => {
+      mounted = false;
+    };
+  }, [currentPage]);
   const handleBookClick = (book: Book) => {
     setSelectedBook(book);
     setIsDialogOpen(true);
@@ -267,7 +291,7 @@ export function Showroom() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-4 items-center">
               <div className="flex-1 relative group">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
                 <Input
@@ -321,7 +345,7 @@ export function Showroom() {
           </CardContent>
         </Card>
 
-        <RecommendBooks recommendBooks={recommendBooks} />
+        <RecommendBooks recommendBooks={booksRecommend} />
 
         {/* Enhanced Results Summary */}
         <div className="flex items-center justify-between">
@@ -559,7 +583,7 @@ export function Showroom() {
 
         {/* Enhanced Book Details Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="w-[400px] h-[550px] border-0 shadow-2xl rounded-2xl bg-white/95 backdrop-blur-sm p-6">
+          <DialogContent className="min-w-[400px] min-h-[550px] border-0 shadow-2xl rounded-2xl bg-white/95 backdrop-blur-sm p-6">
             {selectedBook && (
               <div className="flex flex-col h-full">
                 <DialogHeader className="shrink-0 pb-4">
@@ -613,23 +637,29 @@ export function Showroom() {
                           {selectedBook.publisher || "N/A"}
                         </span>
                       </div>
-                    </div>
-                    <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
                           Year
                         </span>
-                        <Badge variant="default" className="text-xs mt-1">
+                        <span className="text-xs truncate block">
                           {selectedBook.publicationYear}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-muted-foreground text-xs uppercase tracking-wide block">
+                          Status
+                        </span>
+                        <Badge variant="secondary" className="text-xs mt-1">
+                          available
                         </Badge>
                       </div>
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Authors
+                          available
                         </span>
-                        <span className="text-xs">
-                          {selectedBook.authors.length || "Unknown"}
-                        </span>
+                        <span className="text-xs truncate block">28</span>
                       </div>
                     </div>
                   </div>

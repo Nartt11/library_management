@@ -2,10 +2,7 @@ import React from "react";
 import { Button } from "./ui/button";
 import type { UserRole } from "@/types/user";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  AdminNavBarData,
-  StudentNavBarData,
-} from "@/lib/NavBarData";
+import { AdminNavBarData, StudentNavBarData } from "@/lib/NavBarData";
 
 interface NavigationSidebarProps {
   role: UserRole | undefined;
@@ -33,7 +30,7 @@ export function NavigationSidebar({
   const menuItems = getMenuItems();
 
   return (
-    <nav className="p-4 space-y-2 flex flex-col h-full">
+    <nav className="p-4 space-y-2 flex flex-col">
       <div className="flex-1 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;

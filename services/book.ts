@@ -5,6 +5,10 @@ export function getAllBooks(page: number, pageSize: number) {
   return apiFetch(`/books?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
+export function getAllBooksRecommend(page: number, pageSize: number) {
+  return apiFetch(`/books/recommend?pageNumber=${page}&pageSize=${pageSize}`);
+}
+
 // GET /api/books/{id}
 export function getBookById(id:string) {
   return apiFetch(`/books/${id}`);

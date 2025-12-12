@@ -152,52 +152,66 @@ export default function CategoryManagement() {
         </CardHeader>
 
         <CardContent>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="p-3 text-left">ID</th>
-                <th className="p-3 text-left">Name</th>
-                <th className="p-3 text-right">Actions</th>
-              </tr>
-            </thead>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search categories by name"
+                // value={searchTerm}
+                // onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
 
-            <tbody>
-              {categories.length === 0 ? (
-                <tr>
-                  <td className="p-4 text-center" colSpan={3}>
-                    No categories found
-                  </td>
+          <div className="rounded-md border">
+            <table className="w-full ">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="p-3 text-left">ID</th>
+                  <th className="p-3 text-left">Name</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
-              ) : (
-                categories.map((cat) => (
-                  <tr key={cat.id} className="border-b">
-                    <td className="p-3">{cat.id}</td>
-                    <td className="p-3">{cat.name}</td>
+              </thead>
 
-                    <td className="p-3">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(cat)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(cat)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+              <tbody>
+                {categories.length === 0 ? (
+                  <tr>
+                    <td className="p-4 text-center" colSpan={3}>
+                      No categories found
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  categories.map((cat) => (
+                    <tr key={cat.id} className="border-b">
+                      <td className="p-3">{cat.id}</td>
+                      <td className="p-3">{cat.name}</td>
+
+                      <td className="p-3">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(cat)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(cat)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {/* FOOTER */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">

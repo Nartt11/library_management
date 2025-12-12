@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 
 import { loginService } from "@/services/auth/authService";
 import { useAuth } from "@/context/authContext";
+import { toast } from "sonner";
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -50,7 +51,8 @@ export default function LoginPage({}: LoginPageProps) {
       if (response?.user) {
         // Save user to context
         saveUser(response.user);
-        
+        toast.success("Login success");
+
         // Redirect based on role
         const role = response.user.role;
         if (role === "admin") {

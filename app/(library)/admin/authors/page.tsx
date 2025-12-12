@@ -24,13 +24,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 export default function AuthorPage() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { authorsQuery, createMutation, updateMutation, deleteMutation } =
-    useAuthors(page, pageSize);
+    useAuthors(page, pageSize, searchTerm);
 
   const authors = authorsQuery.data?.data ?? [];
   const totalPages = authorsQuery.data?.totalPages ?? 1;
@@ -166,6 +168,17 @@ export default function AuthorPage() {
 
         <CardContent>
           <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search authors by name"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
             {/* TABLE */}
             <div className="rounded-md border">
               <AuthorTable

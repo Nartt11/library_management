@@ -3,7 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-size: 14px;
+  --font-size: 16px;
   --background: #fefefe;
   --foreground: #2d1b0e;
   --card: #ffffff;
@@ -41,8 +41,6 @@
   --sidebar-accent-foreground: #92400e;
   --sidebar-border: #fed7aa;
   --sidebar-ring: #f97316;
-  overscroll-behavior-x: none;
-  overscroll-behavior-y: none;
 }
 
 .dark {
@@ -236,3 +234,4 @@
 html {
   font-size: var(--font-size);
 }
+

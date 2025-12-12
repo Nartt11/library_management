@@ -74,7 +74,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               className="h-8 w-8 object-contain"
             />
             <div>
-              <h2 className="text-sm text-sidebar-foreground">
+              <h2 className="text-xl text-sidebar-foreground">
                 Library System
               </h2>
             </div>
@@ -108,7 +108,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         className="h-8 w-8 object-contain"
                       />
                       <div>
-                        <h2 className="text-sm">Library System</h2>
+                        <h2 className="text-xl">Library System</h2>
                       </div>
                     </div>
                   </div>
@@ -127,10 +127,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarFallback>
-                    {/* {currentUser?.name
+                    {currentUser?.name
                       .split(" ")
                       .map((n) => n[0])
-                      .join("")} */}
+                      .join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">

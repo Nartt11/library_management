@@ -75,13 +75,7 @@ export const AdminNavBarData = [
     icon: AlertTriangle,
     link: "/staff/return",
   },
-  // fix
-  {
-    id: "history",
-    label: "Borrowing History",
-    icon: History,
-    link: "/admin/history",
-  },
+
 
   {
     id: "account",
@@ -112,16 +106,10 @@ export const StudentNavBarData = [
     link: "/student/cart",
   },
   {
-    id: "qr-ticket",
-    label: "QR Borrow Ticket",
-    icon: QrCode,
-    link: "/student/borrow",
-  },
-  {
     id: "history",
     label: "My Borrowing History",
     icon: History,
-    link: "/student/history",
+    link: "/student/borrow",
   },
   {
     id: "account",
