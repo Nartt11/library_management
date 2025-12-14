@@ -6,8 +6,11 @@ export function getCategories() {
 }
 
 // GET /api/book-categories?page=1&pageSize=10
-export function getAllBookCategories(page: number, pageSize: number) {
-  return apiFetch(`/book-categories?pageNumber=${page}&pageSize=${pageSize}`);
+export function getAllBookCategories(query: string, page: number, pageSize: number) {
+  if (query!="")
+    return apiFetch(`/book-categories/search?query=${query}&pageNumber=${page}&pageSize=${pageSize}`);
+  else
+    return apiFetch(`/book-categories/search?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/book-categories/{id}

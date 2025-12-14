@@ -60,13 +60,35 @@ export function Showroom() {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 24;
   const [jumpPage, setJumpPage] = useState("");
+  const categories = [
+    undefined,
+    ...Array.from(
+      new Set(books.flatMap((book) => book.bookCategories.map((c) => c.name)))
+    ),
+  ];
+
+  const { currentUser, setPendingBook } = useAuth();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    undefined
+  );
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedBook, setSelectedBook] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
     async function fetchBooks() {
       setLoading(true);
       try {
-        const data = await getAllBooks(currentPage, pageSize);
+        const data = await getAllBooks(
+          currentPage,
+          pageSize,
+          selectedCategory,
+          undefined,
+          searchTerm
+        );
         if (!mounted) return;
         setBooks(data.data ?? []);
         setTotalPages(data.totalPages ?? 1);
@@ -87,42 +109,27 @@ export function Showroom() {
     return () => {
       mounted = false;
     };
-  }, [currentPage]);
+  }, [currentPage, selectedCategory, searchTerm]);
 
-  const categories = [
-    "all",
-    ...Array.from(
-      new Set(books.flatMap((book) => book.bookCategories.map((c) => c.name)))
-    ),
-  ];
+  // const filteredBooks = books.filter((book) => {
+  //   const authorNames = book.authors
+  //     .map((a) => a.name)
+  //     .join(" ")
+  //     .toLowerCase();
+  //   const matchesSearch =
+  //     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     authorNames.includes(searchTerm.toLowerCase()) ||
+  //     book.isbn.includes(searchTerm);
 
-  const { currentUser, setPendingBook } = useAuth();
+  //   const matchesCategory =
+  //     selectedCategory === "all" ||
+  //     book.bookCategories.some((c) => c.name === selectedCategory);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedBook, setSelectedBook] = useState<any>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  //   // Remove status filter since API doesn't provide status
+  //   const matchesStatus = statusFilter === "all";
 
-  const filteredBooks = books.filter((book) => {
-    const authorNames = book.authors
-      .map((a) => a.name)
-      .join(" ")
-      .toLowerCase();
-    const matchesSearch =
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      authorNames.includes(searchTerm.toLowerCase()) ||
-      book.isbn.includes(searchTerm);
-
-    const matchesCategory =
-      selectedCategory === "all" ||
-      book.bookCategories.some((c) => c.name === selectedCategory);
-
-    // Remove status filter since API doesn't provide status
-    const matchesStatus = statusFilter === "all";
-
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  //   return matchesSearch && matchesCategory && matchesStatus;
+  // });
 
   useEffect(() => {
     let mounted = true;
@@ -295,7 +302,7 @@ export function Showroom() {
               <div className="flex-1 relative group">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-orange-500 transition-colors" />
                 <Input
-                  placeholder="Search by title, author, ISBN, Book ID..."
+                  placeholder="Search by title"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl transition-all duration-200"
@@ -303,25 +310,27 @@ export function Showroom() {
               </div>
               <div className="flex gap-4">
                 <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
+                  value={selectedCategory ?? "all"}
+                  onValueChange={(v) =>
+                    setSelectedCategory(v === "all" ? undefined : v)
+                  }
                 >
                   <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-orange-200">
-                    {categories.map((category) => (
-                      <SelectItem
-                        key={category}
-                        value={category}
-                        className="rounded-lg"
-                      >
-                        {category === "all" ? "All Categories" : category}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(
+                      (category) =>
+                        category && (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        )
+                    )}
                   </SelectContent>
                 </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                {/* <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-orange-100 focus:border-orange-500 bg-white/70 backdrop-blur-sm rounded-xl">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -339,7 +348,7 @@ export function Showroom() {
                       Overdue
                     </SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
               </div>
             </div>
           </CardContent>
@@ -363,7 +372,7 @@ export function Showroom() {
 
         {/* Enhanced Books Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {filteredBooks.map((book) => (
+          {books.map((book) => (
             <Card
               key={book.id}
               className="group cursor-pointer hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm overflow-hidden"
@@ -408,7 +417,7 @@ export function Showroom() {
           ))}
         </div>
 
-        {filteredBooks.length === 0 && (
+        {books.length === 0 && (
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardContent className="text-center py-12">
               <div className="p-4 bg-orange-100 rounded-full w-fit mx-auto mb-4">
@@ -645,22 +654,14 @@ export function Showroom() {
                           {selectedBook.publisher || "N/A"}
                         </span>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Year
-                        </span>
-                        <span className="text-xs truncate block">
-                          {selectedBook.publicationYear}
-                        </span>
-                      </div>
                     </div>
                     <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
-                          Status
+                          Year
                         </span>
                         <Badge variant="secondary" className="text-xs mt-1">
-                          available
+                          {selectedBook.publicationYear}
                         </Badge>
                       </div>
                       <div>
@@ -669,7 +670,7 @@ export function Showroom() {
                         </span>
                         <span className="text-xs truncate block">
                           {" "}
-                          {selectedBook.availableCopiesCount}{" "}
+                          {selectedBook.availableCopiesCount} book(S)
                         </span>
                       </div>
                     </div>

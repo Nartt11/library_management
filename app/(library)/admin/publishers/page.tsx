@@ -23,13 +23,15 @@ import {
 import { usePublishers } from "@/hooks/usePublishers";
 import TablePublishers from "@/components/librarian/publisher/TablePublishers";
 import PublisherForm from "@/components/librarian/publisher/PublisherForm";
+import { Input } from "@/components/ui/input";
 
 export default function publisherPage() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { publishersQuery, createMutation, updateMutation, deleteMutation } =
-    usePublishers(page, pageSize);
+    usePublishers(searchTerm, page, pageSize);
 
   const publishers = publishersQuery.data?.data ?? [];
   const totalPages = publishersQuery.data?.totalPages ?? 1;
@@ -168,6 +170,18 @@ export default function publisherPage() {
         </CardHeader>
 
         <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 mb-4">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search categories by name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
           <div className="space-y-4">
             {/* TABLE */}
             <div className="rounded-md border">

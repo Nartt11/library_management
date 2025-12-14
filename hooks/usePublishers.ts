@@ -7,12 +7,12 @@ import {
 } from "@/services/publisher";
 import { toast } from "sonner";
 
-export function usePublishers(page: number, pageSize: number) {
+export function usePublishers(searchTerm:string, page: number, pageSize: number) {
   const queryClient = useQueryClient();
 
   const publishersQuery = useQuery({
-    queryKey: ["publishers", page, pageSize],
-    queryFn: () => getAllPublishers(page, pageSize),
+    queryKey: ["publishers", page, pageSize, searchTerm],
+    queryFn: () => getAllPublishers(searchTerm, page, pageSize),
   });
 
   const createMutation = useMutation({

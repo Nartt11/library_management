@@ -7,12 +7,12 @@ import {
 } from "@/services/book-category";
 import { toast } from "sonner";
 
-export function useCategories(page: number, pageSize: number) {
+export function useCategories(searchTerm: string, page: number, pageSize: number) {
   const queryClient = useQueryClient();
 
   const categoriesQuery = useQuery({
-    queryKey: ["categories", page, pageSize],
-    queryFn: () => getAllBookCategories(page, pageSize),
+    queryKey: ["categories", page, pageSize,searchTerm],
+    queryFn: () => getAllBookCategories(searchTerm,page, pageSize),
   });
 
   const createMutation = useMutation({

@@ -34,12 +34,13 @@ import { SmartPagination } from "@/components/ui/SmartPagination";
 export default function CategoryManagement() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { categoriesQuery, createMutation, updateMutation, deleteMutation } =
-    useCategories(page, pageSize);
+    useCategories(searchTerm, page, pageSize);
 
-  const categories: bookCategory[] = categoriesQuery.data ?? [];
-  console.log(categoriesQuery.data);
+  const categories: bookCategory[] = categoriesQuery.data?.data ?? [];
+  console.log(searchTerm);
 
   const totalPages = categoriesQuery.data?.totalPages ?? 1;
   const currentPage = categoriesQuery.data?.pageNumber ?? page;
@@ -153,12 +154,12 @@ export default function CategoryManagement() {
 
         <CardContent>
           <div className="flex items-center gap-4">
-            <div className="relative flex-1">
+            <div className="relative flex-1 mb-4">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search categories by name"
-                // value={searchTerm}
-                // onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>

@@ -1,7 +1,8 @@
 import { apiFetch } from "./base";
 
 // GET /api/publishers?page=1&pageSize=10
-export function getAllPublishers(page: number, pageSize: number) {
+export function getAllPublishers(searchTerm: string, page: number, pageSize: number) {
+  if (searchTerm!="") return apiFetch(`/publishers/search?searchTerm=${searchTerm}&pageNumber=${page}&pageSize=${pageSize}`);
   return apiFetch(`/publishers?pageNumber=${page}&pageSize=${pageSize}`);
 }
 

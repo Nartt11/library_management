@@ -1,9 +1,26 @@
 import { apiFetch } from "./base";
 
 // GET /api/books?pageNumber=1&pageSize=10
-export function getAllBooks(page: number, pageSize: number) {
-  return apiFetch(`/books?pageNumber=${page}&pageSize=${pageSize}`);
+// GET /api/books/search?pageNumber=1&pageSize=10&categoryName=...&isbn=...&titleQuery=...
+export function getAllBooks(
+  page: number,
+  pageSize: number,
+  categoryName?: string,
+  isbn?: string,
+  titleQuery?: string
+) {
+  const params = new URLSearchParams({
+    pageNumber: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  if (categoryName) params.append("categoryName", categoryName);
+  if (isbn) params.append("isbn", isbn);
+  if (titleQuery) params.append("titleQuery", titleQuery);
+
+  return apiFetch(`/books/search?${params.toString()}`);
 }
+
 
 export function getAllBooksRecommend(page: number, pageSize: number) {
   return apiFetch(`/books/recommend?pageNumber=${page}&pageSize=${pageSize}`);
