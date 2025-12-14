@@ -8,7 +8,9 @@ import React, {
 } from "react";
 import type { User } from "@/types/user";
 import type { PendingBook } from "@/types/pendingBook";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { getMyProfile } from "@/services/profile";
+import { logout as authServiceLogout } from "@/services/auth/authService";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -35,6 +37,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem("user");
     if (saved) _setCurrentUser(JSON.parse(saved));
   }, []);
+
+  // On mount, verify token by calling profile endpoint. If unauthorized, force logout.
+  useEffect(() => {
+    let mounted = true;
+    const verify = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const profile = await getMyProfile();
+        // If profile returned, sync current user (some APIs return user object)
+        if (mounted && profile) {
+          try {
+            _setCurrentUser(profile as any);
+            localStorage.setItem("user", JSON.stringify(profile));
+          } catch (_) {}
+        }
+      } catch (err: any) {
+        // If API returned unauthorized, clear auth and redirect to sign-in
+        const status = err?.status ?? err?.statusCode ?? null;
+        if (status === 401) {
+          try {
+            authServiceLogout();
+          } catch (_) {}
+          saveUser(null);
+          setPendingBook(null);
+          if (mounted) router.push("/");
+        }
+      }
+    };
+
+    verify();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Validate token on every route change. If profile endpoint returns 401, force logout.
+  const pathname = usePathname();
+  useEffect(() => {
+    let mounted = true;
+    const verifyOnRoute = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        await getMyProfile();
+      } catch (err: any) {
+        const status = err?.status ?? err?.statusCode ?? null;
+        if (status === 401) {
+          try {
+            authServiceLogout();
+          } catch (_) {}
+          saveUser(null);
+          setPendingBook(null);
+          if (mounted) router.push("/");
+        }
+      }
+    };
+
+    verifyOnRoute();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   // Listen for login events dispatched by `loginService` and storage events
   useEffect(() => {
