@@ -1,7 +1,7 @@
 export type UserRole = "admin" | "staff" | "student";
 export interface User {
   id: string;
-  name: string;
+  fullname: string;
   email: string;
   studentNumber?: string;
   role: UserRole;
