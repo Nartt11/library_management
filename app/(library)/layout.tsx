@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "../../components/ui/button";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import { LogOut, Menu } from "lucide-react";
@@ -7,14 +7,11 @@ import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
 
 import { DemoBanner } from "../../components/DemoBanner";
 import { DashboardFooter } from "../../components/DashboardFooter";
-import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import Image from "next/image";
 
 import uitLogo from "./../../public/UITLogo.jpg";
 import { useAuth } from "@/context/authContext";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
-import { getUserFromToken } from "@/services/auth/authService";
-import type { User } from "@/types/user";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -23,44 +20,6 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { logout, currentUser } = useAuth();
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    // Decode user from token on mount
-    const decodedUser = getUserFromToken();
-    setUser(decodedUser);
-
-    // Listen for storage events to update user when token changes
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "token") {
-        const updatedUser = getUserFromToken();
-        setUser(updatedUser);
-      }
-    };
-
-    // Listen for custom auth events
-    const handleAuthLogin = (e: CustomEvent) => {
-      const updatedUser = getUserFromToken();
-      setUser(updatedUser);
-    };
-
-    const handleAuthLogout = () => {
-      setUser(null);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("auth-login", handleAuthLogin as EventListener);
-    window.addEventListener("auth-logout", handleAuthLogout);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener(
-        "auth-login",
-        handleAuthLogin as EventListener
-      );
-      window.removeEventListener("auth-logout", handleAuthLogout);
-    };
-  }, []);
 
   return (
     <div className="flex h-screen bg-background">
@@ -80,7 +39,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
         </div>
-        <NavigationSidebar role={user?.role} activeView="" />
+        <NavigationSidebar role={currentUser?.role} activeView="" />
       </div>
 
       {/* Main Content */}
@@ -112,13 +71,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       </div>
                     </div>
                   </div>
-                  <NavigationSidebar role={user?.role} activeView="" />
+                  <NavigationSidebar role={currentUser?.role} activeView="" />
                 </SheetContent>
               </Sheet>
 
               <div>
                 <h1 className="text-xl text-foreground capitalize">
-                  {currentUser?.role.replace("-", "")} Dashboard
+                  {currentUser?.role ? currentUser.role.replace(/-/g, "") : ""} Dashboard
                 </h1>
               </div>
             </div>
@@ -127,15 +86,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarFallback>
-                    {currentUser?.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {currentUser?.fullname
+                      ? currentUser.fullname.split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                      : "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">
-                  <p className="text-sm text-foreground">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  <p className="text-sm text-foreground">{currentUser?.fullname || "User"}</p>
+                  <p className="text-xs text-muted-foreground">{currentUser?.email || ""}</p>
                 </div>
               </div>
 
@@ -153,8 +113,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <DashboardFooter />
       </div>
 
-      {/* Demo Helper */}
-      {/* <DemoHelper userRole={user?.role} /> */}
     </div>
   );
 }

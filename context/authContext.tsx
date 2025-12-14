@@ -8,7 +8,9 @@ import React, {
 } from "react";
 import type { User } from "@/types/user";
 import type { PendingBook } from "@/types/pendingBook";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { getMyProfile } from "@/services/profile";
+import { logout as authServiceLogout, getUserFromToken } from "@/services/auth/authService";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -33,8 +35,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("user");
-    if (saved) _setCurrentUser(JSON.parse(saved));
+    const token = localStorage.getItem("token");
+    
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as User;
+        // If saved user lacks role, try to fill it from token
+        if (!parsed?.role && token) {
+          const fromToken = getUserFromToken();
+          if (fromToken?.role) {
+            parsed.role = fromToken.role;
+            parsed.id = fromToken.id || parsed.id;
+            parsed.fullname = fromToken.fullname || parsed.fullname;
+            parsed.email = fromToken.email || parsed.email;
+            try {
+              localStorage.setItem("user", JSON.stringify(parsed));
+            } catch (_) {}
+          }
+        }
+        _setCurrentUser(parsed);
+      } catch (_) {
+        _setCurrentUser(null);
+      }
+    } else if (token) {
+      // If no saved user but token exists, extract user from token
+      const fromToken = getUserFromToken();
+      if (fromToken) {
+        _setCurrentUser(fromToken);
+        try {
+          localStorage.setItem("user", JSON.stringify(fromToken));
+        } catch (_) {}
+      }
+    }
   }, []);
+
+  // On mount, verify token by calling profile endpoint. If unauthorized, force logout.
+  useEffect(() => {
+    let mounted = true;
+    const verify = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const profile = await getMyProfile();
+        // If profile returned, sync current user (some APIs return user object)
+        if (mounted && profile) {
+          try {
+            const prof = profile as any;
+            // Always merge role and other info from token if missing from profile
+            const fromToken = getUserFromToken();
+            if (fromToken) {
+              prof.role = prof.role || fromToken.role;
+              prof.id = prof.id || fromToken.id;
+              prof.fullname = prof.fullname || fromToken.fullname;
+              prof.email = prof.email || fromToken.email;
+            }
+            _setCurrentUser(prof);
+            localStorage.setItem("user", JSON.stringify(prof));
+          } catch (_) {}
+        }
+      } catch (err: any) {
+        // If API returned unauthorized, clear auth and redirect to sign-in
+        const status = err?.status ?? err?.statusCode ?? null;
+        if (status === 401) {
+          try {
+            authServiceLogout();
+          } catch (_) {}
+          saveUser(null);
+          setPendingBook(null);
+          if (mounted) router.push("/");
+        }
+      }
+    };
+
+    verify();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Validate token on every route change. If profile endpoint returns 401, force logout.
+  const pathname = usePathname();
+  useEffect(() => {
+    let mounted = true;
+    const verifyOnRoute = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        await getMyProfile();
+      } catch (err: any) {
+        const status = err?.status ?? err?.statusCode ?? null;
+        if (status === 401) {
+          try {
+            authServiceLogout();
+          } catch (_) {}
+          saveUser(null);
+          setPendingBook(null);
+          if (mounted) router.push("/");
+        }
+      }
+    };
+
+    verifyOnRoute();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   // Listen for login events dispatched by `loginService` and storage events
   useEffect(() => {

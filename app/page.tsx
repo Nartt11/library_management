@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import LoginPage from "@/app/(public)/login/page";
 import { Showroom } from "@/components/Showroom";
 // import { AdminDashboard } from "@/components/AdminDashboard";
@@ -9,11 +10,39 @@ import { Showroom } from "@/components/Showroom";
 // import { ScannerDashboard } from "@/components/ScannerDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/authContext";
+import { getUserFromToken } from "@/services/auth/authService";
 
 export default function HomePage() {
   const [showLogin, setShowLogin] = useState(false);
   const { currentUser, saveUser, logout, setPendingBook, pendingBook } =
     useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If user is logged in, redirect to role dashboard
+    if (currentUser && typeof currentUser.role === "string" && currentUser.role.trim() !== "") {
+      const normalizedRole = currentUser.role.replace(/-/g, "").trim();
+      const rolePath = `/${normalizedRole}/dashboard`;
+      router.push(rolePath);
+      return;
+    }
+
+    // If there is a token but no currentUser saved, try to deserialize user from token
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (token && !currentUser) {
+        const userFromToken = getUserFromToken();
+        if (userFromToken) {
+          // persist into context and trigger redirect on next render
+          saveUser(userFromToken);
+          return;
+        }
+
+        // if token exists but cannot parse user, clear stale user storage
+        localStorage.removeItem("user");
+      }
+    } catch (_) {}
+  }, [currentUser, router]);
 
   const handleLogout = () => {
     logout();

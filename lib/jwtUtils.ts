@@ -67,13 +67,13 @@ export function extractUserFromToken(token: string): User | null {
 
   // Extract claims (handles multiple formats)
   const id = payload.AccountId ?? payload.UserId ?? payload.userId ?? payload.sub ?? "";
-  const name = payload.Name ?? payload.UserName ?? payload.name ?? payload.userName ?? "";
+  const fullname = payload.FullName ?? payload.Name ?? payload.UserName ?? payload.name ?? payload.userName ?? payload.fullname ?? "";
   const email = payload.Email ?? payload.email ?? "";
   const role = mapRole(payload.Role ?? payload.role ?? "");
 
   const user: User = {
     id: String(id),
-    name: String(name),
+    fullname: String(fullname),
     email: String(email),
     role,
   };
