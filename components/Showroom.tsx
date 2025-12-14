@@ -383,6 +383,14 @@ export function Showroom() {
                   >
                     {book.publicationYear}
                   </Badge>
+                  {book.availableCopiesCount && (
+                    <Badge
+                      variant="secondary"
+                      className="absolute top-3 left-3 text-xs font-semibold shadow-lg"
+                    >
+                      {book.availableCopiesCount} left
+                    </Badge>
+                  )}
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm font-semibold line-clamp-2 text-foreground mb-2 group-hover:text-orange-600 transition-colors">
@@ -659,7 +667,10 @@ export function Showroom() {
                         <span className="text-muted-foreground text-xs uppercase tracking-wide block">
                           available
                         </span>
-                        <span className="text-xs truncate block">28</span>
+                        <span className="text-xs truncate block">
+                          {" "}
+                          {selectedBook.availableCopiesCount}{" "}
+                        </span>
                       </div>
                     </div>
                   </div>

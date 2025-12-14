@@ -20,6 +20,7 @@ export interface Book {
   description: string;
   authors: Author[];
   bookCategories: BookCategory[];
+  availableCopiesCount: number;
 }
 
 // Extended type for student catalog view with availability info
