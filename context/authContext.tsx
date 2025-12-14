@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (fromToken?.role) {
             parsed.role = fromToken.role;
             parsed.id = fromToken.id || parsed.id;
-            parsed.fullname = fromToken.fullname || parsed.fullname;
+            parsed.name = fromToken.name || parsed.name;
             parsed.email = fromToken.email || parsed.email;
             try {
               localStorage.setItem("user", JSON.stringify(parsed));
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (fromToken) {
               prof.role = prof.role || fromToken.role;
               prof.id = prof.id || fromToken.id;
-              prof.fullname = prof.fullname || fromToken.fullname;
+              prof.name = prof.name || fromToken.name;
               prof.email = prof.email || fromToken.email;
             }
             _setCurrentUser(prof);
