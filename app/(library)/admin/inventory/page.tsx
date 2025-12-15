@@ -443,7 +443,7 @@ export default function BookInventoryManagement() {
                     className="text-left p-3 text-sm text-gray-700"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
-                    Supplier Code
+                    Supplier Name
                   </th>
                   <th
                     className="text-left p-3 text-sm text-gray-700"
@@ -477,9 +477,7 @@ export default function BookInventoryManagement() {
                     className="text-right p-3 text-sm text-gray-700"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
-                    Total Value
-                    <br />
-                    (Tổng tiền)
+                    Noted
                   </th>
                   <th
                     className="text-right p-3 text-sm text-gray-700"
@@ -507,24 +505,26 @@ export default function BookInventoryManagement() {
                           {revision.id}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm">{revision.supplier.id}</td>
+                      <td className="p-3 text-sm">{revision.supplier.name}</td>
                       <td className="p-3 text-sm">{revision.staff.fullName}</td>
                       <td className="p-3 text-sm text-gray-600">
-                        {revision.importDate}
+                        {new Date(revision.importDate).toLocaleString("vi-VN")}
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary">
+                          {revision.bookImportDetails.length}
+                        </Badge>
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant="secondary">
                           {revision.totalAmount}
                         </Badge>
                       </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="secondary">{revision.note}</Badge>
-                      </td>
                       <td
                         className="p-3 text-right"
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
-                        {/* ${revision.totalValue.toFixed(2)} */}
+                        {revision.note}
                       </td>
                       <td className="p-3">
                         <div className="flex items-center justify-end gap-2">

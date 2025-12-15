@@ -7,7 +7,8 @@ export function getAllBooks(
   pageSize: number,
   categoryName?: string,
   isbn?: string,
-  titleQuery?: string
+  titleQuery?: string,
+  authorName? : string
 ) {
   const params = new URLSearchParams({
     pageNumber: page.toString(),
@@ -17,6 +18,7 @@ export function getAllBooks(
   if (categoryName) params.append("categoryName", categoryName);
   if (isbn) params.append("isbn", isbn);
   if (titleQuery) params.append("titleQuery", titleQuery);
+  if (authorName) params.append("authorName", authorName);
 
   return apiFetch(`/books/search?${params.toString()}`);
 }
@@ -69,7 +71,7 @@ export function updateBookAuthors(id: string, authorIds: string[]) {
 
 // POST /api/books/import
 export function importBooks(payload: {
-  supplierId: string;
+  supplierId: string ;
   notes: string;
   details: {
     bookId: string;

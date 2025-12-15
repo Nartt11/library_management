@@ -283,6 +283,7 @@ export function Showroom() {
           </div>
         )}
 
+        <RecommendBooks recommendBooks={booksRecommend} />
         {/* Enhanced Search and Filters */}
         <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="pb-4">
@@ -353,8 +354,6 @@ export function Showroom() {
             </div>
           </CardContent>
         </Card>
-
-        <RecommendBooks recommendBooks={booksRecommend} />
 
         {/* Enhanced Results Summary */}
         <div className="flex items-center justify-between">

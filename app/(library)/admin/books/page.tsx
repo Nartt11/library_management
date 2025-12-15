@@ -21,7 +21,9 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,  DialogFooter,  DialogHeader,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -88,8 +90,8 @@ export default function BookManagement() {
   const { booksQuery, createMutation } = useBooks(
     page,
     pageSize,
-    debouncedTitle,
-    debouncedAuthor
+    title,
+    author
   );
 
   const books: Book[] = booksQuery.data?.data ?? [];
@@ -178,8 +180,8 @@ export default function BookManagement() {
       const response = await getBookCopiesQRs(book.id);
       setQrData(response || []);
     } catch (error) {
-      console.error('Error fetching QR codes:', error);
-      toast.error('Failed to load QR codes');
+      console.error("Error fetching QR codes:", error);
+      toast.error("Failed to load QR codes");
       setQrData([]);
     } finally {
       setQrLoading(false);
@@ -188,25 +190,32 @@ export default function BookManagement() {
 
   // handle print QR codes
   const handlePrintQRs = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
-    const qrHtml = qrData.map((item, index) => {
-      const statusClass = item.status === 'Available' ? 'status-available' : 
-                         item.status === 'Borrowed' ? 'status-borrowed' : 'status-damaged';
-      return `
-        <div class="qr-item">
-          <div class="status ${statusClass}">${item.status}</div>
-          <img src="${generateBarcodeUrl(item.copyId)}" alt="QR ${index + 1}" />
-        </div>
-      `;
-    }).join('');
+    const qrHtml = qrData
+      .map(
+        (item, index) => `
+      <div style="page-break-inside: avoid; margin: 20px; text-align: center; border: 1px solid #ccc; padding: 20px; display: inline-block;">
+        <h3 style="margin-bottom: 10px;">${
+          selectedBookForQR?.title || "Book"
+        }</h3>
+        <p style="margin-bottom: 10px;">Copy ID: ${item.copyId}</p>
+        <p style="margin-bottom: 10px;">Status: ${item.status}</p>
+        <img src="${generateBarcodeUrl(
+          item.copyId
+        )}" style="width: 150px; height: 150px;" />
+        <p style="margin-top: 10px; font-size: 12px;">${item.copyId}</p>
+      </div>
+    `
+      )
+      .join("");
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Codes - ${selectedBookForQR?.title || 'Book'}</title>
+          <title>QR Codes - ${selectedBookForQR?.title || "Book"}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
@@ -236,8 +245,9 @@ export default function BookManagement() {
           </style>
         </head>
         <body>
-          <h1 style="text-align: center; margin-bottom: 20px;">${selectedBookForQR?.title || 'Book'}</h1>
-          <p style="text-align: center; margin-bottom: 30px; color: #666;">Total Copies: ${qrData.length}</p>
+          <h1 style="text-align: center; margin-bottom: 30px;">QR Codes for ${
+            selectedBookForQR?.title || "Book"
+          }</h1>
           <div class="qr-grid">${qrHtml}</div>
         </body>
       </html>
@@ -333,7 +343,11 @@ export default function BookManagement() {
         </CardContent>
       </Card>
 
-      <BooksTable books={books} onEdit={openUpdateDialog} onViewQRs={handleViewQRs} />
+      <BooksTable
+        books={books}
+        onEdit={openUpdateDialog}
+        onViewQRs={handleViewQRs}
+      />
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>
@@ -393,7 +407,7 @@ export default function BookManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              QR Codes - {selectedBookForQR?.title || 'Book'}
+              QR Codes for {selectedBookForQR?.title || "Book"}
             </DialogTitle>
             <DialogDescription className="flex items-center justify-between">
               <span>View and print QR codes for all copies</span>
@@ -419,29 +433,49 @@ export default function BookManagement() {
               <div className="text-muted-foreground">Loading QR codes...</div>
             </div>
           ) : qrData.length === 0 ? (
-            <div className="text-center py-12">
-              <QrCode className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <div className="text-muted-foreground">No copies found for this book</div>
+            <div className="text-center py-8">
+              <div className="text-muted-foreground">
+                No QR codes found for this book
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-3 gap-4">
               {qrData.map((item, index) => (
-                <div key={item.copyId || index} className="flex flex-col items-center gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <Badge
-                    variant={item.status === 'Available' ? 'default' : item.status === 'Borrowed' ? 'secondary' : 'destructive'}
-                    className="text-xs w-full justify-center"
-                  >
-                    {item.status}
-                  </Badge>
-                  
-                  <div className="bg-white p-2 rounded-lg border w-full aspect-square flex items-center justify-center">
-                    <img
-                      src={generateBarcodeUrl(item.copyId)}
-                      alt={`QR ${index + 1}`}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                </div>
+                <Card key={item.copyId || index} className="overflow-hidden">
+                  <CardContent className="p-4 text-center">
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm">
+                          Copy ID: {item.copyId}
+                        </h4>
+                        <Badge
+                          variant={
+                            item.status === "Available"
+                              ? "default"
+                              : item.status === "Borrowed"
+                              ? "secondary"
+                              : "destructive"
+                          }
+                          className="text-xs"
+                        >
+                          {item.status}
+                        </Badge>
+                      </div>
+
+                      <div className="bg-white p-2 rounded-lg border inline-block">
+                        <img
+                          src={generateBarcodeUrl(item.copyId)}
+                          alt={`QR Code for copy ${item.copyId}`}
+                          className="w-24 h-24"
+                        />
+                      </div>
+
+                      <div className="text-xs text-muted-foreground break-all">
+                        {item.copyId}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}

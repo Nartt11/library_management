@@ -2,27 +2,32 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllBooks, searchBooksByTitle, createBook, searchBooksByAuthor, updateBookCategories, updateBookAuthors } from "@/services/book";
 import { toast } from "sonner";
 
-export function useBooks(page: number, pageSize: number, title: string = "", author: string = "") {
+export function useBooks(page: number, pageSize: number, title: string = "", author: string = "", categoryName: string ="",isbn: string ="" ) {
   const queryClient = useQueryClient();
 
   // Query lấy books (có search)
   const booksQuery = useQuery({
-    queryKey: ["books", page, pageSize, title, author],
-    queryFn: ({ queryKey }) => {
-      const [_k, p, ps, t, a] = queryKey as [string, number, number, string, string];
-      const trimmedTitle = (t || "").trim();
-      const trimmedAuthor = (a || "").trim();
+  queryKey: [
+    "books",
+    page,
+    pageSize,
+    categoryName,
+    isbn,
+    title,
+    author,
+  ],
+  queryFn: () => {
+    return getAllBooks(
+      page,
+      pageSize,
+      categoryName?.trim() || undefined,
+      isbn?.trim() || undefined,
+      title?.trim() || undefined,
+      author?.trim() || undefined
+    );
+  },
+});
 
-      if (trimmedTitle !== "") {
-        return searchBooksByTitle(trimmedTitle, p, ps);
-      }
-      if (trimmedAuthor !== "") {
-        return searchBooksByAuthor(trimmedAuthor, p, ps);
-      }
-      return getAllBooks(p, ps);
-    },
-    // keepPrivateData: true,
-  });
 
 
   // Mutation create book

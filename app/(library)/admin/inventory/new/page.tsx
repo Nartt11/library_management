@@ -42,16 +42,25 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 
+type BookItem = {
+  isbn: string;
+  bookTitle: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+};
+
 export default function InventoryCreatePage() {
   const router = useRouter();
   const { currentUser } = useAuth();
   const inventoryTimestamp = new Date().toLocaleString("vi-VN");
 
-  const [supplierId, setSupplierId] = useState("");
-  const [suppliers, setSuppliers] = useState<Supplier[]>();
-  const [staffId, setStaffId] = useState(currentUser?.id);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier>();
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [staffId, setStaffId] = useState(currentUser?.fullname);
   const [notes, setNotes] = useState("");
   const [openSupplierSelect, setOpenSupplierSelect] = useState(false);
+  const [openBookSelect, setOpenBookSelect] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +72,7 @@ export default function InventoryCreatePage() {
       setError(null);
 
       try {
-        const res = await getAllSupplier(supplierId, 1, 50);
+        const res = await getAllSupplier("", 1, 50);
 
         if (!mounted) return;
 
@@ -83,7 +92,7 @@ export default function InventoryCreatePage() {
     return () => {
       mounted = false;
     };
-  }, [supplierId]);
+  }, [selectedSupplier]);
 
   const [bookItems, setBookItems] = useState([
     {
@@ -108,18 +117,23 @@ export default function InventoryCreatePage() {
     ]);
   };
 
-  const handleUpdateItem = (index: number, field: string, value: any) => {
+  const handleUpdateItem = (
+    index: number,
+    field: keyof BookItem,
+    value: any
+  ) => {
     const updated = [...bookItems];
+
     updated[index] = {
       ...updated[index],
       [field]: value,
     };
 
-    // Auto update total price
+    // auto total
     updated[index].totalPrice =
       updated[index].quantity * updated[index].unitPrice;
 
-    // Auto fill book title khi nhập ISBN
+    // ✅ ISBN → Book Title
     if (field === "isbn") {
       const book = findBookByISBN(books, value);
       updated[index].bookTitle = book ? book.title : "";
@@ -128,21 +142,33 @@ export default function InventoryCreatePage() {
     setBookItems(updated);
   };
 
+  function findBookById(id: string) {
+    return books.find((b) => b.id === id) || null;
+  }
+
   function findBookByISBN(books: Book[], isbn: string) {
     if (!isbn) return null;
     return books.find((b) => b.isbn === isbn) || null;
   }
+
+  function findBookByTitle(books: Book[], title: string) {
+    if (!title) return null;
+    return books.find((b) => b.title === title) || null;
+  }
+
   const [books, setBooks] = useState<Book[]>([]);
 
   useEffect(() => {
     async function load() {
-      const data = await getAllBooks(1, 200);
+      const data = await getAllBooks(1, 50);
       setBooks(data.data);
     }
     load();
   }, []);
+  console.log("book in inventory", books);
 
   const handleSave = async () => {
+    const supplierId = selectedSupplier?.id || "";
     const payload = {
       supplierId,
       notes,
@@ -159,6 +185,11 @@ export default function InventoryCreatePage() {
         };
       }),
     };
+    if (!selectedSupplier?.id) {
+      toast.error("Please select a supplier");
+      return;
+    }
+
     console.log("payload import book", payload);
 
     const res = await importBooks(payload);
@@ -227,7 +258,7 @@ export default function InventoryCreatePage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label className="text-sm text-gray-700">
-                Supplier Code <span className="text-red-500">*</span>
+                Supplier Name <span className="text-red-500">*</span>
               </Label>
 
               <Popover
@@ -245,7 +276,7 @@ export default function InventoryCreatePage() {
                       fontFamily: "Inter, sans-serif",
                     }}
                   >
-                    {supplierId || "Select supplier"}
+                    {selectedSupplier?.name || "Select supplier"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -261,12 +292,12 @@ export default function InventoryCreatePage() {
                           key={supplier.id}
                           value={supplier.name}
                           onSelect={() => {
-                            setSupplierId(supplier.id);
+                            setSelectedSupplier(supplier);
 
                             setOpenSupplierSelect(false);
                           }}
                         >
-                          {supplier.id}
+                          {supplier.name}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -276,7 +307,7 @@ export default function InventoryCreatePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="staffId" className="text-sm text-gray-700">
-                Staff ID <span className="text-red-500">*</span>
+                Staff Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="staffId"
@@ -472,20 +503,62 @@ export default function InventoryCreatePage() {
                       />
                     </td>
                     <td className="p-3">
-                      <Input
-                        value={item.bookTitle}
-                        onChange={(e) =>
-                          handleUpdateItem(index, "bookTitle", e.target.value)
+                      <Popover
+                        open={openBookSelect === index}
+                        onOpenChange={(open) =>
+                          setOpenBookSelect(open ? index : null)
                         }
-                        placeholder="Enter book title..."
-                        // disabled={isDetailView}
-                        className="h-10 min-w-[200px]"
-                        style={{
-                          borderRadius: "8px",
-                          backgroundColor: "#F5F1ED",
-                          border: "1px solid #E5E0DB",
-                        }}
-                      />
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-between h-10"
+                            style={{
+                              borderRadius: "8px",
+                              backgroundColor: "#F5F1ED",
+                              border: "1px solid #E5E0DB",
+                            }}
+                          >
+                            {item.bookTitle || "Select book title"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+
+                        <PopoverContent className="w-[320px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search book title..." />
+                            <CommandEmpty>No book found.</CommandEmpty>
+
+                            <CommandGroup>
+                              {books.map((book) => (
+                                <CommandItem
+                                  key={book.id}
+                                  value={book.title}
+                                  onSelect={() => {
+                                    const updated = [...bookItems];
+
+                                    updated[index] = {
+                                      ...updated[index],
+                                      bookTitle: book.title,
+                                      isbn: book.isbn,
+                                    };
+
+                                    setBookItems(updated);
+                                    setOpenBookSelect(null);
+                                  }}
+                                >
+                                  <div className="flex flex-col">
+                                    <span>{book.title}</span>
+                                    <span className="text-xs text-gray-500">
+                                      ISBN: {book.isbn}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </td>
                     <td className="p-3">
                       <Input
@@ -605,20 +678,62 @@ export default function InventoryCreatePage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-gray-600">Book Title</Label>
-                    <Input
-                      value={item.bookTitle}
-                      onChange={(e) =>
-                        handleUpdateItem(index, "bookTitle", e.target.value)
+                    <Popover
+                      open={openBookSelect === index}
+                      onOpenChange={(open) =>
+                        setOpenBookSelect(open ? index : null)
                       }
-                      placeholder="Enter book title..."
-                      // disabled={isDetailView}
-                      className="h-10"
-                      style={{
-                        borderRadius: "8px",
-                        backgroundColor: "#F5F1ED",
-                        border: "1px solid #E5E0DB",
-                      }}
-                    />
+                    >
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between h-10"
+                          style={{
+                            borderRadius: "8px",
+                            backgroundColor: "#F5F1ED",
+                            border: "1px solid #E5E0DB",
+                          }}
+                        >
+                          {item.bookTitle || "Select book title"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+
+                      <PopoverContent className="w-[320px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search book title..." />
+                          <CommandEmpty>No book found.</CommandEmpty>
+
+                          <CommandGroup>
+                            {books.map((book) => (
+                              <CommandItem
+                                key={book.id}
+                                value={book.id}
+                                onSelect={() => {
+                                  const updated = [...bookItems];
+
+                                  updated[index] = {
+                                    ...updated[index],
+                                    bookTitle: book.title,
+                                    isbn: book.isbn,
+                                  };
+
+                                  setBookItems(updated);
+                                  setOpenBookSelect(null);
+                                }}
+                              >
+                                <div className="flex flex-col">
+                                  <span>{book.title}</span>
+                                  <span className="text-xs text-gray-500">
+                                    ISBN: {book.isbn}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">

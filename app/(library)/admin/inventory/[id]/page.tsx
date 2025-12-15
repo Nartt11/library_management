@@ -88,7 +88,7 @@ export default function BookImportDetailPage() {
       </Card>
 
       {/* Summary */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Summary</CardTitle>
         </CardHeader>
@@ -98,12 +98,18 @@ export default function BookImportDetailPage() {
             <span className="font-medium">{data.totalAmount}</span>
           </p>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Book Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Imported Books</CardTitle>
+          <CardTitle className="flex flex-col gap-2">
+            <div className="font-medium uppercase">Imported Books</div>
+            <div>
+              <span className="text-gray-500">Total Amount:</span>{" "}
+              <span className="font-medium">{data.totalAmount}</span>
+            </div>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {data.bookImportDetails?.length === 0 ? (
@@ -123,13 +129,11 @@ export default function BookImportDetailPage() {
               <tbody>
                 {data.bookImportDetails.map((item: any, index: number) => (
                   <tr key={index} className="border-b">
-                    <td className="p-3">{item.bookTitle}</td>
+                    <td className="p-3">{item.book.title}</td>
                     <td className="p-3 text-right">{item.quantity}</td>
+                    <td className="p-3 text-right">${item.unitPrice}</td>
                     <td className="p-3 text-right">
-                      ${item.unitPrice?.toFixed(2)}
-                    </td>
-                    <td className="p-3 text-right">
-                      ${item.totalPrice?.toFixed(2)}
+                      ${item.unitPrice * item.quantity}
                     </td>
                   </tr>
                 ))}
