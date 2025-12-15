@@ -55,6 +55,15 @@ import {
   adminCreateBorrowRequest
 } from "../../../../services/borrow-request";
 import { generateBarcodeUrl, parseBarcode } from "../../../../services/barcode";
+import { getUserProfileById } from "../../../../services/profile";
+
+// Parse student QR code data to extract user ID
+export function parseStudentQR(barcodeData: string): string | null {
+  if (barcodeData.startsWith('STUDENT-')) {
+    return barcodeData.substring(8); // Remove 'STUDENT-' prefix
+  }
+  return null;
+}
 
 export default function BorrowRequestsPage() {
   // State
@@ -86,6 +95,8 @@ export default function BorrowRequestsPage() {
   const [showAdminScanner, setShowAdminScanner] = useState(false);
   const [adminScanInput, setAdminScanInput] = useState("");
   const [searching, setSearching] = useState(false);
+  const [showStudentScanner, setShowStudentScanner] = useState(false);
+  const [studentScanInput, setStudentScanInput] = useState("");
   
   // Pagination
   const [pageNumber, setPageNumber] = useState(1);
@@ -139,7 +150,10 @@ export default function BorrowRequestsPage() {
         const code = jsQR(imageData.data, imageData.width, imageData.height);
         
         if (code && code.data) {
-          if (showAdminScanner) {
+          if (showStudentScanner) {
+            setStudentScanInput(code.data);
+            setTimeout(() => processStudentScannedCode(code.data), 500);
+          } else if (showAdminScanner) {
             setAdminScanInput(code.data);
             setTimeout(() => processAdminScannedCode(code.data), 500);
           } else {
@@ -253,6 +267,48 @@ export default function BorrowRequestsPage() {
     }
   };
 
+  // Student scanner handlers
+  const openStudentScanner = () => {
+    setStudentScanInput("");
+    setShowStudentScanner(true);
+    setTimeout(() => startCamera(), 100);
+  };
+
+  const processStudentScannedCode = async (barcodeData: string) => {
+    const studentId = parseStudentQR(barcodeData);
+    if (studentId) {
+      try {
+        const response = await getUserProfileById(studentId);
+        if (response && response.name && response.email) {
+          const studentData = {
+            id: studentId,
+            name: response.name,
+            fullName: response.name,
+            email: response.email,
+            phone: response.phone || null,
+          };
+          setSelectedMember(studentData);
+          toast.success(`Student ${response.name} selected`);
+          stopCamera();
+          setShowStudentScanner(false);
+        } else {
+          toast.error('Student profile not found or incomplete');
+        }
+      } catch (error: any) {
+        console.error('Error fetching student profile:', error);
+        toast.error(error?.message || 'Failed to fetch student profile');
+      }
+    } else {
+      toast.error('Invalid QR code format. Expected: STUDENT-{id}');
+    }
+  };
+
+  const handleStudentScanSubmit = () => {
+    if (studentScanInput.trim()) {
+      processStudentScannedCode(studentScanInput.trim());
+    }
+  };
+
   const handleAdminCreateSubmit = async () => {
     if (!selectedMember) {
       toast.error('Please select a member');
@@ -289,6 +345,7 @@ export default function BorrowRequestsPage() {
     setMemberSearchTerm("");
     setSearchResults([]);
     setAdminScanInput("");
+    setStudentScanInput("");
   };
 
   // API handlers
@@ -905,6 +962,10 @@ export default function BorrowRequestsPage() {
                     <Button onClick={handleMemberSearch} disabled={searching || !memberSearchTerm.trim()}>
                       {searching ? 'Searching...' : 'Search'}
                     </Button>
+                    <Button variant="outline" onClick={openStudentScanner}>
+                      <QrCode className="h-4 w-4 mr-1" />
+                      Scan QR
+                    </Button>
                   </div>
                   {searchResults.length > 0 && (
                     <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
@@ -1032,6 +1093,71 @@ export default function BorrowRequestsPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => { stopCamera(); setShowAdminScanner(false); }}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Scanner Dialog */}
+      <Dialog open={showStudentScanner} onOpenChange={(open) => { if (!open) { stopCamera(); setShowStudentScanner(false); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Scan Student QR Code</DialogTitle>
+            <DialogDescription>
+              Position the student's QR code in front of the camera or enter manually
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative">
+                  <div className="border-4 border-green-500 w-64 h-64 rounded-lg"></div>
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-400 rounded-tl-lg"></div>
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-400 rounded-tr-lg"></div>
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-400 rounded-bl-lg"></div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-400 rounded-br-lg"></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Or enter QR code data manually:</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="STUDENT-{student-id}"
+                  value={studentScanInput}
+                  onChange={(e) => setStudentScanInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && studentScanInput.trim()) {
+                      handleStudentScanSubmit();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleStudentScanSubmit}
+                  disabled={!studentScanInput.trim()}
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              💡 Scan the student's QR code from their account page or enter the code manually (format: STUDENT-id)
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { stopCamera(); setShowStudentScanner(false); }}>
               Close
             </Button>
           </DialogFooter>
