@@ -4,3 +4,8 @@ import { apiFetch } from "./base";
 export function getMyProfile() {
   return apiFetch(`/profile`);
 }
+
+// GET /api/user/{accountId}
+export function getUserProfileById(accountId: string) {
+  return apiFetch(`/user/${accountId}`);
+}

@@ -73,7 +73,7 @@ export function extractUserFromToken(token: string): User | null {
 
   const user: User = {
     id: String(id),
-    fullname: String(fullname),
+    name: String(fullname),
     email: String(email),
     role,
   };

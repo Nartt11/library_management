@@ -86,15 +86,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarFallback>
-                    {currentUser?.fullname
-                      ? currentUser.fullname.split(" ")
+                    {currentUser?.name
+                      ? currentUser.name.split(" ")
                           .map((n) => n[0])
                           .join("")
                       : "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">
-                  <p className="text-sm text-foreground">{currentUser?.fullname || "User"}</p>
+                  <p className="text-sm text-foreground">{currentUser?.name || "User"}</p>
                   <p className="text-xs text-muted-foreground">{currentUser?.email || ""}</p>
                 </div>
               </div>
