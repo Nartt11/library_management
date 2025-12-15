@@ -96,6 +96,7 @@ export default function InventoryCreatePage() {
 
   const [bookItems, setBookItems] = useState([
     {
+      id: String(Date.now()),
       isbn: "",
       bookTitle: "",
       quantity: 0,
@@ -108,6 +109,7 @@ export default function InventoryCreatePage() {
     setBookItems([
       ...bookItems,
       {
+        id: String(Date.now()),
         isbn: "",
         bookTitle: "",
         quantity: 0,
@@ -115,6 +117,29 @@ export default function InventoryCreatePage() {
         totalPrice: 0,
       },
     ]);
+  };
+  const handleDeleteItem = (id: string) => {
+    if (bookItems.length === 1) {
+      toast.error("Cannot delete the last item");
+      return;
+    }
+    setBookItems(bookItems.filter((item) => item.id !== id));
+    toast.success("Book item removed");
+  };
+
+  const handleResetItems = () => {
+    setSelectedSupplier(undefined);
+    setBookItems([
+      {
+        id: String(Date.now()),
+        isbn: "",
+        bookTitle: "",
+        quantity: 0,
+        unitPrice: 0,
+        totalPrice: 0,
+      },
+    ]);
+    toast.success("All items reset");
   };
 
   const handleUpdateItem = (
@@ -191,7 +216,13 @@ export default function InventoryCreatePage() {
     const timeoutId = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const data = await getAllBooks(1, 50, undefined, undefined, searchQuery);
+        const data = await getAllBooks(
+          1,
+          50,
+          undefined,
+          undefined,
+          searchQuery
+        );
         setBooks(data.data);
       } catch (error) {
         console.error("Error searching books:", error);
@@ -235,6 +266,18 @@ export default function InventoryCreatePage() {
     toast.success(res);
     router.push("/admin/inventory");
   };
+
+  const totalBookTitles = bookItems.filter(
+    (item) => item.isbn.trim() !== ""
+  ).length;
+  const totalQuantity = bookItems.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0
+  );
+  const totalMoney = bookItems.reduce(
+    (sum, item) => sum + (item.totalPrice || 0),
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
@@ -413,7 +456,7 @@ export default function InventoryCreatePage() {
                 className="text-4xl"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {/* {totalBookTitles} */} 12
+                {totalBookTitles}
               </div>
             </div>
             <div
@@ -432,7 +475,7 @@ export default function InventoryCreatePage() {
                 className="text-4xl"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {/* {totalQuantity} */}
+                {totalQuantity}
               </div>
             </div>
             <div
@@ -451,7 +494,7 @@ export default function InventoryCreatePage() {
                 className="text-4xl"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {/* ${totalMoney.toFixed(2)} */}
+                ${totalMoney.toFixed(2)}
               </div>
             </div>
           </div>
@@ -521,11 +564,11 @@ export default function InventoryCreatePage() {
               </thead>
               <tbody>
                 {bookItems.map((item, index) => (
-                    <tr
-                      key={`${item.isbn}-${index}`}
-                      className="border-b hover:bg-gray-50 transition-colors"
-                    >
-                    <td className="p-3">
+                  <tr
+                    key={`${index}`}
+                    className="border-b hover:bg-gray-50 transition-colors align-top"
+                  >
+                    <td className="p-3 top-0">
                       <Input
                         value={item.isbn}
                         onChange={(e) =>
@@ -547,7 +590,11 @@ export default function InventoryCreatePage() {
                         <Input
                           value={item.bookTitle}
                           onChange={(e) => {
-                            handleUpdateItem(index, "bookTitle", e.target.value);
+                            handleUpdateItem(
+                              index,
+                              "bookTitle",
+                              e.target.value
+                            );
                             setOpenBookSelect(index);
                             setSearchQuery(e.target.value);
                           }}
@@ -564,7 +611,7 @@ export default function InventoryCreatePage() {
                           }}
                         />
                         {openBookSelect === index && books.length > 0 && (
-                          <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-[300px] overflow-auto">
+                          <div className=" z-500 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-[300px] overflow-auto">
                             {isSearching ? (
                               <div className="p-4 text-center text-sm text-gray-500">
                                 Searching...
@@ -579,13 +626,19 @@ export default function InventoryCreatePage() {
                                   key={book.id}
                                   className="px-3 py-2 hover:bg-gray-100 cursor-pointer transition-colors"
                                   onClick={() => {
-                                    handleUpdateItem(index, "bookTitle", book.title);
+                                    handleUpdateItem(
+                                      index,
+                                      "bookTitle",
+                                      book.title
+                                    );
                                     setOpenBookSelect(null);
                                     setSearchQuery("");
                                   }}
                                 >
                                   <div className="flex flex-col">
-                                    <span className="font-medium text-sm">{book.title}</span>
+                                    <span className="font-medium text-sm">
+                                      {book.title}
+                                    </span>
                                     <span className="text-xs text-gray-500">
                                       ISBN: {book.isbn}
                                     </span>
@@ -660,7 +713,7 @@ export default function InventoryCreatePage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          // onClick={() => handleDeleteItem(item.id)}
+                          onClick={() => handleDeleteItem(item.id)}
                           className="h-9 w-9 p-0 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />
@@ -690,7 +743,7 @@ export default function InventoryCreatePage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      // onClick={() => handleDeleteItem(item.id)}
+                      onClick={() => handleDeleteItem(item.id)}
                       className="h-8 w-8 p-0 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4 text-red-600" />
@@ -752,13 +805,19 @@ export default function InventoryCreatePage() {
                                 key={book.id}
                                 className="px-3 py-2 hover:bg-gray-100 cursor-pointer transition-colors"
                                 onClick={() => {
-                                  handleUpdateItem(index, "bookTitle", book.title);
+                                  handleUpdateItem(
+                                    index,
+                                    "bookTitle",
+                                    book.title
+                                  );
                                   setOpenBookSelect(null);
                                   setSearchQuery("");
                                 }}
                               >
                                 <div className="flex flex-col">
-                                  <span className="font-medium text-sm">{book.title}</span>
+                                  <span className="font-medium text-sm">
+                                    {book.title}
+                                  </span>
                                   <span className="text-xs text-gray-500">
                                     ISBN: {book.isbn}
                                   </span>
@@ -887,7 +946,11 @@ export default function InventoryCreatePage() {
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <Button variant="outline" className="gap-2">
+        <Button
+          variant="outline"
+          onClick={() => handleResetItems()}
+          className="gap-2"
+        >
           <RotateCcw className="h-4 w-4" /> Reset
         </Button>
         <Button onClick={handleSave} className="gap-2">
