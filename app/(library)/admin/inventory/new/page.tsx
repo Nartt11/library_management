@@ -13,17 +13,78 @@ import {
   ChevronLeft,
   FileDown,
   FileSpreadsheet,
+  ChevronsUpDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { getAllBooks, importBooks } from "@/services/book";
 import { Book } from "@/types/book";
+import { useAuth } from "@/context/authContext";
+import { Supplier } from "@/types/supplier";
+import { getAllSupplier } from "@/services/supplier";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 
 export default function InventoryCreatePage() {
   const router = useRouter();
+  const { currentUser } = useAuth();
+  const inventoryTimestamp = new Date().toLocaleString("vi-VN");
 
   const [supplierId, setSupplierId] = useState("");
+  const [suppliers, setSuppliers] = useState<Supplier[]>();
+  const [staffId, setStaffId] = useState(currentUser?.id);
   const [notes, setNotes] = useState("");
+  const [openSupplierSelect, setOpenSupplierSelect] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchSuppliers() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await getAllSupplier(supplierId, 1, 50);
+
+        if (!mounted) return;
+
+        // Giả sử API trả về dạng { data: Supplier[] }
+        setSuppliers(res.data ?? res);
+      } catch (err: any) {
+        if (mounted) {
+          setError(err?.message || "Failed to fetch suppliers");
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchSuppliers();
+
+    return () => {
+      mounted = false;
+    };
+  }, [supplierId]);
+
   const [bookItems, setBookItems] = useState([
     {
       isbn: "",
@@ -100,8 +161,8 @@ export default function InventoryCreatePage() {
     };
     console.log("payload import book", payload);
 
-    //await importBooks(payload);
-    toast.success("Saved revision!");
+    const res = await importBooks(payload);
+    toast.success(res);
     router.push("/admin/inventory");
   };
 
@@ -152,6 +213,105 @@ export default function InventoryCreatePage() {
           </Button>
         </div>
       </div>
+
+      <Card className="shadow-sm" style={{ borderRadius: "16px" }}>
+        <CardHeader>
+          <CardTitle
+            className="text-lg"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            Session Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-700">
+                Supplier Code <span className="text-red-500">*</span>
+              </Label>
+
+              <Popover
+                open={openSupplierSelect}
+                onOpenChange={setOpenSupplierSelect}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between h-11"
+                    style={{
+                      borderRadius: "10px",
+                      backgroundColor: "#F5F1ED",
+                      border: "1px solid #E5E0DB",
+                      fontFamily: "Inter, sans-serif",
+                    }}
+                  >
+                    {supplierId || "Select supplier"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Search supplier..." />
+                    <CommandEmpty>No supplier found.</CommandEmpty>
+
+                    <CommandGroup>
+                      {suppliers?.map((supplier) => (
+                        <CommandItem
+                          key={supplier.id}
+                          value={supplier.name}
+                          onSelect={() => {
+                            setSupplierId(supplier.id);
+
+                            setOpenSupplierSelect(false);
+                          }}
+                        >
+                          {supplier.id}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="staffId" className="text-sm text-gray-700">
+                Staff ID <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="staffId"
+                value={staffId}
+                // onChange={(e) => setStaffId(e.target.value)}
+                disabled={true}
+                placeholder="e.g. STAFF-001"
+                className="h-11"
+                style={{
+                  borderRadius: "10px",
+                  backgroundColor: "#F5F1ED",
+                  border: "1px solid #E5E0DB",
+                  fontFamily: "Inter, sans-serif",
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-700">
+                Inventory Timestamp
+              </Label>
+              <Input
+                value={inventoryTimestamp}
+                disabled
+                className="h-11"
+                style={{
+                  borderRadius: "10px",
+                  backgroundColor: "#F5F1ED",
+                  border: "1px solid #E5E0DB",
+                  fontFamily: "Inter, sans-serif",
+                }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card
         className="shadow-md"

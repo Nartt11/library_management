@@ -82,6 +82,16 @@ export function importBooks(payload: {
     body: JSON.stringify(payload),
   });
 }
+// GET /api/books/import?pageNumber=1&pageSize=20
+export function getAllBooksImport(page: number, pageSize: number) {
+  return apiFetch(`/books/import?pageNumber=${page}&pageSize=${pageSize}`);
+}
+
+
+// GET /api/books/{id}/copies/qrs
+export function getBookImportById(id: string) {
+  return apiFetch(`/books/import/${id}`);
+}
 
 // GET /api/books/{id}/copies/qrs
 export function getBookCopiesQRs(id: string) {
