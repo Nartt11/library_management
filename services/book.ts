@@ -113,8 +113,18 @@ export function importBooks(payload: {
   });
 }
 // GET /api/books/import?pageNumber=1&pageSize=20
-export function getAllBooksImport(page: number, pageSize: number) {
-  return apiFetch(`/books/import?pageNumber=${page}&pageSize=${pageSize}`);
+export function getAllBooksImport(page: number, pageSize: number, supplierName?: string, staffName?: string, startDate?: string, endDate?: string) {
+  const params = new URLSearchParams({
+    pageNumber: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  if (supplierName) params.append("supplierName", supplierName);
+  if (staffName) params.append("staffName", staffName);
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+
+  return apiFetch(`/books/import?${params.toString()}`);
 }
 
 

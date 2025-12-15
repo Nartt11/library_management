@@ -22,8 +22,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/Container";
-import { BookImport, BookImportResponse } from "@/types/book";
+import { BookImport, BookImportResponse, Staff, Supplier } from "@/types/book";
 import { getAllBooksImport } from "@/services/book";
+import { getAllSupplier } from "@/services/supplier";
 
 interface BookItem {
   id: string;
@@ -71,7 +72,11 @@ export default function BookInventoryManagement() {
       try {
         const res = (await getAllBooksImport(
           currentPage,
-          pageSize
+          pageSize,
+          filterSupplier,
+          filterStaff,
+          filterDateFrom,
+          filterDateTo
         )) as BookImportResponse;
 
         if (!mounted) return;
@@ -98,8 +103,8 @@ export default function BookInventoryManagement() {
   // Filters
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
-  const [filterStaff, setFilterStaff] = useState("all");
-  const [filterSupplier, setFilterSupplier] = useState("all");
+  const [filterStaff, setFilterStaff] = useState("");
+  const [filterSupplier, setFilterSupplier] = useState("");
 
   // Form state
   const [supplierId, setSupplierId] = useState("");
@@ -124,18 +129,40 @@ export default function BookInventoryManagement() {
       totalPrice: 0,
     },
   ]);
+  const [staffList, setStaffList] = useState<Staff>();
+  const [supplierList, setSupplierList] = useState<Supplier>();
+  // useEffect(() => {
+  //   let mounted = true;
 
-  // Extract unique values for filters
-  // const staffList = [
-  //   "all",
-  //   ...Array.from(new Set(revisions.map((r) => r.staffId))),
-  // ];
-  // const supplierList = [
-  //   "all",
-  //   ...Array.from(new Set(revisions.map((r) => r.supplierId))),
-  // ];
+  //   const fetchData = async () => {
+  //     setLoading(true);
+  //     setError(null);
 
-  // Filter revisions
+  //     try {
+  //       const [staffRes, supplierRes] = await Promise.all([
+  //         getAllSupplier(1, 100),
+  //         get("", 1, 100),
+  //       ]);
+
+  //       if (!mounted) return;
+
+  //       setStaffList(staffRes.data ?? staffRes);
+  //       setSupplierList(supplierRes.data ?? supplierRes);
+  //     } catch (err: any) {
+  //       if (mounted) {
+  //         setError(err?.message || "Failed to fetch data");
+  //       }
+  //     } finally {
+  //       if (mounted) setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+
+  //   return () => {
+  //     mounted = false;
+  //   };
+  // }, []);
 
   // Handlers
   const handleCreateNew = () => {
@@ -154,134 +181,10 @@ export default function BookInventoryManagement() {
     router.push("/admin/inventory/new");
   };
 
-  const handleViewDetails = (revision: InventoryRevision) => {
-    //setSelectedRevision(revision);
-    setSupplierId(revision.supplierId);
-    setStaffId(revision.staffId);
-    setBookItems(
-      revision.items.length > 0
-        ? revision.items
-        : [
-            {
-              id: "1",
-              isbn: "",
-              bookTitle: "",
-              quantity: 0,
-              unitPrice: 0,
-              totalPrice: 0,
-            },
-          ]
-    );
-  };
-
   // const handleDeleteRevision = (id: string) => {
   //   setRevisions(revisions.filter((r) => r.id !== id));
   //   toast.success("Inventory revision deleted");
   // };
-
-  const handleAddBookItem = () => {
-    const newItem: BookItem = {
-      id: String(Date.now()),
-      isbn: "",
-      bookTitle: "",
-      quantity: 0,
-      unitPrice: 0,
-      totalPrice: 0,
-    };
-    setBookItems([...bookItems, newItem]);
-  };
-
-  const handleUpdateItem = (
-    id: string,
-    field: keyof BookItem,
-    value: string | number
-  ) => {
-    setBookItems(
-      bookItems.map((item) => {
-        if (item.id === id) {
-          const updatedItem = { ...item, [field]: value };
-
-          if (field === "quantity" || field === "unitPrice") {
-            const qty = field === "quantity" ? Number(value) : item.quantity;
-            const price =
-              field === "unitPrice" ? Number(value) : item.unitPrice;
-            updatedItem.totalPrice = qty * price;
-          }
-
-          return updatedItem;
-        }
-        return item;
-      })
-    );
-  };
-
-  const handleDeleteItem = (id: string) => {
-    if (bookItems.length === 1) {
-      toast.error("Cannot delete the last item");
-      return;
-    }
-    setBookItems(bookItems.filter((item) => item.id !== id));
-    toast.success("Book item removed");
-  };
-
-  const handleResetItems = () => {
-    setSupplierId("");
-    setStaffId("");
-    setBookItems([
-      {
-        id: "1",
-        isbn: "",
-        bookTitle: "",
-        quantity: 0,
-        unitPrice: 0,
-        totalPrice: 0,
-      },
-    ]);
-    toast.success("All items reset");
-  };
-
-  const handleSaveRevision = () => {
-    if (!supplierId.trim()) {
-      toast.error("Supplier Code is required");
-      return;
-    }
-    if (!staffId.trim()) {
-      toast.error("Staff ID is required");
-      return;
-    }
-
-    const validItems = bookItems.filter((item) => item.isbn.trim() !== "");
-    if (validItems.length === 0) {
-      toast.error("Please add at least one book item");
-      return;
-    }
-
-    const totalQuantity = validItems.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    );
-    const totalValue = validItems.reduce(
-      (sum, item) => sum + item.totalPrice,
-      0
-    );
-
-    // const newRevision: InventoryRevision = {
-    //   id: String(Date.now()),
-    //   revisionCode: `INV-2024-${String(revisions.length + 1).padStart(3, "0")}`,
-    //   supplierId,
-    //   staffId,
-    //   timestamp: inventoryTimestamp,
-    //   totalItems: validItems.length,
-    //   totalQuantity,
-    //   totalValue,
-    //   items: validItems,
-    //   status: "completed",
-    // };
-
-    // setRevisions([newRevision, ...revisions]);
-    // toast.success("Inventory revision saved successfully");
-    // setViewMode("dashboard");
-  };
 
   const handleExportPDF = () => {
     toast.success("Exporting to PDF...");
@@ -292,17 +195,6 @@ export default function BookInventoryManagement() {
   };
 
   // Calculate totals for current form
-  const totalBookTitles = bookItems.filter(
-    (item) => item.isbn.trim() !== ""
-  ).length;
-  const totalQuantity = bookItems.reduce(
-    (sum, item) => sum + (item.quantity || 0),
-    0
-  );
-  const totalMoney = bookItems.reduce(
-    (sum, item) => sum + (item.totalPrice || 0),
-    0
-  );
 
   return (
     <Container>
@@ -374,7 +266,7 @@ export default function BookInventoryManagement() {
             </div>
             <div className="space-y-2">
               <Label className="text-sm text-gray-600">Staff</Label>
-              {/* <select
+              <select
                 value={filterStaff}
                 onChange={(e) => setFilterStaff(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg text-sm"
@@ -384,16 +276,16 @@ export default function BookInventoryManagement() {
                   border: "1px solid #E5E0DB",
                 }}
               >
-                {staffList.map((staff) => (
+                {/* {staffList.map((staff) => (
                   <option key={staff} value={staff}>
                     {staff === "all" ? "All Staff" : staff}
                   </option>
-                ))}
-              </select> */}
+                ))} */}
+              </select>
             </div>
             <div className="space-y-2">
               <Label className="text-sm text-gray-600">Supplier</Label>
-              {/* <select
+              <select
                 value={filterSupplier}
                 onChange={(e) => setFilterSupplier(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg text-sm"
@@ -403,12 +295,12 @@ export default function BookInventoryManagement() {
                   border: "1px solid #E5E0DB",
                 }}
               >
-                {supplierList.map((supplier) => (
+                {/* {supplierList.map((supplier) => (
                   <option key={supplier} value={supplier}>
                     {supplier === "all" ? "All Suppliers" : supplier}
                   </option>
-                ))}
-              </select> */}
+                ))} */}
+              </select>
             </div>
           </div>
         </CardContent>
