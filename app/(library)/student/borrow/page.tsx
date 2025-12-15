@@ -14,6 +14,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "../../../../components/ui/dialog";
@@ -41,6 +42,7 @@ import {
 import { toast } from "sonner";
 import { BorrowRequestDto } from "../../../../types/borrow-request";
 import { getMyBorrowRequests } from "../../../../services/borrow-request";
+import { getBookById } from "../../../../services/book";
 
 export default function MyRequestsPage() {
   const [requests, setRequests] = useState<BorrowRequestDto[]>([]);
@@ -50,6 +52,9 @@ export default function MyRequestsPage() {
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [showBookDetailDialog, setShowBookDetailDialog] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<any | null>(null);
+  const [loadingBook, setLoadingBook] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -156,6 +161,21 @@ export default function MyRequestsPage() {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleViewBookDetail = async (bookId: string) => {
+    try {
+      setLoadingBook(true);
+      setShowBookDetailDialog(true);
+      const bookData = await getBookById(bookId);
+      setSelectedBook(bookData);
+    } catch (error: any) {
+      console.error('Error fetching book details:', error);
+      toast.error(error?.message || 'Failed to load book details');
+      setShowBookDetailDialog(false);
+    } finally {
+      setLoadingBook(false);
+    }
   };
 
   const filteredRequests = requests.filter(request => {
@@ -395,8 +415,22 @@ export default function MyRequestsPage() {
                         {/* Book Info */}
                         <div className="mt-4">
                           <div className="text-sm font-medium mb-2">Book</div>
-                          <div className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm">
-                            <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div 
+                            className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm hover:bg-muted/50 cursor-pointer transition-colors"
+                            onClick={() => request.bookId && handleViewBookDetail(request.bookId)}
+                          >
+                            {request.bookImageUrl ? (
+                              <img 
+                                src={request.bookImageUrl} 
+                                alt={request.bookTitle || 'Book'}
+                                className="w-12 h-16 object-cover rounded shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="font-medium truncate">{request.bookTitle}</div>
                               <div className="text-xs text-muted-foreground">ISBN: {request.bookISBN}</div>
@@ -418,6 +452,115 @@ export default function MyRequestsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Book Detail Dialog */}
+      <Dialog open={showBookDetailDialog} onOpenChange={setShowBookDetailDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Book Details
+            </DialogTitle>
+          </DialogHeader>
+
+          {loadingBook ? (
+            <div className="p-8 text-center">
+              <div className="text-muted-foreground">Loading book details...</div>
+            </div>
+          ) : selectedBook ? (
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                {selectedBook.imgUrl && (
+                  <img 
+                    src={selectedBook.imgUrl} 
+                    alt={selectedBook.title}
+                    className="w-32 h-48 object-cover rounded-lg shadow-sm"
+                  />
+                )}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-xl font-semibold">{selectedBook.title}</h3>
+                    {selectedBook.authors && selectedBook.authors.length > 0 && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {selectedBook.authors.map((author: any) => author.name).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">ISBN</div>
+                      <div className="text-sm font-medium">{selectedBook.isbn}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Publisher</div>
+                      <div className="text-sm font-medium">{selectedBook.publisher || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Published Year</div>
+                      <div className="text-sm font-medium">{selectedBook.publicationYear || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Available Copies</div>
+                      <div className="text-sm font-medium text-green-600">{selectedBook.availableCopiesCount || 0}</div>
+                    </div>
+                  </div>
+
+                  {selectedBook.bookCategories && selectedBook.bookCategories.length > 0 && (
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Categories</div>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedBook.bookCategories.map((cat: any, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs">{cat.name}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedBook.description && (
+                <div>
+                  <div className="text-sm font-medium mb-2">Description</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedBook.description}</p>
+                </div>
+              )}
+
+              {selectedBook.authors && selectedBook.authors.length > 0 && (
+                <div className="border-t pt-3">
+                  <div className="text-sm font-medium mb-2">Authors</div>
+                  <div className="space-y-2">
+                    {selectedBook.authors.map((author: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <div className="text-sm font-medium">{author.name}</div>
+                          {author.yearOfBirth && (
+                            <div className="text-xs text-muted-foreground">Born: {author.yearOfBirth}</div>
+                          )}
+                          {author.briefDescription && (
+                            <div className="text-xs text-muted-foreground mt-1">{author.briefDescription}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="text-muted-foreground">No book details available</div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBookDetailDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (

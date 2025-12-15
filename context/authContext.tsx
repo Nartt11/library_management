@@ -119,15 +119,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   useEffect(() => {
     let mounted = true;
+    
+    // Skip validation for public routes
+    const publicRoutes = ["/", "/login", "/register", "/about"];
+    const isPublicRoute = publicRoutes.some(route => pathname === route || pathname?.startsWith(route + "/"));
+    
     const verifyOnRoute = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+          // If no token and trying to access protected route, redirect to login
+          if (!isPublicRoute && mounted) {
+            router.push("/");
+          }
+          return;
+        }
+
+        // Skip validation on public routes when token exists (user is logged in)
+        if (isPublicRoute) return;
 
         await getMyProfile();
       } catch (err: any) {
         const status = err?.status ?? err?.statusCode ?? null;
         if (status === 401) {
+          console.warn("Token validation failed on route change - logging out");
           try {
             authServiceLogout();
           } catch (_) {}
@@ -135,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setPendingBook(null);
           if (mounted) router.push("/");
         }
+        // For other errors (network, 500, etc), don't force logout
       }
     };
 

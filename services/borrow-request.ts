@@ -6,22 +6,30 @@ import {
   RejectBorrowRequestPayload,
   ReturnBookPayload
 } from "../types/borrow-request";
-// GET /api/borrow-requests - Admin: Get paginated borrow requests by type
+// GET /api/borrow-requests - Admin: Get paginated borrow requests with optional status filter
 export async function getBorrowRequests(
   pageNumber: number = 1,
   pageSize: number = 10,
-  type: 'pending' | 'borrowed' | 'overdue' | 'returned' | 'overdue-returned' = 'pending'
+  status?: 'Pending' | 'Borrowed' | 'Overdue' | 'Returned' | 'OverdueReturned' | 'Rejected' | 'Cancelled'
 ): Promise<PaginatedBorrowRequests> {
-  const url = `/borrow-requests/${type}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+  let url = `/borrow-requests?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+  if (status) {
+    url += `&status=${status}`;
+  }
   return await getApi<PaginatedBorrowRequests>(url);
 }
 
-// GET /api/borrow-requests/my-requests - Student: Get my requests with pagination (all statuses)
+// GET /api/borrow-requests/my-requests - Student: Get my requests with pagination and optional status filter
 export async function getMyBorrowRequests(
   pageNumber: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  status?: 'Pending' | 'Borrowed' | 'Overdue' | 'Returned' | 'OverdueReturned' | 'Rejected' | 'Cancelled'
 ): Promise<PaginatedBorrowRequests> {
-  return await getApi<PaginatedBorrowRequests>(`/borrow-requests/my-requests?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  let url = `/borrow-requests/my-requests?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+  if (status) {
+    url += `&status=${status}`;
+  }
+  return await getApi<PaginatedBorrowRequests>(url);
 }
 
 // GET /api/borrow-requests/my-history - Student: Get my completed requests (Returned or OverdueReturned)
@@ -62,25 +70,28 @@ export async function returnBookCopy(payload: ReturnBookPayload): Promise<any> {
   return await postApi<any>('/borrow-requests/return', payload);
 }
 
-// GET /api/borrow-requests/active-borrows - Admin: Get active borrowed books
+// GET /api/borrow-requests - Admin: Get active borrowed books (using status=Borrowed)
 export async function getActiveBorrows(
   pageNumber: number = 1,
   pageSize: number = 10
 ): Promise<PaginatedBorrowRequests> {
   return await getApi<PaginatedBorrowRequests>(
-    `/borrow-requests/borrowed?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    `/borrow-requests?status=Borrowed&pageNumber=${pageNumber}&pageSize=${pageSize}`
   );
 }
 
-// GET /api/borrow-requests/member/{memberId} - Admin: Get member's borrow requests
+// GET /api/borrow-requests/member/{memberId} - Admin: Get member's borrow requests with optional status filter
 export async function getMemberBorrowRequests(
   memberId: string,
   pageNumber: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  status?: 'Pending' | 'Borrowed' | 'Overdue' | 'Returned' | 'OverdueReturned' | 'Rejected' | 'Cancelled'
 ): Promise<PaginatedBorrowRequests> {
-  return await getApi<PaginatedBorrowRequests>(
-    `/borrow-requests/member/${memberId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
-  );
+  let url = `/borrow-requests/member/${memberId}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+  if (status) {
+    url += `&status=${status}`;
+  }
+  return await getApi<PaginatedBorrowRequests>(url);
 }
 
 // GET /api/borrow-requests/search-members - Admin: Search for members by name, email, or phone

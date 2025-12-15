@@ -32,6 +32,7 @@ export default function BooksTable({
                 <th className="p-4 text-sm">Book Image</th>
                 <th className="p-4 text-sm">Book Details</th>
                 <th className="p-4 text-sm">Category</th>
+                <th className="p-4 text-sm">Available</th>
                 <th className="p-4 text-sm">Actions</th>
               </tr>
             </thead>
@@ -60,6 +61,13 @@ export default function BooksTable({
                   </td>
                   <td className="p-4 text-sm">
                     {book.bookCategories.map((cat) => cat.name).join(", ")}
+                  </td>
+                  <td className="p-4">
+                    <span className={`text-sm font-medium ${
+                      book.availableCopiesCount > 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {book.availableCopiesCount || 0}
+                    </span>
                   </td>
 
                   <td className="p-4">

@@ -56,6 +56,7 @@ import {
 } from "../../../../services/borrow-request";
 import { generateBarcodeUrl, parseBarcode } from "../../../../services/barcode";
 import { getUserProfileById } from "../../../../services/profile";
+import { getBookById } from "../../../../services/book";
 
 // Parse student QR code data to extract user ID
 export function parseStudentQR(barcodeData: string): string | null {
@@ -80,7 +81,7 @@ export default function BorrowRequestsPage() {
   // Form states
   const [rejectReason, setRejectReason] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<'pending' | 'borrowed' | 'overdue' | 'returned' | 'overdue-returned'>("pending");
+  const [statusFilter, setStatusFilter] = useState<'Pending' | 'Borrowed' | 'Overdue' | 'Returned' | 'OverdueReturned'>('Pending');
   const [manualInput, setManualInput] = useState("");
   const [scannedBookCopyId, setScannedBookCopyId] = useState<string>("");
   
@@ -97,6 +98,9 @@ export default function BorrowRequestsPage() {
   const [searching, setSearching] = useState(false);
   const [showStudentScanner, setShowStudentScanner] = useState(false);
   const [studentScanInput, setStudentScanInput] = useState("");
+  const [showBookDetailDialog, setShowBookDetailDialog] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<any | null>(null);
+  const [loadingBook, setLoadingBook] = useState(false);
   
   // Pagination
   const [pageNumber, setPageNumber] = useState(1);
@@ -370,9 +374,9 @@ export default function BorrowRequestsPage() {
   const fetchStats = async () => {
     try {
       const [pending, borrowed, overdue] = await Promise.all([
-        getBorrowRequests(1, 1, 'pending'),
-        getBorrowRequests(1, 1, 'borrowed'),
-        getBorrowRequests(1, 1, 'overdue'),
+        getBorrowRequests(1, 1, 'Pending'),
+        getBorrowRequests(1, 1, 'Borrowed'),
+        getBorrowRequests(1, 1, 'Overdue'),
       ]);
       const p = pending.totalItems || 0;
       const b = borrowed.totalItems || 0;
@@ -447,6 +451,21 @@ export default function BorrowRequestsPage() {
   const openRejectDialog = (request: BorrowRequestDto) => {
     setSelectedRequest(request);
     setShowRejectDialog(true);
+  };
+
+  const handleViewBookDetail = async (bookId: string) => {
+    try {
+      setLoadingBook(true);
+      setShowBookDetailDialog(true);
+      const bookData = await getBookById(bookId);
+      setSelectedBook(bookData);
+    } catch (error: any) {
+      console.error('Error fetching book details:', error);
+      toast.error(error?.message || 'Failed to load book details');
+      setShowBookDetailDialog(false);
+    } finally {
+      setLoadingBook(false);
+    }
   };
 
 
@@ -596,16 +615,16 @@ export default function BorrowRequestsPage() {
                 className="pl-10 shadow-sm"
               />
             </div>
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'pending' | 'borrowed' | 'overdue' | 'returned' | 'overdue-returned')}>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as 'Pending' | 'Borrowed' | 'Overdue' | 'Returned' | 'OverdueReturned')}>
               <SelectTrigger className="w-full md:w-48 shadow-sm">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pending Requests</SelectItem>
-                <SelectItem value="borrowed">Borrowed Books</SelectItem>
-                <SelectItem value="overdue">Overdue Books</SelectItem>
-                <SelectItem value="returned">Returned (On Time)</SelectItem>
-                <SelectItem value="overdue-returned">Returned (Late)</SelectItem>
+                <SelectItem value="Pending">Pending Requests</SelectItem>
+                <SelectItem value="Borrowed">Borrowed Books</SelectItem>
+                <SelectItem value="Overdue">Overdue Books</SelectItem>
+                <SelectItem value="Returned">Returned (On Time)</SelectItem>
+                <SelectItem value="OverdueReturned">Returned (Late)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -697,8 +716,22 @@ export default function BorrowRequestsPage() {
                         {/* Book Info */}
                         <div className="mt-4">
                           <div className="text-sm font-medium mb-2">Book</div>
-                          <div className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm">
-                            <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div 
+                            className="flex items-center gap-3 p-2 border rounded-lg bg-card text-sm hover:bg-muted/50 cursor-pointer transition-colors"
+                            onClick={() => request.bookId && handleViewBookDetail(request.bookId)}
+                          >
+                            {request.bookImageUrl ? (
+                              <img 
+                                src={request.bookImageUrl} 
+                                alt={request.bookTitle || 'Book'}
+                                className="w-12 h-16 object-cover rounded shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="font-medium truncate">{request.bookTitle || 'Unknown Book'}</div>
                               <div className="text-xs text-muted-foreground">ISBN: {request.bookISBN || 'N/A'}</div>
@@ -1207,6 +1240,115 @@ export default function BorrowRequestsPage() {
             </Button>
             <Button onClick={handleConfirm} disabled={loading}>
               {loading ? 'Confirming...' : 'Confirm Borrow Request'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Book Detail Dialog */}
+      <Dialog open={showBookDetailDialog} onOpenChange={setShowBookDetailDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Book Details
+            </DialogTitle>
+          </DialogHeader>
+
+          {loadingBook ? (
+            <div className="p-8 text-center">
+              <div className="text-muted-foreground">Loading book details...</div>
+            </div>
+          ) : selectedBook ? (
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                {selectedBook.imgUrl && (
+                  <img 
+                    src={selectedBook.imgUrl} 
+                    alt={selectedBook.title}
+                    className="w-32 h-48 object-cover rounded-lg shadow-sm"
+                  />
+                )}
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-xl font-semibold">{selectedBook.title}</h3>
+                    {selectedBook.authors && selectedBook.authors.length > 0 && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {selectedBook.authors.map((author: any) => author.name).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">ISBN</div>
+                      <div className="text-sm font-medium">{selectedBook.isbn}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Publisher</div>
+                      <div className="text-sm font-medium">{selectedBook.publisher || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Published Year</div>
+                      <div className="text-sm font-medium">{selectedBook.publicationYear || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Available Copies</div>
+                      <div className="text-sm font-medium text-green-600">{selectedBook.availableCopiesCount || 0}</div>
+                    </div>
+                  </div>
+
+                  {selectedBook.bookCategories && selectedBook.bookCategories.length > 0 && (
+                    <div>
+                      <div className="text-xs text-muted-foreground mb-1">Categories</div>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedBook.bookCategories.map((cat: any, idx: number) => (
+                          <Badge key={idx} variant="outline" className="text-xs">{cat.name}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedBook.description && (
+                <div>
+                  <div className="text-sm font-medium mb-2">Description</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedBook.description}</p>
+                </div>
+              )}
+
+              {selectedBook.authors && selectedBook.authors.length > 0 && (
+                <div className="border-t pt-3">
+                  <div className="text-sm font-medium mb-2">Authors</div>
+                  <div className="space-y-2">
+                    {selectedBook.authors.map((author: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                        <div>
+                          <div className="text-sm font-medium">{author.name}</div>
+                          {author.yearOfBirth && (
+                            <div className="text-xs text-muted-foreground">Born: {author.yearOfBirth}</div>
+                          )}
+                          {author.briefDescription && (
+                            <div className="text-xs text-muted-foreground mt-1">{author.briefDescription}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="p-8 text-center">
+              <div className="text-muted-foreground">No book details available</div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBookDetailDialog(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

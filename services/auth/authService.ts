@@ -74,3 +74,21 @@ export function getCurrentUser() {
   if (token) return { token };
   return null;
 }
+
+export async function requestPasswordReset(email: string) {
+  const data = await postApi<any>("/auth/request-password-reset", { email });
+  return data;
+}
+
+export async function resetPassword(
+  email: string,
+  token: number,
+  newPassword: string
+) {
+  const data = await postApi<any>("/auth/reset-password", {
+    email,
+    token,
+    newPassword,
+  });
+  return data;
+}

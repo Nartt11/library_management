@@ -19,7 +19,7 @@ import type { User, UserRole } from "@/types/user";
 import uitLogo from "./../../../public/UITLogo.jpg";
 import { useRouter } from "next/navigation";
 
-import { loginService } from "@/services/auth/authService";
+import { loginService, requestPasswordReset, resetPassword } from "@/services/auth/authService";
 import { useAuth } from "@/context/authContext";
 import { toast } from "sonner";
 
@@ -75,28 +75,43 @@ export default function LoginPage({}: LoginPageProps) {
     router.push("/");
   };
 
-  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (forgotPasswordStep === "email") {
-      // Move to code verification step
-      setForgotPasswordStep("code");
-    } else if (forgotPasswordStep === "code") {
-      // Check if code is correct (mock validation - accept "123456")
-      if (verificationCode === "123456") {
+    try {
+      if (forgotPasswordStep === "email") {
+        // Request password reset
+        await requestPasswordReset(forgotEmail);
+        toast.success("Verification code sent to your email");
+        setForgotPasswordStep("code");
+      } else if (forgotPasswordStep === "code") {
+        // Just validate that code is entered, actual verification happens on reset
+        if (!verificationCode) {
+          toast.error("Please enter the verification code");
+          return;
+        }
         setForgotPasswordStep("newPassword");
-      } else {
-        alert("Invalid verification code. Please try again.");
+      } else if (forgotPasswordStep === "newPassword") {
+        // Reset password with token
+        const token = parseInt(verificationCode);
+        if (isNaN(token)) {
+          toast.error("Invalid verification code format");
+          return;
+        }
+        
+        await resetPassword(forgotEmail, token, newPassword);
+        toast.success("Password changed successfully");
+        
+        // Reset states and go back to login
+        setShowForgotPassword(false);
+        setForgotPasswordStep("email");
+        setForgotEmail("");
+        setVerificationCode("");
+        setNewPassword("");
       }
-    } else if (forgotPasswordStep === "newPassword") {
-      // Password changed successfully
-      alert("Successful change");
-      // Reset states and go back to login
-      setShowForgotPassword(false);
-      setForgotPasswordStep("email");
-      setForgotEmail("");
-      setVerificationCode("");
-      setNewPassword("");
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      toast.error(error?.message || "Failed to process password reset");
     }
   };
 
@@ -256,7 +271,7 @@ export default function LoginPage({}: LoginPageProps) {
                         required
                       />
                       <div className="text-xs text-muted-foreground">
-                        Demo code: 123456
+                        Check your email for the verification code
                       </div>
                     </div>
                   )}
