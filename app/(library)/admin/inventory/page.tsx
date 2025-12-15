@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/Container";
+import { BookImport, BookImportResponse } from "@/types/book";
+import { getAllBooksImport } from "@/services/book";
 
 interface BookItem {
   id: string;
@@ -50,66 +52,48 @@ type ViewMode = "dashboard" | "create" | "edit" | "detail";
 export default function BookInventoryManagement() {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
-  const [selectedRevision, setSelectedRevision] =
-    useState<InventoryRevision | null>(null);
+  const [imports, setImports] = useState<BookImport[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
 
-  // Sample data for revisions
-  const [revisions, setRevisions] = useState<InventoryRevision[]>([
-    {
-      id: "1",
-      revisionCode: "INV-2024-001",
-      supplierId: "SUP-001",
-      staffId: "STAFF-001",
-      timestamp: "2024-01-15 14:30:00",
-      totalItems: 5,
-      totalQuantity: 150,
-      totalValue: 4250.5,
-      status: "completed",
-      items: [
-        {
-          id: "1",
-          isbn: "978-0-123456-78-9",
-          bookTitle: "Introduction to Computer Science",
-          quantity: 30,
-          unitPrice: 89.99,
-          totalPrice: 2699.7,
-        },
-        {
-          id: "2",
-          isbn: "978-0-123456-79-6",
-          bookTitle: "Data Structures",
-          quantity: 25,
-          unitPrice: 95.5,
-          totalPrice: 2387.5,
-        },
-      ],
-    },
-    {
-      id: "2",
-      revisionCode: "INV-2024-002",
-      supplierId: "SUP-002",
-      staffId: "STAFF-002",
-      timestamp: "2024-01-16 09:15:00",
-      totalItems: 3,
-      totalQuantity: 85,
-      totalValue: 3150.0,
-      status: "completed",
-      items: [],
-    },
-    {
-      id: "3",
-      revisionCode: "INV-2024-003",
-      supplierId: "SUP-001",
-      staffId: "STAFF-001",
-      timestamp: "2024-01-17 11:45:00",
-      totalItems: 8,
-      totalQuantity: 220,
-      totalValue: 6800.75,
-      status: "completed",
-      items: [],
-    },
-  ]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchBookImports() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = (await getAllBooksImport(
+          currentPage,
+          pageSize
+        )) as BookImportResponse;
+
+        if (!mounted) return;
+
+        setImports(res.data);
+        setTotalPages(res.totalPages);
+        setTotalItems(res.totalItems);
+      } catch (err: any) {
+        if (mounted) {
+          setError(err?.message || "Failed to fetch book imports");
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    fetchBookImports();
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentPage, pageSize]);
 
   // Filters
   const [filterDateFrom, setFilterDateFrom] = useState("");
@@ -142,33 +126,16 @@ export default function BookInventoryManagement() {
   ]);
 
   // Extract unique values for filters
-  const staffList = [
-    "all",
-    ...Array.from(new Set(revisions.map((r) => r.staffId))),
-  ];
-  const supplierList = [
-    "all",
-    ...Array.from(new Set(revisions.map((r) => r.supplierId))),
-  ];
+  // const staffList = [
+  //   "all",
+  //   ...Array.from(new Set(revisions.map((r) => r.staffId))),
+  // ];
+  // const supplierList = [
+  //   "all",
+  //   ...Array.from(new Set(revisions.map((r) => r.supplierId))),
+  // ];
 
   // Filter revisions
-  const filteredRevisions = revisions.filter((revision) => {
-    const matchesStaff =
-      filterStaff === "all" || revision.staffId === filterStaff;
-    const matchesSupplier =
-      filterSupplier === "all" || revision.supplierId === filterSupplier;
-
-    let matchesDate = true;
-    if (filterDateFrom || filterDateTo) {
-      const revDate = new Date(revision.timestamp);
-      if (filterDateFrom)
-        matchesDate = matchesDate && revDate >= new Date(filterDateFrom);
-      if (filterDateTo)
-        matchesDate = matchesDate && revDate <= new Date(filterDateTo);
-    }
-
-    return matchesStaff && matchesSupplier && matchesDate;
-  });
 
   // Handlers
   const handleCreateNew = () => {
@@ -185,11 +152,10 @@ export default function BookInventoryManagement() {
       },
     ]);
     router.push("/admin/inventory/new");
-    setViewMode("create");
   };
 
   const handleViewDetails = (revision: InventoryRevision) => {
-    setSelectedRevision(revision);
+    //setSelectedRevision(revision);
     setSupplierId(revision.supplierId);
     setStaffId(revision.staffId);
     setBookItems(
@@ -206,13 +172,12 @@ export default function BookInventoryManagement() {
             },
           ]
     );
-    setViewMode("detail");
   };
 
-  const handleDeleteRevision = (id: string) => {
-    setRevisions(revisions.filter((r) => r.id !== id));
-    toast.success("Inventory revision deleted");
-  };
+  // const handleDeleteRevision = (id: string) => {
+  //   setRevisions(revisions.filter((r) => r.id !== id));
+  //   toast.success("Inventory revision deleted");
+  // };
 
   const handleAddBookItem = () => {
     const newItem: BookItem = {
@@ -300,22 +265,22 @@ export default function BookInventoryManagement() {
       0
     );
 
-    const newRevision: InventoryRevision = {
-      id: String(Date.now()),
-      revisionCode: `INV-2024-${String(revisions.length + 1).padStart(3, "0")}`,
-      supplierId,
-      staffId,
-      timestamp: inventoryTimestamp,
-      totalItems: validItems.length,
-      totalQuantity,
-      totalValue,
-      items: validItems,
-      status: "completed",
-    };
+    // const newRevision: InventoryRevision = {
+    //   id: String(Date.now()),
+    //   revisionCode: `INV-2024-${String(revisions.length + 1).padStart(3, "0")}`,
+    //   supplierId,
+    //   staffId,
+    //   timestamp: inventoryTimestamp,
+    //   totalItems: validItems.length,
+    //   totalQuantity,
+    //   totalValue,
+    //   items: validItems,
+    //   status: "completed",
+    // };
 
-    setRevisions([newRevision, ...revisions]);
-    toast.success("Inventory revision saved successfully");
-    setViewMode("dashboard");
+    // setRevisions([newRevision, ...revisions]);
+    // toast.success("Inventory revision saved successfully");
+    // setViewMode("dashboard");
   };
 
   const handleExportPDF = () => {
@@ -409,7 +374,7 @@ export default function BookInventoryManagement() {
             </div>
             <div className="space-y-2">
               <Label className="text-sm text-gray-600">Staff</Label>
-              <select
+              {/* <select
                 value={filterStaff}
                 onChange={(e) => setFilterStaff(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg text-sm"
@@ -424,11 +389,11 @@ export default function BookInventoryManagement() {
                     {staff === "all" ? "All Staff" : staff}
                   </option>
                 ))}
-              </select>
+              </select> */}
             </div>
             <div className="space-y-2">
               <Label className="text-sm text-gray-600">Supplier</Label>
-              <select
+              {/* <select
                 value={filterSupplier}
                 onChange={(e) => setFilterSupplier(e.target.value)}
                 className="w-full h-10 px-3 rounded-lg text-sm"
@@ -443,7 +408,7 @@ export default function BookInventoryManagement() {
                     {supplier === "all" ? "All Suppliers" : supplier}
                   </option>
                 ))}
-              </select>
+              </select> */}
             </div>
           </div>
         </CardContent>
@@ -525,61 +490,63 @@ export default function BookInventoryManagement() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRevisions.length === 0 ? (
+                {imports.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="p-8 text-center text-gray-500">
                       No inventory revisions found
                     </td>
                   </tr>
                 ) : (
-                  filteredRevisions.map((revision) => (
+                  imports.map((revision) => (
                     <tr
                       key={revision.id}
                       className="border-b hover:bg-gray-50 transition-colors"
                     >
                       <td className="p-3">
                         <Badge variant="outline" className="font-mono">
-                          {revision.revisionCode}
+                          {revision.id}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm">{revision.supplierId}</td>
-                      <td className="p-3 text-sm">{revision.staffId}</td>
+                      <td className="p-3 text-sm">{revision.supplier.id}</td>
+                      <td className="p-3 text-sm">{revision.staff.fullName}</td>
                       <td className="p-3 text-sm text-gray-600">
-                        {revision.timestamp}
-                      </td>
-                      <td className="p-3 text-center">
-                        <Badge variant="secondary">{revision.totalItems}</Badge>
+                        {revision.importDate}
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant="secondary">
-                          {revision.totalQuantity}
+                          {revision.totalAmount}
                         </Badge>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant="secondary">{revision.note}</Badge>
                       </td>
                       <td
                         className="p-3 text-right"
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
-                        ${revision.totalValue.toFixed(2)}
+                        {/* ${revision.totalValue.toFixed(2)} */}
                       </td>
                       <td className="p-3">
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleViewDetails(revision)}
+                            onClick={() =>
+                              router.push(`/admin/inventory/${revision.id}`)
+                            }
                             className="h-8 gap-1 hover:bg-blue-50"
                           >
                             <Eye className="h-4 w-4 text-blue-600" />
                             <span className="text-xs">View</span>
                           </Button>
-                          <Button
+                          {/* <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteRevision(revision.id)}
                             className="h-8 w-8 p-0 hover:bg-red-50"
                           >
                             <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
+                          </Button> */}
                         </div>
                       </td>
                     </tr>
@@ -591,12 +558,12 @@ export default function BookInventoryManagement() {
 
           {/* Mobile Cards */}
           <div className="lg:hidden space-y-4">
-            {filteredRevisions.length === 0 ? (
+            {imports.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 No inventory revisions found
               </div>
             ) : (
-              filteredRevisions.map((revision) => (
+              imports.map((revision) => (
                 <Card
                   key={revision.id}
                   className="shadow-sm"
@@ -605,52 +572,54 @@ export default function BookInventoryManagement() {
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <Badge variant="outline" className="font-mono">
-                        {revision.revisionCode}
+                        {revision.id}
                       </Badge>
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleViewDetails(revision)}
+                          onClick={() =>
+                            router.push(`/admin/inventory/${revision.id}`)
+                          }
                           className="h-8 w-8 p-0 hover:bg-blue-50"
                         >
                           <Eye className="h-4 w-4 text-blue-600" />
                         </Button>
-                        <Button
+                        {/* <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteRevision(revision.id)}
                           className="h-8 w-8 p-0 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-gray-600">Supplier:</span>
-                        <div>{revision.supplierId}</div>
+                        <div>{revision.supplier.id}</div>
                       </div>
                       <div>
                         <span className="text-gray-600">Staff:</span>
-                        <div>{revision.staffId}</div>
+                        <div>{revision.staff.fullName}</div>
                       </div>
                       <div className="col-span-2">
                         <span className="text-gray-600">Time:</span>
-                        <div className="text-xs">{revision.timestamp}</div>
+                        <div className="text-xs">{revision.importDate}</div>
                       </div>
                     </div>
                     <div className="flex gap-4 pt-2 border-t text-sm">
                       <div>
                         <span className="text-gray-600">Items:</span>
                         <Badge variant="secondary" className="ml-1">
-                          {revision.totalItems}
+                          {revision.totalAmount}
                         </Badge>
                       </div>
                       <div>
                         <span className="text-gray-600">Qty:</span>
                         <Badge variant="secondary" className="ml-1">
-                          {revision.totalQuantity}
+                          {/* {revision.totalQuantity} */}
                         </Badge>
                       </div>
                       <div>
@@ -659,7 +628,7 @@ export default function BookInventoryManagement() {
                           className="ml-1"
                           style={{ fontFamily: "Inter, sans-serif" }}
                         >
-                          ${revision.totalValue.toFixed(2)}
+                          {/* ${revision.totalValue.toFixed(2)} */}
                         </span>
                       </div>
                     </div>
@@ -670,7 +639,7 @@ export default function BookInventoryManagement() {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            Showing {filteredRevisions.length} of {revisions.length} revision(s)
+            Showing {totalPages} of {totalItems} revision(s)
           </div>
         </CardContent>
       </Card>

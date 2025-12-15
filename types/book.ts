@@ -31,3 +31,39 @@ export interface BookWithAvailability extends Book {
   location?: string;
   expectedReturnDate?: string;
 }
+
+export interface BookImportResponse {
+  data: BookImport[];
+  pageNumber: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+export interface BookImport {
+  id: string;
+  supplier: Supplier;
+  staff: Staff;
+  importDate: string;      // ISO string
+  totalAmount: number;
+  note: string | null;
+  bookImportDetails: BookImportDetail[];
+}
+export interface Supplier {
+  id: string;
+  name: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+}
+export interface Staff {
+  hireDate: string;        // ISO string
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+}
+export interface BookImportDetail {
+  bookTitle: string;
+  bookISBN: string;
+  quantity: number;
+  unitPrice: number;
+}
