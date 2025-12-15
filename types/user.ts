@@ -6,6 +6,10 @@ export interface User {
   studentNumber?: string;
   role: UserRole;
   avatar?: string;
-  //phoneNumber?: string;
-  //address?: string; 
+  // Extended optional profile fields
+  fullName?: string;
+  phoneNumber?: string;
+  address?: string;
+  imageUrl?: string;
+  joinDate?: string;
 }

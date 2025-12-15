@@ -9,3 +9,14 @@ export function getMyProfile() {
 export function getUserProfileById(accountId: string) {
   return apiFetch(`/user/${accountId}`);
 }
+
+// PUT /api/profile
+export function updateMyProfile(body: any) {
+  return apiFetch(`/profile`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}

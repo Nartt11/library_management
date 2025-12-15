@@ -46,7 +46,7 @@ import { addBookToCart } from "@/services/cart";
 import { toast } from "sonner";
 
 import { useAuth } from "@/context/authContext";
-import { getAllBooks, getAllBooksRecommend } from "@/services/book";
+import { getAllBooks, getAllBooksRecommend, getTopBooks } from "@/services/book";
 import RecommendBooks from "./showroom/RecommendBooks";
 
 export function Showroom() {
@@ -136,7 +136,13 @@ export function Showroom() {
     async function fetchBooks() {
       setLoading(true);
       try {
-        const data = await getAllBooksRecommend(1, 10);
+        let data;
+        if (currentUser) {
+          data = await getAllBooksRecommend(1, 10);
+        } else {
+          // fallback to top-books for anonymous users
+          data = await getTopBooks(1, 6);
+        }
         if (!mounted) return;
         setBooksRecommend(data.data ?? []);
         // Scroll to top when page changes

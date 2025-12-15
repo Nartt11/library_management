@@ -2,7 +2,7 @@ import { apiFetch } from "./base";
 
 // GET /api/books?pageNumber=1&pageSize=10
 // GET /api/books/search?pageNumber=1&pageSize=10&categoryName=...&isbn=...&titleQuery=...
-export function getAllBooks(
+export async function getAllBooks(
   page: number,
   pageSize: number,
   categoryName?: string,
@@ -20,12 +20,40 @@ export function getAllBooks(
   if (titleQuery) params.append("titleQuery", titleQuery);
   if (authorName) params.append("authorName", authorName);
 
-  return apiFetch(`/books/search?${params.toString()}`);
+  const response = await apiFetch(`/books/search?${params.toString()}`);
+  // Response: { data: [...], pageNumber, pageSize, totalItems, totalPages }
+  return response;
 }
 
 
-export function getAllBooksRecommend(page: number, pageSize: number) {
-  return apiFetch(`/books/recommend?pageNumber=${page}&pageSize=${pageSize}`);
+export async function getAllBooksRecommend(page: number, pageSize: number) {
+  const response = await apiFetch(`/books/recommend?pageNumber=${page}&pageSize=${pageSize}`);
+  // Response: { data: [...], errorMessage, isSuccess }
+  // Return normalized structure matching search endpoint
+  return {
+    data: response?.data ?? [],
+    pageNumber: page,
+    pageSize: pageSize,
+    totalItems: response?.data?.length ?? 0,
+    totalPages: 1,
+  };
+}
+
+// GET /api/books/top-books?pageNumber=1&pageSize=6
+export async function getTopBooks(page: number, pageSize: number) {
+  const response = await apiFetch(`/books/top-books?pageNumber=${page}&pageSize=${pageSize}`);
+  // Response: { data: { data: [{ book: {...}, borrowCount: ... }], ... }, errorMessage, isSuccess }
+  // Extract books from nested structure
+  const booksData = response?.data?.data ?? [];
+  const books = booksData.map((item: any) => item.book);
+  
+  return {
+    data: books,
+    pageNumber: response?.data?.pageNumber ?? page,
+    pageSize: response?.data?.pageSize ?? pageSize,
+    totalItems: response?.data?.totalItems ?? books.length,
+    totalPages: response?.data?.totalPages ?? 1,
+  };
 }
 
 // GET /api/books/{id}

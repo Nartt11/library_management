@@ -22,7 +22,6 @@ import {
   Eye,
   EyeOff,
   CheckCircle2,
-  QrCode,
   Edit,
   Save,
   X,
@@ -138,13 +137,29 @@ export default function ManageAccount() {
       return;
     }
 
-    // In a real app, this would call an API
-    toast.success("Password changed successfully!");
-    setPasswordForm({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+    // Call change-password API
+    (async () => {
+      try {
+        const res = await fetch('/api/profile/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            oldPassword: passwordForm.currentPassword, 
+            newPassword: passwordForm.newPassword 
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          throw new Error(err?.message || 'Failed to change password');
+        }
+
+        toast.success('Password changed successfully!');
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } catch (err: any) {
+        toast.error(err?.message || 'Failed to change password');
+      }
+    })();
   };
 
   const getRoleColor = (role: string) => {
@@ -166,13 +181,6 @@ export default function ManageAccount() {
       .map((n) => n[0])
       .join("")
       .toUpperCase();
-  };
-
-  // Generate QR code URL using barcode service pattern for student ID
-  const generateStudentQRCode = (userId: string) => {
-    const studentData = `STUDENT-${userId}`;
-    // Using same pattern as barcode.ts but for students
-    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(studentData)}`;
   };
 
   return (
@@ -341,14 +349,6 @@ export default function ManageAccount() {
                         currentUser.role.slice(1)}
                     </p>
                   </div>
-                  {currentUser.studentNumber && (
-                    <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
-                        Student Number
-                      </Label>
-                      <p className="mt-1">{currentUser.studentNumber}</p>
-                    </div>
-                  )}
                 </div>
               )}
             </CardContent>
@@ -478,34 +478,8 @@ export default function ManageAccount() {
           </Card>
         </div>
 
-        {/* Account Summary & QR Code */}
+        {/* Account Summary */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <QrCode className="h-5 w-5" />
-                Student ID QR Code
-              </CardTitle>
-              <CardDescription>
-                Your unique student identification QR code
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-gray-100 inline-block">
-                <img
-                  src={generateStudentQRCode(currentUser.id)}
-                  alt="Student ID QR Code"
-                  className="w-32 h-32"
-                />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Use this QR code for library services and attendance
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -518,7 +492,7 @@ export default function ManageAccount() {
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                   <User className="h-8 w-8 text-primary" />
                 </div>
-                  <h3 className="font-medium">{profileForm.fullName ?? currentUser.name}</h3>
+                <h3 className="font-medium">{profileForm.fullName ?? currentUser.name}</h3>
                 <p className="text-sm text-muted-foreground">
                   {currentUser?.role.charAt(0).toUpperCase() +
                     currentUser.role.slice(1)}{" "}
@@ -540,7 +514,7 @@ export default function ManageAccount() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Member Since</span>
-                  <span>Jan 2024</span>
+                  <span>{profileForm.joinDate ? new Date(profileForm.joinDate).toLocaleDateString() : "Jan 2024"}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Last Login</span>

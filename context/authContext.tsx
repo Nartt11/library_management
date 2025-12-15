@@ -167,9 +167,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Listen for login events dispatched by `loginService` and storage events
   useEffect(() => {
-    const onAuthLogin = (e: any) => {
+    const onAuthLogin = async (e: any) => {
       const user = e?.detail ?? null;
-      if (user) saveUser(user);
+      if (user) {
+        saveUser(user);
+        // Immediately fetch full profile after login to get fullName and imageUrl
+        try {
+          const profile = await getMyProfile();
+          if (profile) {
+            const fullUser = {
+              ...user,
+              fullName: profile.fullName,
+              email: profile.email,
+              phoneNumber: profile.phoneNumber,
+              address: profile.address,
+              imageUrl: profile.imageUrl,
+              joinDate: profile.joinDate,
+            };
+            saveUser(fullUser as any);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch profile after login:", err);
+        }
+      }
     };
 
     const onStorage = (ev: StorageEvent) => {
