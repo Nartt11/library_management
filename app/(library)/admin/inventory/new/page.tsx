@@ -57,7 +57,7 @@ export default function InventoryCreatePage() {
 
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier>();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [staffId, setStaffId] = useState(currentUser?.fullname);
+  const [staffId, setStaffId] = useState(currentUser?.name);
   const [notes, setNotes] = useState("");
   const [openSupplierSelect, setOpenSupplierSelect] = useState(false);
   const [openBookSelect, setOpenBookSelect] = useState<number | null>(null);
@@ -129,17 +129,24 @@ export default function InventoryCreatePage() {
       [field]: value,
     };
 
+    // ✅ Book Title → ISBN (when selecting from dropdown)
+    if (field === "bookTitle") {
+      const book = findBookByTitle(books, value);
+      updated[index].isbn = book ? book.isbn : "";
+    }
+
     // auto total
     updated[index].totalPrice =
       updated[index].quantity * updated[index].unitPrice;
 
-    // ✅ ISBN → Book Title
-    if (field === "isbn") {
-      const book = findBookByISBN(books, value);
-      updated[index].bookTitle = book ? book.title : "";
-    }
-
     setBookItems(updated);
+  };
+
+  const handleISBNBlur = (index: number, isbn: string) => {
+    const book = findBookByISBN(books, isbn);
+    if (book) {
+      handleUpdateItem(index, "bookTitle", book.title);
+    }
   };
 
   function findBookById(id: string) {
@@ -157,7 +164,10 @@ export default function InventoryCreatePage() {
   }
 
   const [books, setBooks] = useState<Book[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearching, setIsSearching] = useState(false);
 
+  // Load initial books
   useEffect(() => {
     async function load() {
       const data = await getAllBooks(1, 50);
@@ -165,6 +175,35 @@ export default function InventoryCreatePage() {
     }
     load();
   }, []);
+
+  // Search books when user types
+  useEffect(() => {
+    if (!searchQuery) {
+      // Reset to initial books if search is empty
+      async function load() {
+        const data = await getAllBooks(1, 50);
+        setBooks(data.data);
+      }
+      load();
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const data = await getAllBooks(1, 50, undefined, undefined, searchQuery);
+        setBooks(data.data);
+      } catch (error) {
+        console.error("Error searching books:", error);
+        toast.error("Failed to search books");
+      } finally {
+        setIsSearching(false);
+      }
+    }, 2000); // Debounce 2000ms (wait 2s after typing stops)
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   console.log("book in inventory", books);
 
   const handleSave = async () => {
@@ -482,16 +521,17 @@ export default function InventoryCreatePage() {
               </thead>
               <tbody>
                 {bookItems.map((item, index) => (
-                  <tr
-                    key={item.isbn}
-                    className="border-b hover:bg-gray-50 transition-colors"
-                  >
+                    <tr
+                      key={`${item.isbn}-${index}`}
+                      className="border-b hover:bg-gray-50 transition-colors"
+                    >
                     <td className="p-3">
                       <Input
                         value={item.isbn}
                         onChange={(e) =>
                           handleUpdateItem(index, "isbn", e.target.value)
                         }
+                        onBlur={(e) => handleISBNBlur(index, e.target.value)}
                         placeholder="978-0-123456-78-9"
                         // disabled={isDetailView}
                         className="h-10 min-w-[160px]"
@@ -503,62 +543,59 @@ export default function InventoryCreatePage() {
                       />
                     </td>
                     <td className="p-3">
-                      <Popover
-                        open={openBookSelect === index}
-                        onOpenChange={(open) =>
-                          setOpenBookSelect(open ? index : null)
-                        }
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-between h-10"
-                            style={{
-                              borderRadius: "8px",
-                              backgroundColor: "#F5F1ED",
-                              border: "1px solid #E5E0DB",
-                            }}
-                          >
-                            {item.bookTitle || "Select book title"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent className="w-[320px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Search book title..." />
-                            <CommandEmpty>No book found.</CommandEmpty>
-
-                            <CommandGroup>
-                              {books.map((book) => (
-                                <CommandItem
+                      <div className="relative">
+                        <Input
+                          value={item.bookTitle}
+                          onChange={(e) => {
+                            handleUpdateItem(index, "bookTitle", e.target.value);
+                            setOpenBookSelect(index);
+                            setSearchQuery(e.target.value);
+                          }}
+                          onFocus={() => {
+                            setOpenBookSelect(index);
+                            setSearchQuery(item.bookTitle);
+                          }}
+                          placeholder="Type to search book title..."
+                          className="h-10 min-w-[200px]"
+                          style={{
+                            borderRadius: "8px",
+                            backgroundColor: "#F5F1ED",
+                            border: "1px solid #E5E0DB",
+                          }}
+                        />
+                        {openBookSelect === index && books.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-[300px] overflow-auto">
+                            {isSearching ? (
+                              <div className="p-4 text-center text-sm text-gray-500">
+                                Searching...
+                              </div>
+                            ) : books.length === 0 ? (
+                              <div className="p-4 text-center text-sm text-gray-500">
+                                No book found.
+                              </div>
+                            ) : (
+                              books.map((book) => (
+                                <div
                                   key={book.id}
-                                  value={book.title}
-                                  onSelect={() => {
-                                    const updated = [...bookItems];
-
-                                    updated[index] = {
-                                      ...updated[index],
-                                      bookTitle: book.title,
-                                      isbn: book.isbn,
-                                    };
-
-                                    setBookItems(updated);
+                                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer transition-colors"
+                                  onClick={() => {
+                                    handleUpdateItem(index, "bookTitle", book.title);
                                     setOpenBookSelect(null);
+                                    setSearchQuery("");
                                   }}
                                 >
                                   <div className="flex flex-col">
-                                    <span>{book.title}</span>
+                                    <span className="font-medium text-sm">{book.title}</span>
                                     <span className="text-xs text-gray-500">
                                       ISBN: {book.isbn}
                                     </span>
                                   </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3">
                       <Input
@@ -640,7 +677,7 @@ export default function InventoryCreatePage() {
           <div className="md:hidden space-y-4">
             {bookItems.map((item, index) => (
               <Card
-                key={item.isbn}
+                key={`${item.isbn}-${index}`}
                 className="shadow-sm"
                 style={{ borderRadius: "12px" }}
               >
@@ -666,6 +703,7 @@ export default function InventoryCreatePage() {
                       onChange={(e) =>
                         handleUpdateItem(index, "isbn", e.target.value)
                       }
+                      onBlur={(e) => handleISBNBlur(index, e.target.value)}
                       placeholder="978-0-123456-78-9"
                       // disabled={isDetailView}
                       className="h-10"
@@ -678,62 +716,59 @@ export default function InventoryCreatePage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-gray-600">Book Title</Label>
-                    <Popover
-                      open={openBookSelect === index}
-                      onOpenChange={(open) =>
-                        setOpenBookSelect(open ? index : null)
-                      }
-                    >
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-between h-10"
-                          style={{
-                            borderRadius: "8px",
-                            backgroundColor: "#F5F1ED",
-                            border: "1px solid #E5E0DB",
-                          }}
-                        >
-                          {item.bookTitle || "Select book title"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-
-                      <PopoverContent className="w-[320px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search book title..." />
-                          <CommandEmpty>No book found.</CommandEmpty>
-
-                          <CommandGroup>
-                            {books.map((book) => (
-                              <CommandItem
+                    <div className="relative">
+                      <Input
+                        value={item.bookTitle}
+                        onChange={(e) => {
+                          handleUpdateItem(index, "bookTitle", e.target.value);
+                          setOpenBookSelect(index);
+                          setSearchQuery(e.target.value);
+                        }}
+                        onFocus={() => {
+                          setOpenBookSelect(index);
+                          setSearchQuery(item.bookTitle);
+                        }}
+                        placeholder="Type to search book title..."
+                        className="h-10"
+                        style={{
+                          borderRadius: "8px",
+                          backgroundColor: "#F5F1ED",
+                          border: "1px solid #E5E0DB",
+                        }}
+                      />
+                      {openBookSelect === index && books.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-[300px] overflow-auto">
+                          {isSearching ? (
+                            <div className="p-4 text-center text-sm text-gray-500">
+                              Searching...
+                            </div>
+                          ) : books.length === 0 ? (
+                            <div className="p-4 text-center text-sm text-gray-500">
+                              No book found.
+                            </div>
+                          ) : (
+                            books.map((book) => (
+                              <div
                                 key={book.id}
-                                value={book.id}
-                                onSelect={() => {
-                                  const updated = [...bookItems];
-
-                                  updated[index] = {
-                                    ...updated[index],
-                                    bookTitle: book.title,
-                                    isbn: book.isbn,
-                                  };
-
-                                  setBookItems(updated);
+                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer transition-colors"
+                                onClick={() => {
+                                  handleUpdateItem(index, "bookTitle", book.title);
                                   setOpenBookSelect(null);
+                                  setSearchQuery("");
                                 }}
                               >
                                 <div className="flex flex-col">
-                                  <span>{book.title}</span>
+                                  <span className="font-medium text-sm">{book.title}</span>
                                   <span className="text-xs text-gray-500">
                                     ISBN: {book.isbn}
                                   </span>
                                 </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
