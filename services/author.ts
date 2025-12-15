@@ -48,8 +48,10 @@ export async function AddAuthor(formData: AuthorFormData) {
 
 
 // GET /api/authors?page=1&pageSize=10
-export function getAllAuthors(page: number, pageSize: number,nameQuery: string) {
-  return apiFetch(`/authors/search?nameQuery=${nameQuery}&pageNumber=${page}&pageSize=${pageSize}`);
+export function getAllAuthors(page: number, pageSize: number, nameQuery?: string) {
+  if (nameQuery!="")
+    return apiFetch(`/authors/search?nameQuery=${nameQuery}&pageNumber=${page}&pageSize=${pageSize}`);
+  return  apiFetch(`/authors/search?pageNumber=${page}&pageSize=${pageSize}`);
 }
 
 // GET /api/authors/{id}

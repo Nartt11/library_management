@@ -10,7 +10,10 @@ import type { User } from "@/types/user";
 import type { PendingBook } from "@/types/pendingBook";
 import { useRouter, usePathname } from "next/navigation";
 import { getMyProfile } from "@/services/profile";
-import { logout as authServiceLogout, getUserFromToken } from "@/services/auth/authService";
+import {
+  logout as authServiceLogout,
+  getUserFromToken,
+} from "@/services/auth/authService";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -36,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem("user");
     const token = localStorage.getItem("token");
-    
+
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as User;

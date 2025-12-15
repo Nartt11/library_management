@@ -37,8 +37,8 @@ export default function BookFormCreate({
   // Load category & author từ server
   useEffect(() => {
     async function loadData() {
-      const cat = await getAllBookCategories(1, 50);
-      const au = await getAllAuthors(1, 50);
+      const cat = await getAllBookCategories("", 1, 50);
+      const au = await getAllAuthors(1, 50, "");
       setCategories(cat.data ?? cat);
       setAuthors(au.data ?? au);
     }
@@ -260,8 +260,8 @@ export function BookFormUpdate({
 
   useEffect(() => {
     async function loadData() {
-      const cat = await getAllBookCategories(1, 200);
-      const au = await getAllAuthors(1, 200);
+      const cat = await getAllBookCategories("", 1, 200);
+      const au = await getAllAuthors(1, 200, "");
       setCategories(cat.data ?? cat);
       setAuthors(au.data ?? au);
     }
@@ -444,7 +444,7 @@ export function BookFormUpdate({
                   onClick={() => toggleAuthor(id)}
                   className="inline-flex items-center gap-2 px-2 py-1 rounded bg-green-100 hover:bg-green-200"
                 >
-                  <span>{item?.name ?? id}</span>
+                  <span>{item?.name ?? ""}</span>
                   <span className="text-xs text-red-500">×</span>
                 </button>
               );

@@ -21,7 +21,9 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,  DialogFooter,  DialogHeader,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -88,8 +90,8 @@ export default function BookManagement() {
   const { booksQuery, createMutation } = useBooks(
     page,
     pageSize,
-    debouncedTitle,
-    debouncedAuthor
+    title,
+    author
   );
 
   const books: Book[] = booksQuery.data?.data ?? [];
@@ -178,8 +180,8 @@ export default function BookManagement() {
       const response = await getBookCopiesQRs(book.id);
       setQrData(response || []);
     } catch (error) {
-      console.error('Error fetching QR codes:', error);
-      toast.error('Failed to load QR codes');
+      console.error("Error fetching QR codes:", error);
+      toast.error("Failed to load QR codes");
       setQrData([]);
     } finally {
       setQrLoading(false);
@@ -188,24 +190,32 @@ export default function BookManagement() {
 
   // handle print QR codes
   const handlePrintQRs = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
-    const qrHtml = qrData.map((item, index) => `
+    const qrHtml = qrData
+      .map(
+        (item, index) => `
       <div style="page-break-inside: avoid; margin: 20px; text-align: center; border: 1px solid #ccc; padding: 20px; display: inline-block;">
-        <h3 style="margin-bottom: 10px;">${selectedBookForQR?.title || 'Book'}</h3>
+        <h3 style="margin-bottom: 10px;">${
+          selectedBookForQR?.title || "Book"
+        }</h3>
         <p style="margin-bottom: 10px;">Copy ID: ${item.copyId}</p>
         <p style="margin-bottom: 10px;">Status: ${item.status}</p>
-        <img src="${generateBarcodeUrl(item.copyId)}" style="width: 150px; height: 150px;" />
+        <img src="${generateBarcodeUrl(
+          item.copyId
+        )}" style="width: 150px; height: 150px;" />
         <p style="margin-top: 10px; font-size: 12px;">${item.copyId}</p>
       </div>
-    `).join('');
+    `
+      )
+      .join("");
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Codes - ${selectedBookForQR?.title || 'Book'}</title>
+          <title>QR Codes - ${selectedBookForQR?.title || "Book"}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .qr-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
@@ -216,7 +226,9 @@ export default function BookManagement() {
           </style>
         </head>
         <body>
-          <h1 style="text-align: center; margin-bottom: 30px;">QR Codes for ${selectedBookForQR?.title || 'Book'}</h1>
+          <h1 style="text-align: center; margin-bottom: 30px;">QR Codes for ${
+            selectedBookForQR?.title || "Book"
+          }</h1>
           <div class="qr-grid">${qrHtml}</div>
         </body>
       </html>
@@ -312,7 +324,11 @@ export default function BookManagement() {
         </CardContent>
       </Card>
 
-      <BooksTable books={books} onEdit={openUpdateDialog} onViewQRs={handleViewQRs} />
+      <BooksTable
+        books={books}
+        onEdit={openUpdateDialog}
+        onViewQRs={handleViewQRs}
+      />
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>
@@ -372,7 +388,7 @@ export default function BookManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              QR Codes for {selectedBookForQR?.title || 'Book'}
+              QR Codes for {selectedBookForQR?.title || "Book"}
             </DialogTitle>
             <DialogDescription>
               View and print QR codes for all copies of this book
@@ -396,7 +412,9 @@ export default function BookManagement() {
             </div>
           ) : qrData.length === 0 ? (
             <div className="text-center py-8">
-              <div className="text-muted-foreground">No QR codes found for this book</div>
+              <div className="text-muted-foreground">
+                No QR codes found for this book
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -405,9 +423,17 @@ export default function BookManagement() {
                   <CardContent className="p-4 text-center">
                     <div className="space-y-3">
                       <div>
-                        <h4 className="font-medium text-sm">Copy ID: {item.copyId}</h4>
+                        <h4 className="font-medium text-sm">
+                          Copy ID: {item.copyId}
+                        </h4>
                         <Badge
-                          variant={item.status === 'Available' ? 'default' : item.status === 'Borrowed' ? 'secondary' : 'destructive'}
+                          variant={
+                            item.status === "Available"
+                              ? "default"
+                              : item.status === "Borrowed"
+                              ? "secondary"
+                              : "destructive"
+                          }
                           className="text-xs"
                         >
                           {item.status}
