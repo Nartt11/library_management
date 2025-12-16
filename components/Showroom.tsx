@@ -138,7 +138,7 @@ export function Showroom() {
       try {
         let data;
         if (currentUser) {
-          data = await getAllBooksRecommend(1, 10);
+          data = await getAllBooksRecommend(1, 12);
         } else {
           // fallback to top-books for anonymous users
           data = await getTopBooks(1, 6);

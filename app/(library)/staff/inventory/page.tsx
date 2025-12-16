@@ -25,6 +25,7 @@ import { Container } from "@/components/Container";
 import { BookImport, BookImportResponse, Staff, Supplier } from "@/types/book";
 import { getAllBooksImport } from "@/services/book";
 import { getAllSupplier } from "@/services/supplier";
+import { getAllStaff } from "@/services/staff";
 
 interface BookItem {
   id: string;
@@ -62,6 +63,17 @@ export default function BookInventoryManagement() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Filters - declare before useEffect that depends on them
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [filterStaff, setFilterStaff] = useState("");
+  const [filterSupplier, setFilterSupplier] = useState("");
+  
+  // Search inputs
+  const [staffSearchTerm, setStaffSearchTerm] = useState("");
+  const [supplierSearchTerm, setSupplierSearchTerm] = useState("");
+  
   useEffect(() => {
     let mounted = true;
 
@@ -98,13 +110,7 @@ export default function BookInventoryManagement() {
     return () => {
       mounted = false;
     };
-  }, [currentPage, pageSize]);
-
-  // Filters
-  const [filterDateFrom, setFilterDateFrom] = useState("");
-  const [filterDateTo, setFilterDateTo] = useState("");
-  const [filterStaff, setFilterStaff] = useState("");
-  const [filterSupplier, setFilterSupplier] = useState("");
+  }, [currentPage, pageSize, filterSupplier, filterStaff, filterDateFrom, filterDateTo]);
 
   // Form state
   const [supplierId, setSupplierId] = useState("");
@@ -129,40 +135,65 @@ export default function BookInventoryManagement() {
       totalPrice: 0,
     },
   ]);
-  const [staffList, setStaffList] = useState<Staff>();
-  const [supplierList, setSupplierList] = useState<Supplier>();
-  // useEffect(() => {
-  //   let mounted = true;
+  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [supplierList, setSupplierList] = useState<Supplier[]>([]);
+  
+  // Debounced fetch for staff
+  useEffect(() => {
+    if (!staffSearchTerm || staffSearchTerm === filterStaff) {
+      setStaffList([]);
+      return;
+    }
 
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     setError(null);
+    const timer = setTimeout(async () => {
+      try {
+        const staffRes = await getAllStaff(1, 20, staffSearchTerm);
+        setStaffList(staffRes.data ?? []);
+      } catch (err: any) {
+        console.error("Failed to fetch staff:", err);
+      }
+    }, 600);
 
-  //     try {
-  //       const [staffRes, supplierRes] = await Promise.all([
-  //         getAllSupplier(1, 100),
-  //         get("", 1, 100),
-  //       ]);
+    return () => clearTimeout(timer);
+  }, [staffSearchTerm, filterStaff]);
 
-  //       if (!mounted) return;
+  // Debounced fetch for supplier
+  useEffect(() => {
+    if (!supplierSearchTerm || supplierSearchTerm === filterSupplier) {
+      setSupplierList([]);
+      return;
+    }
 
-  //       setStaffList(staffRes.data ?? staffRes);
-  //       setSupplierList(supplierRes.data ?? supplierRes);
-  //     } catch (err: any) {
-  //       if (mounted) {
-  //         setError(err?.message || "Failed to fetch data");
-  //       }
-  //     } finally {
-  //       if (mounted) setLoading(false);
-  //     }
-  //   };
+    const timer = setTimeout(async () => {
+      try {
+        const supplierRes = await getAllSupplier(supplierSearchTerm, 1, 20);
+        setSupplierList(supplierRes.data ?? []);
+      } catch (err: any) {
+        console.error("Failed to fetch supplier:", err);
+      }
+    }, 600);
 
-  //   fetchData();
+    return () => clearTimeout(timer);
+  }, [supplierSearchTerm, filterSupplier]);
 
-  //   return () => {
-  //     mounted = false;
-  //   };
-  // }, []);
+  // Filter handlers
+  const handleApplyStaffFilter = () => {
+    setCurrentPage(1);
+  };
+
+  const handleApplySupplierFilter = () => {
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilterDateFrom("");
+    setFilterDateTo("");
+    setFilterStaff("");
+    setFilterSupplier("");
+    setStaffSearchTerm("");
+    setSupplierSearchTerm("");
+    setCurrentPage(1);
+  };
 
   // Handlers
   const handleCreateNew = () => {
@@ -235,72 +266,163 @@ export default function BookInventoryManagement() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-600">Date From</Label>
-              <Input
-                type="date"
-                value={filterDateFrom}
-                onChange={(e) => setFilterDateFrom(e.target.value)}
-                className="h-10"
-                style={{
-                  borderRadius: "8px",
-                  backgroundColor: "#F5F1ED",
-                  border: "1px solid #E5E0DB",
-                }}
-              />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-600">Date From</Label>
+                <Input
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="h-10"
+                  style={{
+                    borderRadius: "8px",
+                    backgroundColor: "#F5F1ED",
+                    border: "1px solid #E5E0DB",
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-600">Date To</Label>
+                <Input
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="h-10"
+                  style={{
+                    borderRadius: "8px",
+                    backgroundColor: "#F5F1ED",
+                    border: "1px solid #E5E0DB",
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-600">Search & Select Staff</Label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Type to search staff..."
+                    value={staffSearchTerm}
+                    onChange={(e) => setStaffSearchTerm(e.target.value)}
+                    onFocus={() => setStaffList([])}
+                    className="h-10"
+                    style={{
+                      borderRadius: "8px",
+                      backgroundColor: "#F5F1ED",
+                      border: "1px solid #E5E0DB",
+                    }}
+                  />
+                  {staffList.length > 0 && (
+                    <div
+                      className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                      style={{
+                        borderRadius: "8px",
+                        border: "1px solid #E5E0DB",
+                      }}
+                    >
+                      <div
+                        className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                        onClick={() => {
+                          setFilterStaff("");
+                          setStaffSearchTerm("");
+                          setStaffList([]);
+                        }}
+                      >
+                        All Staff
+                      </div>
+                      {staffList.map((staff) => (
+                        <div
+                          key={staff.id}
+                          className="p-2 hover:bg-gray-100 cursor-pointer text-sm border-t"
+                          onClick={() => {
+                            setFilterStaff(staff.fullName);
+                            setStaffSearchTerm(staff.fullName);
+                            setStaffList([]);
+                          }}
+                        >
+                          {staff.fullName}
+                          <span className="text-xs text-gray-500 ml-2">
+                            ({staff.email})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {filterStaff && (
+                  <div className="text-xs text-gray-600 mt-1">
+                    Selected: <span className="font-medium">{filterStaff}</span>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-600">Search & Select Supplier</Label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Type to search supplier..."
+                    value={supplierSearchTerm}
+                    onChange={(e) => setSupplierSearchTerm(e.target.value)}
+                    onFocus={() => setSupplierList([])}
+                    className="h-10"
+                    style={{
+                      borderRadius: "8px",
+                      backgroundColor: "#F5F1ED",
+                      border: "1px solid #E5E0DB",
+                    }}
+                  />
+                  {supplierList.length > 0 && (
+                    <div
+                      className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                      style={{
+                        borderRadius: "8px",
+                        border: "1px solid #E5E0DB",
+                      }}
+                    >
+                      <div
+                        className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                        onClick={() => {
+                          setFilterSupplier("");
+                          setSupplierSearchTerm("");
+                          setSupplierList([]);
+                        }}
+                      >
+                        All Suppliers
+                      </div>
+                      {supplierList.map((supplier) => (
+                        <div
+                          key={supplier.id}
+                          className="p-2 hover:bg-gray-100 cursor-pointer text-sm border-t"
+                          onClick={() => {
+                            setFilterSupplier(supplier.name);
+                            setSupplierSearchTerm(supplier.name);
+                            setSupplierList([]);
+                          }}
+                        >
+                          {supplier.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {filterSupplier && (
+                  <div className="text-xs text-gray-600 mt-1">
+                    Selected: <span className="font-medium">{filterSupplier}</span>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-600">Date To</Label>
-              <Input
-                type="date"
-                value={filterDateTo}
-                onChange={(e) => setFilterDateTo(e.target.value)}
-                className="h-10"
-                style={{
-                  borderRadius: "8px",
-                  backgroundColor: "#F5F1ED",
-                  border: "1px solid #E5E0DB",
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-600">Staff</Label>
-              <select
-                value={filterStaff}
-                onChange={(e) => setFilterStaff(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg text-sm"
-                style={{
-                  borderRadius: "8px",
-                  backgroundColor: "#F5F1ED",
-                  border: "1px solid #E5E0DB",
-                }}
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleClearFilters}
+                variant="outline"
+                className="gap-2"
+                style={{ borderRadius: "8px" }}
               >
-                {/* {staffList.map((staff) => (
-                  <option key={staff} value={staff}>
-                    {staff === "all" ? "All Staff" : staff}
-                  </option>
-                ))} */}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm text-gray-600">Supplier</Label>
-              <select
-                value={filterSupplier}
-                onChange={(e) => setFilterSupplier(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg text-sm"
-                style={{
-                  borderRadius: "8px",
-                  backgroundColor: "#F5F1ED",
-                  border: "1px solid #E5E0DB",
-                }}
-              >
-                {/* {supplierList.map((supplier) => (
-                  <option key={supplier} value={supplier}>
-                    {supplier === "all" ? "All Suppliers" : supplier}
-                  </option>
-                ))} */}
-              </select>
+                <RotateCcw className="h-4 w-4" />
+                Clear Filters
+              </Button>
             </div>
           </div>
         </CardContent>
