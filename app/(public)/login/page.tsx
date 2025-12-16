@@ -19,7 +19,11 @@ import type { User, UserRole } from "@/types/user";
 import uitLogo from "./../../../public/UITLogo.jpg";
 import { useRouter } from "next/navigation";
 
-import { loginService, requestPasswordReset, resetPassword } from "@/services/auth/authService";
+import {
+  loginService,
+  requestPasswordReset,
+  resetPassword,
+} from "@/services/auth/authService";
 import { useAuth } from "@/context/authContext";
 import { toast } from "sonner";
 
@@ -58,7 +62,7 @@ export default function LoginPage({}: LoginPageProps) {
         if (role === "admin") {
           router.push("/admin/dashboard");
         } else if (role === "staff") {
-          router.push("/staff/dashboard");
+          router.push("/staff/inventory");
         } else {
           router.push("/student/dashboard");
         }
@@ -98,10 +102,10 @@ export default function LoginPage({}: LoginPageProps) {
           toast.error("Invalid verification code format");
           return;
         }
-        
+
         await resetPassword(forgotEmail, token, newPassword);
         toast.success("Password changed successfully");
-        
+
         // Reset states and go back to login
         setShowForgotPassword(false);
         setForgotPasswordStep("email");
