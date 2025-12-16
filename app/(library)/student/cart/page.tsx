@@ -316,7 +316,7 @@ export default function BookCart() {
       )}
 
       {/* Current QR Display Modal */}
-      <Dialog open={showQRDisplay} onOpenChange={setShowQRDisplay}>
+      {/* <Dialog open={showQRDisplay} onOpenChange={setShowQRDisplay}>
         <DialogContent className="max-w-md">
           <DialogHeader className="text-center pb-3">
             <div className="mx-auto w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mb-2">
@@ -332,7 +332,7 @@ export default function BookCart() {
 
           {currentQR && (
             <div className="space-y-4">
-              {/* QR Code Display */}
+              
               <div className="flex justify-center">
                 <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-orange-100">
                   <img
@@ -343,7 +343,7 @@ export default function BookCart() {
                 </div>
               </div>
 
-              {/* Ticket Information Card */}
+              
               <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-3 space-y-3">
                 <div className="text-center">
                   <div className="text-xs text-orange-700 font-medium mb-1">
@@ -379,7 +379,7 @@ export default function BookCart() {
                 </div>
               </div>
 
-              {/* Message */}
+              
               <div className="bg-teal-50 border border-teal-200 rounded-xl p-3">
                 <p className="text-sm text-teal-700 text-center">
                   {currentQR.message}
@@ -398,7 +398,7 @@ export default function BookCart() {
             </div>
           )}
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }

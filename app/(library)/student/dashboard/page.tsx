@@ -5,59 +5,78 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import { BookOpen, Calendar, Clock, AlertTriangle, Search, QrCode, History } from 'lucide-react';
-import { getStudentDashboard } from '../../../../services/student';
 import { StudentDashboardData } from '../../../../types/student';
+import { useAuth } from '@/context/authContext';
+import { getMyBorrowRequests } from '@/services/borrow-request';
+import { toast } from 'sonner';
+import { BorrowRequestDto } from '@/types/borrow-request';
+import { log } from 'console';
+import { set } from 'react-hook-form';
 
 export default function StudentDashboardHome() {
   const router = useRouter();
+  const {currentUser} = useAuth();
   const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchDashboardData() {
-      try {
-        setLoading(true);
-        const data = await getStudentDashboard();
-        setDashboardData(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    }
+    const [requests, setRequests] = useState<BorrowRequestDto[]>([]);
+    const [overdueBooks, setOverdueBooks] = useState<BorrowRequestDto[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<BorrowRequestDto | null>(null);
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const pageSize = 20;
 
-    fetchDashboardData();
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
-  const kpiData = dashboardData ? [
+  useEffect(() => {
+    if (mounted) {
+      fetchMyRequests();
+    }
+  }, [mounted, pageNumber]);
+
+  const fetchMyRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await getMyBorrowRequests( pageNumber, pageSize, "Borrowed");
+
+      const res = await getMyBorrowRequests( pageNumber, pageSize, "Overdue");
+      setOverdueBooks(res.data || []);
+      setRequests(response.data || []);
+      console.log('Fetched my requests:', response);
+      setTotalPages(response.totalPages);
+      setTotalItems(response.totalItems);
+    } catch (error) {
+      console.error('Error fetching my requests:', error);
+      toast.error('Failed to load your borrow requests');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kpiData =  [
     {
       title: 'Books Borrowed',
-      value: dashboardData.booksBorrowed.toString(),
+      value: requests.length.toString(),
       description: 'Currently borrowed',
       icon: BookOpen,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
     {
-      title: 'Days Visited',
-      value: dashboardData.daysVisited.toString(),
-      description: 'This month',
-      icon: Calendar,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
-    {
       title: 'Overdue Books',
-      value: dashboardData.overdueBooks.toString(),
+      value: overdueBooks.length.toString(),
       description: 'Need attention',
       icon: AlertTriangle,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
     },
-  ] : [];
+  ] ;
 
   const recentBorrowedBooks = dashboardData?.currentlyBorrowedBooks || [];
 
@@ -94,14 +113,14 @@ export default function StudentDashboardHome() {
     );
   }
 
-  if (!dashboardData) {
-    return null;
-  }
+  // if (!dashboardData) {
+  //   return null;
+  // }
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl mb-2">Welcome back, {"PLACEHOLDER"}!</h1>
+        <h1 className="text-2xl mb-2">Welcome back, {currentUser?.fullName}!</h1>
         <p className="text-muted-foreground">Here's your library overview for today.</p>
       </div>
 
@@ -133,12 +152,12 @@ export default function StudentDashboardHome() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentBorrowedBooks.map((book) => (
+              {requests.map((book) => (
                 <div key={book.id} className="flex items-center justify-between p-3 bg-linear-to-r from-orange-50 to-amber-50 rounded-lg">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">{book.title}</p>
-                    <p className="text-xs text-muted-foreground">by {book.author}</p>
-                    <p className="text-xs text-muted-foreground">Due: {book.dueDate}</p>
+                    <p className="text-sm truncate">{book.bookTitle}</p>
+                    <p className="text-xs text-muted-foreground">ISBN {book.bookISBN}</p>
+                    <p className="text-xs text-muted-foreground">Due: {new Date(book.dueDate ?? "").toLocaleString("vi-VN")}</p>
                   </div>
                   <Badge variant={getStatusColor(book.status)}>
                     {book.status}
@@ -170,18 +189,18 @@ export default function StudentDashboardHome() {
               <Button 
                 variant="outline"
                 className="h-auto p-4 flex items-center gap-3 bg-green-50 border-green-200 hover:bg-green-100"
-                onClick={() => router.push('/student/qr-ticket')}
+                onClick={() => router.push('/student/cart')}
               >
                 <QrCode className="h-5 w-5 text-green-600" />
                 <div className="text-left flex-1">
-                  <h4 className="text-sm text-green-700">Generate QR Ticket</h4>
+                  <h4 className="text-sm text-green-700">Student Cart</h4>
                   <p className="text-xs text-green-600">For borrowing books</p>
                 </div>
               </Button>
               <Button 
                 variant="outline"
                 className="h-auto p-4 flex items-center gap-3 bg-amber-50 border-amber-200 hover:bg-amber-100"
-                onClick={() => router.push('/student/history')}
+                onClick={() => router.push('/student/borrow')}
               >
                 <History className="h-5 w-5 text-amber-600" />
                 <div className="text-left flex-1">
