@@ -89,8 +89,6 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Demo Banner */}
-        <DemoBanner />
 
         {/* Header */}
         <header className="bg-card border-b border-border px-4 lg:px-6 py-4">

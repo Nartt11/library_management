@@ -27,11 +27,13 @@ export async function getTopCategories(
     pageSize: pageSize.toString(),
   });
 
-  const response = await getApi<{ data: TopCategoriesResponse }>(
+  const response = await getApi<TopCategoriesResponse>(
     `/book-categories/top-categories?${params.toString()}`
   );
 
-  return response.data;
+  console.log('📊 getTopCategories response:', response);
+  // If API returns { data: [...] }, extract it, otherwise return as-is
+  return (response as any).data ? (response as any).data : response;
 }
 
 export interface BorrowCountStatDto {
@@ -50,11 +52,12 @@ export async function getBorrowStatistics(
     toDate,
   });
 
-  const response = await getApi<{ data: BorrowCountStatDto }>(
+  const response = await getApi<BorrowCountStatDto>(
     `/statistics/by-borrow-count?${params.toString()}`
   );
 
-  return response.data;
+  console.log('📊 getBorrowStatistics response:', response);
+  return response;
 }
 
 export interface MemberBorrowCountStatDto {

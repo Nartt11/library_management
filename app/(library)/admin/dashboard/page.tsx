@@ -395,18 +395,31 @@ export default function AdminDashboard() {
                   <BarChart data={weeklyBorrowStats.dailyCounts.map((count, index) => {
                     const date = new Date(weeklyBorrowStats.fromDate);
                     date.setDate(date.getDate() + index);
-                    return { date: date.toISOString().split('T')[0], count };
+                    const dateStr = date.toISOString().split('T')[0];
+                    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                    const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    return { 
+                      date: dateStr, 
+                      count,
+                      label: `${dayName} ${monthDay}`,
+                      fullDate: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+                    };
                   })}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
-                      dataKey="date"
-                      tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { weekday: 'short' })}
-                      fontSize={12}
+                      dataKey="label"
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      fontSize={11}
                     />
-                    <YAxis />
+                    <YAxis 
+                      allowDecimals={false}
+                      label={{ value: 'Borrow Count', angle: -90, position: 'insideLeft' }}
+                    />
                     <Tooltip 
-                      labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                      formatter={(value) => [`${value} borrows`, 'Books']}
+                      labelFormatter={(label, payload) => payload[0]?.payload?.fullDate || label}
+                      formatter={(value) => [`${value} ${value === 1 ? 'borrow' : 'borrows'}`, 'Count']}
                     />
                     <Bar dataKey="count" fill="#3b82f6" />
                   </BarChart>

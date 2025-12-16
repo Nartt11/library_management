@@ -77,7 +77,7 @@ export function extractUserFromToken(token: string): User | null {
     email: String(email),
     role,
   };
-
+console.log('Extracted user from token:', user);
   // If the role is student, attach studentNumber field
   if (role === "student" && id) {
     (user as any).studentNumber = String(id);
