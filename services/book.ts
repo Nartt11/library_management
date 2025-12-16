@@ -42,17 +42,17 @@ export async function getAllBooksRecommend(page: number, pageSize: number) {
 // GET /api/books/top-books?pageNumber=1&pageSize=6
 export async function getTopBooks(page: number, pageSize: number) {
   const response = await apiFetch(`/books/top-books?pageNumber=${page}&pageSize=${pageSize}`);
-  // Response: { data: { data: [{ book: {...}, borrowCount: ... }], ... }, errorMessage, isSuccess }
-  // Extract books from nested structure
-  const booksData = response?.data?.data ?? [];
+  // Response: { data: [{ book: {...}, borrowCount: ... }], pageNumber, pageSize, totalItems, totalPages }
+  // Extract books from array
+  const booksData = response?.data ?? [];
   const books = booksData.map((item: any) => item.book);
   
   return {
     data: books,
-    pageNumber: response?.data?.pageNumber ?? page,
-    pageSize: response?.data?.pageSize ?? pageSize,
-    totalItems: response?.data?.totalItems ?? books.length,
-    totalPages: response?.data?.totalPages ?? 1,
+    pageNumber: response?.pageNumber ?? page,
+    pageSize: response?.pageSize ?? pageSize,
+    totalItems: response?.totalItems ?? books.length,
+    totalPages: response?.totalPages ?? 1,
   };
 }
 

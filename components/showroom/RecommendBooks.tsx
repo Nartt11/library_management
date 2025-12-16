@@ -205,7 +205,9 @@ export default function RecommendBooks({
                         Publisher
                       </span>
                       <span className="text-xs truncate block">
-                        {selectedBook.publisher || "N/A"}
+                        {typeof selectedBook.publisher === 'object' && selectedBook.publisher?.name
+                          ? selectedBook.publisher.name
+                          : selectedBook.publisher || "N/A"}
                       </span>
                     </div>
                   </div>
