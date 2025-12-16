@@ -1,4 +1,4 @@
-export interface Publisher {
+interface Publisher {
     id: string,
     name: string,
     phoneNumber: string,

@@ -1,5 +1,3 @@
-import { Publisher } from "./publisher";
-
 export interface Author {
   id: string;
   name: string;
