@@ -56,6 +56,7 @@ export interface Supplier {
   email: string;
 }
 export interface Staff {
+  id: string;
   hireDate: string;        // ISO string
   fullName: string;
   email: string;
