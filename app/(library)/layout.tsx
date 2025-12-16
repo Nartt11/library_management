@@ -12,8 +12,11 @@ import Image from "next/image";
 import uitLogo from "./../../public/UITLogo.jpg";
 import { useAuth } from "@/context/authContext";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
-
-export default function DashboardLayout() {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { logout, currentUser } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [displayImage, setDisplayImage] = useState("");
@@ -162,7 +165,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-auto bg-background"></main>
+        <main className="flex-1 overflow-auto bg-background">{children}</main>
 
         {/* Dashboard Footer */}
         <DashboardFooter />
