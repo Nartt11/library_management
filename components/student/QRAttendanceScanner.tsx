@@ -26,7 +26,8 @@ import {
 } from "lucide-react";
 
 // import { toast } from 'sonner@2.0.3';
-import type { User } from "../../page";
+// import type { User } from "../../page";
+import type { User } from "../../types/user";
 
 interface QRAttendanceScannerProps {
   user: User;

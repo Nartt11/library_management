@@ -360,7 +360,7 @@ export function BookFormUpdate({
 
         <div>
           <Label>Publisher</Label>
-          <Input value={book.publisher ?? ""} disabled />
+          <Input value={book.publisher.name ?? ""} disabled />
         </div>
 
         <div>

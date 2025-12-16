@@ -12,7 +12,7 @@ type RawBook = {
   authors?: Array<{ id?: string; name?: string }>;
   bookCategories?: Array<{ id?: string; name?: string }>;
   publicationYear?: number;
-  publisher?: string | null;
+  publisher: Publisher;
   // optional fields that may exist in other responses
   location?: string;
   copies?: number;
@@ -43,6 +43,7 @@ function mapRawToBook(rb: RawBook): Book {
       id: a.id || '',
       name: a.name || 'Unknown'
     })) ?? [],
+    availableCopiesCount: rb.availableCopies ?? rb.copies ?? 0,
     bookCategories: rb.bookCategories?.map(c => ({
       id: c.id || '',
       name: c.name || 'Uncategorized'

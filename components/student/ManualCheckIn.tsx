@@ -13,7 +13,7 @@ import { Badge } from "../ui/badge";
 import { ScanAlert } from "../ui/scan-alert";
 import { LogIn, Clock, Calendar, UserRound, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import type { User } from "../../../types/user";
+import type { User } from "../../types/user";
 
 interface ManualCheckInProps {
   user: User;

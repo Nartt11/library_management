@@ -24,7 +24,8 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { toast } from "sonner";
-import type { User } from "../../../types/user";
+// import type { User } from "../../../types/user";
+import type { User } from "../../types/user";
 
 interface GeneratedQRHolderProps {
   user: User;
