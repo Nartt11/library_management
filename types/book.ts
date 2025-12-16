@@ -15,7 +15,7 @@ export interface Book {
   isbn: string;
   title: string; 
   imgUrl: string;
-  publisher: string | null;
+  publisher: string | Publisher;
   publicationYear: number;
   description: string;
   authors: Author[];

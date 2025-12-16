@@ -12,20 +12,20 @@ import Image from "next/image";
 import uitLogo from "./../../public/UITLogo.jpg";
 import { useAuth } from "@/context/authContext";
 import { NavigationSidebar } from "@/components/NavigationSidebar";
-
-interface DashboardLayoutProps {
+export default function DashboardLayout({
+  children,
+}: {
   children: React.ReactNode;
-  onLogout: () => void;
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+}) {
   const { logout, currentUser } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [displayImage, setDisplayImage] = useState("");
 
   const updateDisplayInfo = () => {
     if (currentUser) {
-      setDisplayName((currentUser as any)?.fullName || currentUser?.name || "User");
+      setDisplayName(
+        (currentUser as any)?.fullName || currentUser?.name || "User"
+      );
       setDisplayImage((currentUser as any)?.imageUrl || "");
     }
   };
@@ -58,7 +58,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     window.addEventListener("storage", handleStorage);
 
     return () => {
-      window.removeEventListener("auth-login", handleAuthLogin as EventListener);
+      window.removeEventListener(
+        "auth-login",
+        handleAuthLogin as EventListener
+      );
       window.removeEventListener("storage", handleStorage);
     };
   }, []);
@@ -119,7 +122,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
               <div>
                 <h1 className="text-xl text-foreground capitalize">
-                  {currentUser?.role ? currentUser.role.replace(/-/g, "") : ""} Dashboard
+                  {currentUser?.role ? currentUser.role.replace(/-/g, "") : ""}{" "}
+                  Dashboard
                 </h1>
               </div>
             </div>
@@ -128,15 +132,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex items-center gap-3">
                 <Avatar>
                   {displayImage ? (
-                    <img 
-                      src={displayImage} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover rounded-full" 
+                    <img
+                      src={displayImage}
+                      alt="Profile"
+                      className="w-full h-full object-cover rounded-full"
                     />
                   ) : (
                     <AvatarFallback>
                       {displayName
-                        ? displayName.split(" ")
+                        ? displayName
+                            .split(" ")
                             .map((n) => n[0])
                             .join("")
                             .toUpperCase()
@@ -145,10 +150,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   )}
                 </Avatar>
                 <div className="hidden sm:block">
-                  <p className="text-sm text-foreground">
-                    {displayName}
+                  <p className="text-sm text-foreground">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {currentUser?.email || ""}
                   </p>
-                  <p className="text-xs text-muted-foreground">{currentUser?.email || ""}</p>
                 </div>
               </div>
 
@@ -165,7 +170,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Dashboard Footer */}
         <DashboardFooter />
       </div>
-
     </div>
   );
 }

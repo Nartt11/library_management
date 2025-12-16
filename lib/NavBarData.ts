@@ -76,7 +76,6 @@ export const AdminNavBarData = [
     link: "/staff/return",
   },
 
-
   {
     id: "account",
     label: "Manage My Account",
@@ -116,5 +115,32 @@ export const StudentNavBarData = [
     label: "Manage My Account",
     icon: User,
     link: "/student/account",
+  },
+];
+
+export const StaffNavBarData = [
+  {
+    id: "inventory",
+    label: "Book Inventory",
+    icon: Package,
+    link: "/staff/inventory",
+  },
+  {
+    id: "requests",
+    label: "Borrow Requests",
+    icon: QrCode,
+    link: "/staff/requests",
+  },
+  {
+    id: "Returns",
+    label: "Return book copies",
+    icon: AlertTriangle,
+    link: "/staff/return",
+  },
+  {
+    id: "account",
+    label: "Manage My Account",
+    icon: User,
+    link: "/staff/account",
   },
 ];

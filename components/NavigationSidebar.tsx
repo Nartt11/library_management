@@ -2,7 +2,11 @@ import React from "react";
 import { Button } from "./ui/button";
 import type { UserRole } from "@/types/user";
 import { usePathname, useRouter } from "next/navigation";
-import { AdminNavBarData, StudentNavBarData } from "@/lib/NavBarData";
+import {
+  AdminNavBarData,
+  StaffNavBarData,
+  StudentNavBarData,
+} from "@/lib/NavBarData";
 
 interface NavigationSidebarProps {
   role: UserRole | undefined;
@@ -22,6 +26,8 @@ export function NavigationSidebar({
         return AdminNavBarData;
       case "student":
         return StudentNavBarData;
+      case "staff":
+        return StaffNavBarData;
       default:
         return StudentNavBarData; // Default to student view
     }
